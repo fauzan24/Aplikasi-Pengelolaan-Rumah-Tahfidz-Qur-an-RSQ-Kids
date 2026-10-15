@@ -2,19 +2,21 @@ import { useState } from "react";
 import { CssBaseline } from "@mui/material";
 
 import Login from "./pages/auth/Login";
+import DashboardAdmin from "./pages/admin/DashboardAdmin";
 import DashboardPengajar from "./pages/pengajar/DashboardPengajar";
+import DashboardWalisantri from "./pages/walisantri/DashboardWalisantri";
 import KelasDiampu from "./pages/pengajar/KelasDiampu";
 import InputNilai from "./pages/pengajar/InputNilai";
 import ProgresBelajar from "./pages/pengajar/ProgresBelajar";
 import DetailProgresBelajar from "./pages/pengajar/DetailProgresBelajar";
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [pengguna, setPengguna] = useState(null);
   const [activePage, setActivePage] = useState("Dashboard");
   const [santriTerpilih, setSantriTerpilih] = useState(null);
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
+    setPengguna(null);
     setActivePage("Dashboard");
     setSantriTerpilih(null);
   };
@@ -30,6 +32,14 @@ function App() {
   };
 
   const renderPage = () => {
+    if (pengguna?.role === "admin") {
+      return <DashboardAdmin {...pageProps} pengguna={pengguna} />;
+    }
+
+    if (pengguna?.role === "walisantri") {
+      return <DashboardWalisantri {...pageProps} pengguna={pengguna} />;
+    }
+
     switch (activePage) {
       case "Kelas Diampu":
         return <KelasDiampu {...pageProps} />;
@@ -63,8 +73,8 @@ function App() {
   return (
     <>
       <CssBaseline />
-      {!isLoggedIn ? (
-        <Login onLogin={() => setIsLoggedIn(true)} />
+      {!pengguna ? (
+        <Login onLogin={setPengguna} />
       ) : (
         renderPage()
       )}
