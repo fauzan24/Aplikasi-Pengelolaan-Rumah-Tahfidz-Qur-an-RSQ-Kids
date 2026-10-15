@@ -2,6 +2,8 @@ import { useState } from "react";
 import { CssBaseline } from "@mui/material";
 
 import Login from "./pages/auth/Login";
+import DashboardAdmin from "./pages/admin/DashboardAdmin";
+import DataSantri from "./pages/admin/DataSantri";
 import DashboardPengajar from "./pages/pengajar/DashboardPengajar";
 import KelasDiampu from "./pages/pengajar/KelasDiampu";
 import InputNilai from "./pages/pengajar/InputNilai";
@@ -30,6 +32,18 @@ function App() {
   };
 
   const renderPage = () => {
+    if (pengguna?.role === "admin") {
+      if (activePage === "Data Santri") {
+        return <DataSantri {...pageProps} />;
+      }
+
+      return <DashboardAdmin {...pageProps} pengguna={pengguna} />;
+    }
+
+    if (pengguna?.role === "walisantri") {
+      return <DashboardWalisantri {...pageProps} pengguna={pengguna} />;
+    }
+
     switch (activePage) {
       case "Kelas Diampu":
         return <KelasDiampu {...pageProps} />;
