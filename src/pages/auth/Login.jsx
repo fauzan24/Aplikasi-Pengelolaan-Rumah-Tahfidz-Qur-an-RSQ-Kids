@@ -23,6 +23,7 @@ import {
   TextField,
   Typography
 } from '@mui/material';
+import { akunDummy } from '../../data/akunDummy';
 
 const Login = ({ onLogin }) => {
   const [isRegister, setIsRegister] = useState(false);
@@ -34,10 +35,11 @@ const Login = ({ onLogin }) => {
     password: '',
     rememberMe: false
   });
+  const [loginError, setLoginError] = useState('');
 
   const handleChange = (event) => {
     const { name, value, checked, type } = event.target;
-
+    setLoginError('');
     setFormData((previous) => ({
       ...previous,
       [name]: type === 'checkbox' ? checked : value
@@ -62,12 +64,23 @@ const Login = ({ onLogin }) => {
     }
 
     if (!formData.username.trim() || !formData.password) {
-      alert('Nama pengguna dan kata sandi wajib diisi!');
+      setLoginError('Nama pengguna dan kata sandi wajib diisi.');
       return;
     }
 
-    // Masuk ke Dashboard Pengajar
-    onLogin?.();
+    const akun = akunDummy.find(
+      (data) =>
+        data.username === formData.username.trim().toLowerCase() &&
+        data.password === formData.password
+    );
+
+    if (!akun) {
+      setLoginError('Nama pengguna atau kata sandi tidak sesuai.');
+      return;
+    }
+
+    const { password: _password, ...pengguna } = akun;
+    onLogin?.(pengguna);
   };
 
   return (
@@ -178,7 +191,7 @@ const Login = ({ onLogin }) => {
           sx={{
             width: { xs: '100%', sm: '86%' },
             position: 'relative',
-            height: { xs: 900, sm: 560, md: 580 },
+            height: { xs: 900, sm: 600, md: 620 },
             overflow: 'hidden',
             border: '1px solid #efefe9',
             borderRadius: { xs: 3, md: 4 },
@@ -355,6 +368,12 @@ const Login = ({ onLogin }) => {
                   : 'Silakan masukkan nama pengguna dan kata sandi Anda untuk mengakses kelas.'}
               </Typography>
 
+              {!isRegister && (
+                <Typography sx={{ mb: 1.5, color: '#777c73', fontSize: 10, lineHeight: 1.6 }}>
+                  Akun demo: admin / admin123 (Admin), pengajar / pengajar123 (Pengajar), wali / wali123 (Wali Santri).
+                </Typography>
+              )}
+
               <Typography
                 component="label"
                 htmlFor="username"
@@ -517,61 +536,24 @@ const Login = ({ onLogin }) => {
                 }}
               />
 
-              {!isRegister && (
-                <Box
-                  sx={{
-                    mb: 2.5,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 1
-                  }}
-                >
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        name="rememberMe"
-                        checked={formData.rememberMe}
-                        onChange={handleChange}
-                        size="small"
-                        sx={{
-                          p: 0.5,
-                          mr: 0.25,
-                          color: '#bbc0b7',
-                          '&.Mui-checked': { color: '#526d4b' }
-                        }}
-                      />
-                    }
-                    label={
-                      <Typography sx={{ color: '#737970', fontSize: 11 }}>
-                        Ingat saya
-                      </Typography>
-                    }
-                    sx={{ m: 0 }}
-                  />
-
-                  <Link
-                    href="#"
-                    underline="none"
-                    sx={{
-                      color: '#5c7053',
-                      fontSize: 11,
-                      fontWeight: 600
-                    }}
-                  >
-                    Lupa Password?
-                  </Link>
-                </Box>
+              {loginError && !isRegister && (
+                <Typography role="alert" sx={{ mt: 0.5, color: '#B42318', fontSize: 11 }}>
+                  {loginError}
+                </Typography>
               )}
 
-              <Box
-                sx={{
-                  mb: 2.5,
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: 1.25
-                }}
-              >
+              {!isRegister && <Box sx={{ mb: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+                <FormControlLabel
+                  control={<Checkbox name="rememberMe" checked={formData.rememberMe} onChange={handleChange} size="small" sx={{ p: 0.5, mr: 0.25, color: '#bbc0b7', '&.Mui-checked': { color: '#526d4b' } }} />}
+                  label={<Typography sx={{ color: '#737970', fontSize: 11 }}>Ingat saya</Typography>}
+                  sx={{ m: 0 }}
+                />
+                <Link href="#" underline="none" sx={{ color: '#5c7053', fontSize: 11, fontWeight: 600 }}>
+                  Lupa Password?
+                </Link>
+              </Box>}
+
+              <Box sx={{ mb: 2.5, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.25 }}>
                 <Button
                   type="button"
                   variant="outlined"
