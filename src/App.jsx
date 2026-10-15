@@ -3,6 +3,7 @@ import { CssBaseline } from "@mui/material";
 
 import Login from "./pages/auth/Login";
 import DashboardAdmin from "./pages/admin/DashboardAdmin";
+import DataSantri from "./pages/admin/DataSantri";
 import DashboardPengajar from "./pages/pengajar/DashboardPengajar";
 import DashboardWalisantri from "./pages/walisantri/DashboardWalisantri";
 import KelasDiampu from "./pages/pengajar/KelasDiampu";
@@ -33,6 +34,10 @@ function App() {
 
   const renderPage = () => {
     if (pengguna?.role === "admin") {
+      if (activePage === "Data Santri") {
+        return <DataSantri {...pageProps} />;
+      }
+
       return <DashboardAdmin {...pageProps} pengguna={pengguna} />;
     }
 
