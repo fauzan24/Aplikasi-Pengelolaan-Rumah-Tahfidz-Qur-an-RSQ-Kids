@@ -22,8 +22,9 @@ import {
   TextField,
   Typography
 } from '@mui/material';
+import { akunDummy } from '../../data/akunDummy';
 
-const Login = () => {
+const Login = ({ onLogin }) => {
   const [isRegister, setIsRegister] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -32,9 +33,11 @@ const Login = () => {
     password: '',
     rememberMe: false
   });
+  const [loginError, setLoginError] = useState('');
 
   const handleChange = (event) => {
     const { name, value, checked, type } = event.target;
+    setLoginError('');
     setFormData((previous) => ({
       ...previous,
       [name]: type === 'checkbox' ? checked : value
@@ -43,7 +46,39 @@ const Login = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log(isRegister ? 'Data Pendaftaran Dikirim:' : 'Data Login Dikirim:', formData);
+
+    if (isRegister) {
+      if (
+        !formData.username.trim() ||
+        !formData.email.trim() ||
+        !formData.password
+      ) {
+        alert('Semua data pendaftaran wajib diisi!');
+        return;
+      }
+
+      alert('Fitur pendaftaran belum terhubung ke database.');
+      return;
+    }
+
+    if (!formData.username.trim() || !formData.password) {
+      setLoginError('Nama pengguna dan kata sandi wajib diisi.');
+      return;
+    }
+
+    const akun = akunDummy.find(
+      (data) =>
+        data.username === formData.username.trim().toLowerCase() &&
+        data.password === formData.password
+    );
+
+    if (!akun) {
+      setLoginError('Nama pengguna atau kata sandi tidak sesuai.');
+      return;
+    }
+
+    const { password: _password, ...pengguna } = akun;
+    onLogin?.(pengguna);
   };
 
   return (
@@ -134,7 +169,7 @@ const Login = () => {
           sx={{
             width: { xs: '100%', sm: '86%' },
             position: 'relative',
-            height: { xs: 900, sm: 560, md: 580 },
+            height: { xs: 900, sm: 600, md: 620 },
             overflow: 'hidden',
             border: '1px solid #efefe9',
             borderRadius: { xs: 3, md: 4 },
@@ -249,13 +284,36 @@ const Login = () => {
               <Typography component="h2" sx={{ mb: 0.5, fontSize: 40, lineHeight: 1.2, fontWeight: 900, color: '#20261f' }}>
                 {isRegister ? 'DAFTAR' : 'MASUK'}
               </Typography>
-              <Typography sx={{ mb: 3, color: '#777c73', fontSize: 13, lineHeight: 1.5 }}>
+              <Typography
+                sx={{
+                  mb: 2,
+                  color: '#777c73',
+                  fontSize: 13,
+                  lineHeight: 1.5
+                }}
+              >
                 {isRegister
                   ? 'Lengkapi data berikut untuk membuat akun santri.'
                   : 'Silakan masukkan nama pengguna dan kata sandi Anda untuk mengakses kelas.'}
               </Typography>
 
-              <Typography component="label" htmlFor="username" sx={{ display: 'block', mb: 0.65, color: '#495344', fontSize: 13, fontWeight: 800 }}>
+              {!isRegister && (
+                <Typography sx={{ mb: 1.5, color: '#777c73', fontSize: 10, lineHeight: 1.6 }}>
+                  Akun demo: admin / admin123 (Admin), pengajar / pengajar123 (Pengajar), wali / wali123 (Wali Santri).
+                </Typography>
+              )}
+
+              <Typography
+                component="label"
+                htmlFor="username"
+                sx={{
+                  display: 'block',
+                  mb: 0.65,
+                  color: '#495344',
+                  fontSize: 13,
+                  fontWeight: 800
+                }}
+              >
                 NAMA PENGGUNA
               </Typography>
               <TextField
@@ -332,6 +390,12 @@ const Login = () => {
                   }
                 }}
               />
+
+              {loginError && !isRegister && (
+                <Typography role="alert" sx={{ mt: 0.5, color: '#B42318', fontSize: 11 }}>
+                  {loginError}
+                </Typography>
+              )}
 
               {!isRegister && <Box sx={{ mb: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
                 <FormControlLabel
