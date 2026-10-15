@@ -5,18 +5,19 @@ import Login from "./pages/auth/Login";
 import DashboardAdmin from "./pages/admin/DashboardAdmin";
 import DataSantri from "./pages/admin/DataSantri";
 import DashboardPengajar from "./pages/pengajar/DashboardPengajar";
+import DashboardWalisantri from "./pages/walisantri/DashboardWalisantri";
 import KelasDiampu from "./pages/pengajar/KelasDiampu";
 import InputNilai from "./pages/pengajar/InputNilai";
 import ProgresBelajar from "./pages/pengajar/ProgresBelajar";
 import DetailProgresBelajar from "./pages/pengajar/DetailProgresBelajar";
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [pengguna, setPengguna] = useState(null);
   const [activePage, setActivePage] = useState("Dashboard");
   const [santriTerpilih, setSantriTerpilih] = useState(null);
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
+    setPengguna(null);
     setActivePage("Dashboard");
     setSantriTerpilih(null);
   };
@@ -77,8 +78,8 @@ function App() {
   return (
     <>
       <CssBaseline />
-      {!isLoggedIn ? (
-        <Login onLogin={() => setIsLoggedIn(true)} />
+      {!pengguna ? (
+        <Login onLogin={setPengguna} />
       ) : (
         renderPage()
       )}
