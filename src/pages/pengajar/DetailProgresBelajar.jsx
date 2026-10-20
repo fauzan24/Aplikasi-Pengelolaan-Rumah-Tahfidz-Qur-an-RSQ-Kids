@@ -1,68 +1,85 @@
 import { useState } from "react";
-import { Pencil, Trash2, X, Save, UserRound } from "lucide-react";
+import {
+  ArrowBack,
+  Close,
+  Delete,
+  EditOutlined,
+  Person,
+  SaveOutlined,
+} from "@mui/icons-material";
+import {
+  Avatar,
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  LinearProgress,
+  Paper,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+} from "@mui/material";
 import LayoutPengajar from "../../components/pengajar/LayoutPengajar";
 
 const dataAwal = [
-  {
-    id: 1,
-    tanggal: "05/04/2026",
-    pelajaran: "Tahfidz",
-    progres: 30,
-    catatan: "Surat AT-Takatsur",
-  },
-  {
-    id: 2,
-    tanggal: "13/04/2026",
-    pelajaran: "Bacaan",
-    progres: 60,
-    catatan: "AT-Takwir",
-  },
-  {
-    id: 3,
-    tanggal: "15/04/2026",
-    pelajaran: "Iqro",
-    progres: 50,
-    catatan: "Jilid 3",
-  },
+  { id: 1, tanggal: "05/04/2026", pelajaran: "Tahfidz", progres: 30, catatan: "Surat AT-Takatsur" },
+  { id: 2, tanggal: "13/04/2026", pelajaran: "Bacaan", progres: 60, catatan: "AT-Takwir" },
+  { id: 3, tanggal: "15/04/2026", pelajaran: "Iqro", progres: 50, catatan: "Jilid 3" },
 ];
 
-export default function DetailProgresBelajar({
-  santri,
-  onNavigate,
-  onLogout,
-}) {
+const tanggalValid = (tanggal) => {
+  const bagian = tanggal.split("/");
+  return bagian.length === 3 && bagian.every((nilai) => nilai.trim() !== "");
+};
+
+const fieldEdit = [
+  { field: "tanggal", label: "Tanggal (DD/MM/YYYY)", type: "text" },
+  { field: "pelajaran", label: "Mata Pelajaran", type: "text" },
+  { field: "progres", label: "Progres (%)", type: "number" },
+  { field: "catatan", label: "Catatan", type: "text" },
+];
+
+export default function DetailProgresBelajar({ santri, onNavigate, onLogout }) {
   const [daftarProgres, setDaftarProgres] = useState(dataAwal);
   const [dataEdit, setDataEdit] = useState(null);
 
   const bukaEdit = (item) => setDataEdit({ ...item });
 
-  const simpanEdit = (e) => {
-    e.preventDefault();
+  const simpanEdit = (event) => {
+    event.preventDefault();
 
     setDaftarProgres((data) =>
-      data.map((item) =>
-        item.id === dataEdit.id ? dataEdit : item
-      )
+      data.map((item) => (item.id === dataEdit.id ? dataEdit : item))
     );
-
     setDataEdit(null);
   };
 
   const hapusProgres = (id) => {
-    if (!window.confirm("Yakin ingin menghapus catatan progres ini?")) {
-      return;
-    }
+    if (!window.confirm("Yakin ingin menghapus catatan progres ini?")) return;
 
-    setDaftarProgres((data) =>
-      data.filter((item) => item.id !== id)
-    );
+    setDaftarProgres((data) => data.filter((item) => item.id !== id));
   };
 
-  const tanggalValid = (tanggal) => {
-    const bagian = tanggal.split("/");
-    return bagian.length === 3 &&
-      bagian.every((nilai) => nilai.trim() !== "");
-  };
+  const progresValid =
+    dataEdit &&
+    dataEdit.progres !== "" &&
+    Number(dataEdit.progres) >= 0 &&
+    Number(dataEdit.progres) <= 100;
+  const formValid =
+    dataEdit &&
+    tanggalValid(dataEdit.tanggal) &&
+    dataEdit.pelajaran.trim() &&
+    dataEdit.catatan.trim() &&
+    progresValid;
 
   return (
     <LayoutPengajar
@@ -70,449 +87,289 @@ export default function DetailProgresBelajar({
       onNavigate={onNavigate}
       onLogout={onLogout}
     >
-      <div className="dpb-page">
-        <style>{`
-          .dpb-page {
-            min-height: calc(100vh - 76px);
-            padding: 30px;
-            background: #FBF9F3;
-            color: #28352C;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-          }
-          .dpb-page * { box-sizing: border-box; }
-          .dpb-page h1 {
-            margin: 0 0 28px;
-            font-size: 26px;
-            font-weight: 800;
-          }
-          .dpb-profile {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            width: min(100%, 520px);
-            margin-bottom: 30px;
-            padding: 24px;
-            border: 1px solid #EAE7DF;
-            border-radius: 24px;
-            background: white;
-          }
-          .dpb-avatar {
-            width: 86px;
-            height: 86px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background: #5A734E;
-            color: white;
-          }
-          .dpb-profile h2 {
-            margin: 0 0 12px;
-            font-size: 17px;
-          }
-          .dpb-profile p {
-            margin: 7px 0;
-            color: #626B60;
-            font-size: 12px;
-          }
-          .dpb-card {
-            overflow: hidden;
-            padding: 12px 22px;
-            border: 1px solid #EAE7DF;
-            border-radius: 24px;
-            background: white;
-          }
-          .dpb-scroll { overflow-x: auto; }
-          .dpb-table {
-            width: 100%;
-            min-width: 850px;
-            border-collapse: collapse;
-            text-align: left;
-          }
-          .dpb-table thead {
-            background: #5A734E;
-            color: white;
-          }
-          .dpb-table th {
-            height: 60px;
-            padding: 0 18px;
-            font-size: 12px;
-          }
-          .dpb-table th:first-child { border-radius: 12px 0 0 0; }
-          .dpb-table th:last-child {
-            border-radius: 0 12px 0 0;
-            text-align: center;
-          }
-          .dpb-table td {
-            height: 88px;
-            padding: 14px 18px;
-            border-bottom: 1px solid #ECEAE3;
-            color: #626B60;
-            font-size: 12px;
-          }
-          .dpb-table tbody tr:last-child td { border-bottom: 0; }
-          .dpb-progress {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            min-width: 155px;
-          }
-          .dpb-track {
-            flex: 1;
-            height: 12px;
-            overflow: hidden;
-            border-radius: 20px;
-            background: #E9E7E0;
-          }
-          .dpb-fill {
-            height: 100%;
-            border-radius: inherit;
-            background: #5A734E;
-          }
-          .dpb-percent {
-            min-width: 38px;
-            color: #28352C;
-            font-size: 13px;
-            font-weight: 800;
-          }
-          .dpb-actions {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-          }
-          .dpb-icon-btn {
-            width: 42px;
-            height: 42px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border: 0;
-            border-radius: 12px;
-            cursor: pointer;
-          }
-          .dpb-edit { background: #EBECE5; color: #526D48; }
-          .dpb-edit:hover { background: #DDE4D6; }
-          .dpb-delete { background: #F9DFDF; color: #CB3E36; }
-          .dpb-delete:hover { background: #F4CCCC; }
-          .dpb-empty {
-            padding: 35px !important;
-            text-align: center;
-          }
-          .dpb-back {
-            margin-bottom: 20px;
-            padding: 9px 14px;
-            border: 1px solid #DCDDD3;
-            border-radius: 10px;
-            background: white;
-            color: #526D48;
-            font: inherit;
-            font-size: 12px;
-            cursor: pointer;
-          }
-          .dpb-modal-bg {
-            position: fixed;
-            inset: 0;
-            z-index: 2000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 18px;
-            background: rgba(24,36,25,.48);
-          }
-          .dpb-modal {
-            width: 100%;
-            max-width: 460px;
-            padding: 25px;
-            border-radius: 20px;
-            background: white;
-            box-shadow: 0 20px 60px rgba(0,0,0,.16);
-          }
-          .dpb-modal-head {
-            display: flex;
-            justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 20px;
-          }
-          .dpb-modal-head h2 { margin: 0; font-size: 19px; }
-          .dpb-close {
-            width: 32px;
-            height: 32px;
-            border: 0;
-            border-radius: 9px;
-            background: #F2F3EE;
-            cursor: pointer;
-          }
-          .dpb-form { display: grid; gap: 15px; }
-          .dpb-field { display: grid; gap: 7px; }
-          .dpb-field label {
-            font-size: 12px;
-            font-weight: 700;
-            color: #4F5D4B;
-          }
-          .dpb-field input {
-            width: 100%;
-            height: 43px;
-            padding: 0 12px;
-            border: 1px solid #E2E5DC;
-            border-radius: 10px;
-            outline: none;
-            font: inherit;
-            font-size: 13px;
-          }
-          .dpb-modal-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 7px;
-          }
-          .dpb-cancel, .dpb-save {
-            min-height: 41px;
-            padding: 0 15px;
-            border-radius: 10px;
-            font: inherit;
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-          }
-          .dpb-cancel {
-            border: 1px solid #E2E5DC;
-            background: white;
-            color: #52614E;
-          }
-          .dpb-save {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            border: 0;
-            background: #5A734E;
-            color: white;
-          }
-          @media (max-width: 650px) {
-            .dpb-page { padding: 22px 14px; }
-            .dpb-page h1 { font-size: 23px; }
-            .dpb-profile { padding: 18px; gap: 14px; }
-            .dpb-avatar { width: 65px; height: 65px; }
-            .dpb-card { padding: 8px; border-radius: 16px; }
-          }
-        `}</style>
+      <Stack spacing={3} sx={{ width: "100%", minWidth: 0, pb: 3 }}>
+        <Typography component="h1" variant="h5" fontWeight={800} color="#28352C">
+          Detail Progres Belajar
+        </Typography>
 
-        <h1>Detail Progres Belajar</h1>
-
-        <button
-          className="dpb-back"
+        <Button
+          startIcon={<ArrowBack />}
+          variant="outlined"
           onClick={() => onNavigate?.("Progres Belajar")}
+          sx={{
+            alignSelf: "flex-start",
+            borderColor: "#DCDDD3",
+            borderRadius: 2,
+            color: "#526D48",
+            fontSize: 12,
+            textTransform: "none",
+          }}
         >
-          ← Kembali ke daftar santri
-        </button>
+          Kembali ke daftar santri
+        </Button>
 
-        <section className="dpb-profile">
-          <div className="dpb-avatar">
-            <UserRound size={42} strokeWidth={1.5} />
-          </div>
-          <div>
-            <h2>{santri?.nama || "Santri"}</h2>
-            <p>NIS: {santri?.id || "-"}</p>
-            <p>Kelas: {santri?.kelas || "-"}</p>
-          </div>
-        </section>
+        <Paper
+          variant="outlined"
+          sx={{
+            width: "100%",
+            maxWidth: 520,
+            p: { xs: 2, sm: 3 },
+            borderColor: "#EAE7DF",
+            borderRadius: 3,
+            backgroundColor: "#fff",
+          }}
+        >
+          <Stack direction="row" spacing={{ xs: 1.75, sm: 2.5 }} sx={{ alignItems: "center" }}>
+            <Avatar
+              sx={{
+                width: { xs: 65, sm: 86 },
+                height: { xs: 65, sm: 86 },
+                flex: "0 0 auto",
+                backgroundColor: "#5A734E",
+              }}
+            >
+              <Person sx={{ fontSize: { xs: 36, sm: 46 } }} />
+            </Avatar>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography component="h2" variant="subtitle1" fontWeight={800} color="#28352C">
+                {santri?.nama || "Santri"}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.75, fontSize: 12 }}>
+                NIS: {santri?.id || "-"}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontSize: 12 }}>
+                Kelas: {santri?.kelas || "-"}
+              </Typography>
+            </Box>
+          </Stack>
+        </Paper>
 
-        <section className="dpb-card">
-          <div className="dpb-scroll">
-            <table className="dpb-table">
-              <thead>
-                <tr>
-                  <th style={{ width: "6%" }}>No</th>
-                  <th style={{ width: "16%" }}>Tanggal</th>
-                  <th style={{ width: "18%" }}>Mata Pelajaran</th>
-                  <th style={{ width: "22%" }}>Progres</th>
-                  <th style={{ width: "20%" }}>Catatan</th>
-                  <th style={{ width: "18%" }}>Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
+        <Paper
+          variant="outlined"
+          sx={{
+            width: "100%",
+            overflow: "hidden",
+            p: { xs: 1, sm: 1.5 },
+            borderColor: "#EAE7DF",
+            borderRadius: 3,
+            backgroundColor: "#fff",
+          }}
+        >
+          <TableContainer sx={{ overflowX: "auto", borderRadius: 1.5 }}>
+            <Table aria-label="Detail progres belajar" sx={{ minWidth: 850 }}>
+              <TableHead>
+                <TableRow sx={{ backgroundColor: "#5A734E" }}>
+                  {["No", "Tanggal", "Mata Pelajaran", "Progres", "Catatan", "Aksi"].map(
+                    (label) => (
+                      <TableCell
+                        key={label}
+                        align={label === "Aksi" ? "center" : "left"}
+                        sx={{
+                          height: 60,
+                          px: 2.25,
+                          color: "#fff",
+                          fontSize: 12,
+                          fontWeight: 700,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {label}
+                      </TableCell>
+                    )
+                  )}
+                </TableRow>
+              </TableHead>
+              <TableBody>
                 {daftarProgres.length > 0 ? (
-                  daftarProgres.map((item, index) => (
-                    <tr key={item.id}>
-                      <td>{index + 1}.</td>
-                      <td>{item.tanggal}</td>
-                      <td>{item.pelajaran}</td>
-                      <td>
-                        <div className="dpb-progress">
-                          <div className="dpb-track">
-                            <div
-                              className="dpb-fill"
-                              style={{
-                                width: `${Math.min(
-                                  100,
-                                  Math.max(0, Number(item.progres) || 0)
-                                )}%`,
+                  daftarProgres.map((item, index) => {
+                    const persentase = Math.min(100, Math.max(0, Number(item.progres) || 0));
+
+                    return (
+                      <TableRow key={item.id} hover>
+                        <TableCell sx={tableCellSx}>{index + 1}.</TableCell>
+                        <TableCell sx={{ ...tableCellSx, whiteSpace: "nowrap" }}>
+                          {item.tanggal}
+                        </TableCell>
+                        <TableCell sx={tableCellSx}>{item.pelajaran}</TableCell>
+                        <TableCell sx={tableCellSx}>
+                          <Stack direction="row" spacing={1.5} sx={{ minWidth: 155, alignItems: "center" }}>
+                            <LinearProgress
+                              variant="determinate"
+                              value={persentase}
+                              sx={{
+                                flex: 1,
+                                height: 12,
+                                borderRadius: 5,
+                                backgroundColor: "#E9E7E0",
+                                "& .MuiLinearProgress-bar": {
+                                  borderRadius: 5,
+                                  backgroundColor: "#5A734E",
+                                },
                               }}
                             />
-                          </div>
-                          <span className="dpb-percent">
-                            {item.progres}%
-                          </span>
-                        </div>
-                      </td>
-                      <td>{item.catatan}</td>
-                      <td>
-                        <div className="dpb-actions">
-                          <button
-                            className="dpb-icon-btn dpb-edit"
-                            title="Edit progres"
-                            aria-label="Edit progres"
-                            onClick={() => bukaEdit(item)}
-                          >
-                            <Pencil size={19} />
-                          </button>
-                          <button
-                            className="dpb-icon-btn dpb-delete"
-                            title="Hapus progres"
-                            aria-label="Hapus progres"
-                            onClick={() => hapusProgres(item.id)}
-                          >
-                            <Trash2 size={19} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                            <Typography
+                              variant="body2"
+                              fontWeight={800}
+                              color="#28352C"
+                              sx={{ minWidth: 38, fontSize: 13 }}
+                            >
+                              {item.progres}%
+                            </Typography>
+                          </Stack>
+                        </TableCell>
+                        <TableCell sx={tableCellSx}>{item.catatan}</TableCell>
+                        <TableCell align="center" sx={tableCellSx}>
+                          <Stack direction="row" spacing={1} sx={{ justifyContent: "center" }}>
+                            <IconButton
+                              title="Edit progres"
+                              aria-label={`Edit progres ${item.pelajaran}`}
+                              onClick={() => bukaEdit(item)}
+                              sx={{
+                                width: 42,
+                                height: 42,
+                                borderRadius: 1.5,
+                                backgroundColor: "#EBECE5",
+                                color: "#526D48",
+                                "&:hover": { backgroundColor: "#DDE4D6" },
+                              }}
+                            >
+                              <EditOutlined fontSize="small" />
+                            </IconButton>
+                            <IconButton
+                              title="Hapus progres"
+                              aria-label={`Hapus progres ${item.pelajaran}`}
+                              onClick={() => hapusProgres(item.id)}
+                              sx={{
+                                width: 42,
+                                height: 42,
+                                borderRadius: 1.5,
+                                backgroundColor: "#F9DFDF",
+                                color: "#CB3E36",
+                                "&:hover": { backgroundColor: "#F4CCCC" },
+                              }}
+                            >
+                              <Delete fontSize="small" />
+                            </IconButton>
+                          </Stack>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 ) : (
-                  <tr>
-                    <td colSpan={6} className="dpb-empty">
+                  <TableRow>
+                    <TableCell colSpan={6} align="center" sx={{ py: 4, color: "#626B60", fontSize: 13 }}>
                       Belum ada catatan progres belajar.
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 )}
-              </tbody>
-            </table>
-          </div>
-        </section>
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
 
-        {dataEdit && (
-          <div
-            className="dpb-modal-bg"
-            onMouseDown={(e) => {
-              if (e.target === e.currentTarget) setDataEdit(null);
-            }}
-          >
-            <section
-              className="dpb-modal"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="dpb-modal-title"
-            >
-              <div className="dpb-modal-head">
-                <h2 id="dpb-modal-title">Edit Progres Belajar</h2>
-                <button
-                  className="dpb-close"
-                  aria-label="Tutup"
-                  onClick={() => setDataEdit(null)}
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              <form className="dpb-form" onSubmit={simpanEdit}>
-                <div className="dpb-field">
-                  <label htmlFor="dpb-tanggal">Tanggal (DD/MM/YYYY)</label>
-                  <input
-                    id="dpb-tanggal"
-                    type="text"
-                    value={dataEdit.tanggal}
-                    onChange={(e) =>
-                      setDataEdit({
-                        ...dataEdit,
-                        tanggal: e.target.value,
-                      })
-                    }
+        <Dialog
+          open={Boolean(dataEdit)}
+          onClose={() => setDataEdit(null)}
+          fullWidth
+          maxWidth="xs"
+          aria-labelledby="dpb-modal-title"
+        >
+          <DialogTitle sx={{ p: 3, pb: 1.5 }}>
+            <Stack direction="row" spacing={2} sx={{ alignItems: "center", justifyContent: "space-between" }}>
+              <Typography id="dpb-modal-title" component="h2" variant="h6" fontWeight={800} color="#28352C">
+                Edit Progres Belajar
+              </Typography>
+              <IconButton
+                aria-label="Tutup"
+                onClick={() => setDataEdit(null)}
+                size="small"
+                sx={{ backgroundColor: "#F2F3EE", color: "#52614E" }}
+              >
+                <Close fontSize="small" />
+              </IconButton>
+            </Stack>
+          </DialogTitle>
+          <Box component="form" onSubmit={simpanEdit}>
+            <DialogContent sx={{ px: 3, pt: 1.5 }}>
+              <Stack spacing={2}>
+                {fieldEdit.map(({ field, label, type }) => (
+                  <TextField
+                    key={field}
+                    fullWidth
                     required
-                  />
-                  {!tanggalValid(dataEdit.tanggal) && (
-                    <span style={{ color: "#CB3E36", fontSize: 11 }}>
-                      Isi tanggal dengan format DD/MM/YYYY.
-                    </span>
-                  )}
-                </div>
-
-                <div className="dpb-field">
-                  <label htmlFor="dpb-pelajaran">Mata Pelajaran</label>
-                  <input
-                    id="dpb-pelajaran"
-                    value={dataEdit.pelajaran}
-                    onChange={(e) =>
-                      setDataEdit({
-                        ...dataEdit,
-                        pelajaran: e.target.value,
-                      })
+                    type={type}
+                    label={label}
+                    value={dataEdit?.[field] ?? ""}
+                    onChange={(event) =>
+                      setDataEdit((sebelumnya) => ({
+                        ...sebelumnya,
+                        [field]: event.target.value,
+                      }))
                     }
-                    required
-                  />
-                </div>
-
-                <div className="dpb-field">
-                  <label htmlFor="dpb-progres">Progres (%)</label>
-                  <input
-                    id="dpb-progres"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={dataEdit.progres}
-                    onChange={(e) =>
-                      setDataEdit({
-                        ...dataEdit,
-                        progres: e.target.value,
-                      })
+                    inputProps={
+                      field === "progres"
+                        ? { min: 0, max: 100, step: 1 }
+                        : undefined
                     }
-                    required
-                  />
-                </div>
-
-                <div className="dpb-field">
-                  <label htmlFor="dpb-catatan">Catatan</label>
-                  <input
-                    id="dpb-catatan"
-                    value={dataEdit.catatan}
-                    onChange={(e) =>
-                      setDataEdit({
-                        ...dataEdit,
-                        catatan: e.target.value,
-                      })
+                    error={field === "tanggal" && Boolean(dataEdit) && !tanggalValid(dataEdit.tanggal)}
+                    helperText={
+                      field === "tanggal" && dataEdit && !tanggalValid(dataEdit.tanggal)
+                        ? "Isi tanggal dengan format DD/MM/YYYY."
+                        : undefined
                     }
-                    required
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: 1.5,
+                        backgroundColor: "#FCFBF8",
+                      },
+                    }}
                   />
-                </div>
-
-                <div className="dpb-modal-actions">
-                  <button
-                    type="button"
-                    className="dpb-cancel"
-                    onClick={() => setDataEdit(null)}
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    className="dpb-save"
-                    disabled={
-                      !tanggalValid(dataEdit.tanggal) ||
-                      !dataEdit.pelajaran.trim() ||
-                      !dataEdit.catatan.trim() ||
-                      dataEdit.progres === "" ||
-                      Number(dataEdit.progres) < 0 ||
-                      Number(dataEdit.progres) > 100
-                    }
-                  >
-                    <Save size={16} />
-                    Simpan
-                  </button>
-                </div>
-              </form>
-            </section>
-          </div>
-        )}
-      </div>
+                ))}
+              </Stack>
+            </DialogContent>
+            <DialogActions sx={{ px: 3, pb: 3, pt: 1, gap: 1 }}>
+              <Button
+                type="button"
+                variant="outlined"
+                onClick={() => setDataEdit(null)}
+                sx={{
+                  minHeight: 42,
+                  borderColor: "#E2E5DC",
+                  borderRadius: 1.5,
+                  color: "#52614E",
+                  textTransform: "none",
+                }}
+              >
+                Batal
+              </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                startIcon={<SaveOutlined />}
+                disabled={!formValid}
+                sx={{
+                  minHeight: 42,
+                  borderRadius: 1.5,
+                  backgroundColor: "#5A734E",
+                  textTransform: "none",
+                  "&:hover": { backgroundColor: "#30442E" },
+                }}
+              >
+                Simpan
+              </Button>
+            </DialogActions>
+          </Box>
+        </Dialog>
+      </Stack>
     </LayoutPengajar>
   );
 }
+
+const tableCellSx = {
+  height: 88,
+  px: 2.25,
+  py: 1.75,
+  borderBottomColor: "#ECEAE3",
+  color: "#626B60",
+  fontSize: 12,
+};
