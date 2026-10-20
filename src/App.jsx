@@ -1,15 +1,19 @@
+
 import { useState } from "react";
 import { CssBaseline } from "@mui/material";
 
 import Login from "./pages/auth/Login";
+
 import DashboardAdmin from "./pages/admin/DashboardAdmin";
 import DataSantri from "./pages/admin/DataSantri";
+
 import DashboardPengajar from "./pages/pengajar/DashboardPengajar";
-import DashboardWalisantri from "./pages/walisantri/DashboardWalisantri";
 import KelasDiampu from "./pages/pengajar/KelasDiampu";
 import InputNilai from "./pages/pengajar/InputNilai";
 import ProgresBelajar from "./pages/pengajar/ProgresBelajar";
 import DetailProgresBelajar from "./pages/pengajar/DetailProgresBelajar";
+
+import DashboardWalisantri from "./pages/walisantri/DashboardWalisantri";
 
 function App() {
   const [pengguna, setPengguna] = useState(null);
@@ -33,29 +37,53 @@ function App() {
   };
 
   const renderPage = () => {
+    // Halaman Admin
     if (pengguna?.role === "admin") {
       if (activePage === "Data Santri") {
         return <DataSantri {...pageProps} />;
       }
 
-      return <DashboardAdmin {...pageProps} pengguna={pengguna} />;
+      return (
+        <DashboardAdmin
+          {...pageProps}
+          pengguna={pengguna}
+        />
+      );
     }
 
+    // Halaman Wali Santri
     if (pengguna?.role === "walisantri") {
-      return <DashboardWalisantri {...pageProps} pengguna={pengguna} />;
+      return (
+        <DashboardWalisantri
+          {...pageProps}
+          pengguna={pengguna}
+        />
+      );
     }
 
+    // Halaman Pengajar
     switch (activePage) {
       case "Kelas Diampu":
-        return <KelasDiampu {...pageProps} />;
+        return (
+          <KelasDiampu
+            {...pageProps}
+            activeMenu="Kelas Diampu"
+          />
+        );
 
       case "Input Nilai":
-        return <InputNilai {...pageProps} />;
+        return (
+          <InputNilai
+            {...pageProps}
+            activeMenu="Input Nilai"
+          />
+        );
 
       case "Progres Belajar":
         return (
           <ProgresBelajar
             {...pageProps}
+            activeMenu="Progres Belajar"
             onDetail={bukaDetailSantri}
           />
         );
@@ -65,8 +93,17 @@ function App() {
           <DetailProgresBelajar
             {...pageProps}
             santri={santriTerpilih}
-            onKembali={() => setActivePage("Progres Belajar")}
+            onKembali={() =>
+              setActivePage("Progres Belajar")
+            }
           />
+        );
+
+      case "Raport Santri":
+        return (
+          <div style={{ padding: 30 }}>
+            <h1>Halaman Raport Berhasil Dibuka</h1>
+          </div>
         );
 
       case "Dashboard":
@@ -78,6 +115,7 @@ function App() {
   return (
     <>
       <CssBaseline />
+
       {!pengguna ? (
         <Login onLogin={setPengguna} />
       ) : (

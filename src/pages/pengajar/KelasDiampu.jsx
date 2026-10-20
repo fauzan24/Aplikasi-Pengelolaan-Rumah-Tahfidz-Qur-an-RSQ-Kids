@@ -1,14 +1,30 @@
-
 import { useState } from "react";
 import {
-  Sun,
-  Moon,
-  Clock,
-  BookOpen,
+  AccessTime,
+  ArrowForward,
+  MenuBook,
+  NightsStay,
   Search,
-  ChevronDown,
-  ArrowRight,
-} from "lucide-react";
+  WbSunny,
+} from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  Card,
+  Chip,
+  InputAdornment,
+  MenuItem,
+  Paper,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+} from "@mui/material";
 import LayoutPengajar from "../../components/pengajar/LayoutPengajar";
 
 const dataSantri = [
@@ -21,24 +37,32 @@ const dataSantri = [
   { nis: "RSQ007", nama: "Muhammad Fikri", nilai: 87, status: "Belum Lengkap" },
 ];
 
+const kelas = [
+  { id: "pagi", nama: "Kelas Pagi A", jadwal: "Jadwal pagi", jumlah: dataSantri.length, icon: WbSunny },
+  { id: "sore", nama: "Kelas Sore A", jadwal: "Jadwal sore", jumlah: 0, icon: NightsStay },
+];
+
 export default function KelasDiampu({ onNavigate, onLogout }) {
   const [kelasAktif, setKelasAktif] = useState("pagi");
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("Semua Status");
 
   const santriKelas = kelasAktif === "pagi" ? dataSantri : [];
-
   const santriDitampilkan = santriKelas.filter((santri) => {
     const cocokSearch = `${santri.nis} ${santri.nama}`
       .toLowerCase()
       .includes(search.toLowerCase());
-
     const cocokStatus =
-      filterStatus === "Semua Status" ||
-      santri.status === filterStatus;
+      filterStatus === "Semua Status" || santri.status === filterStatus;
 
     return cocokSearch && cocokStatus;
   });
+
+  const pilihKelas = (id) => {
+    setKelasAktif(id);
+    setSearch("");
+    setFilterStatus("Semua Status");
+  };
 
   return (
     <LayoutPengajar
@@ -46,635 +70,343 @@ export default function KelasDiampu({ onNavigate, onLogout }) {
       onNavigate={onNavigate}
       onLogout={onLogout}
     >
-      <div className="kd-page">
-        <style>{`
-          .kd-page {
-            width: 100%;
-            min-width: 0;
-            padding: 0 0 24px;
-            color: #2d3f2c;
-            font-family: inherit;
-            box-sizing: border-box;
-          }
-
-          .kd-page *,
-          .kd-page *::before,
-          .kd-page *::after {
-            box-sizing: border-box;
-          }
-
-          .kd-heading {
-            margin: 0 0 26px;
-          }
-
-          .kd-eyebrow {
-            margin: 0 0 8px;
-            color: #7a8775;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 1.5px;
-          }
-
-          .kd-heading h1 {
-            margin: 0 0 8px;
-            color: #2d3f2c;
-            font-size: 27px;
-            line-height: 1.35;
-            font-weight: 700;
-          }
-
-          .kd-description {
-            margin: 0;
-            color: #7b8578;
-            font-size: 14px;
-            line-height: 1.6;
-          }
-
-          .kd-year {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-            width: 100%;
-            min-height: 150px;
-            padding: 24px 28px;
-            margin: 0 0 28px;
-            border-radius: 15px;
-            background: #30442e;
-            color: #fff;
-          }
-
-          .kd-year-label {
-            margin: 0 0 9px;
-            color: #dce4d8;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 1.2px;
-          }
-
-          .kd-year h2 {
-            margin: 0 0 8px;
-            color: #fff;
-            font-size: 25px;
-            line-height: 1.3;
-          }
-
-          .kd-year-semester {
-            margin: 0;
-            color: #dce4d8;
-            font-size: 13px;
-          }
-
-          .kd-year-icon {
-            display: grid;
-            place-items: center;
-            width: 54px;
-            height: 54px;
-            flex-shrink: 0;
-            border-radius: 14px;
-            background: #ffffff1c;
-          }
-
-          .kd-section-title {
-            margin: 0 0 16px;
-            color: #2d3f2c;
-            font-size: 18px;
-            font-weight: 700;
-          }
-
-          .kd-class-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 16px;
-            margin-bottom: 26px;
-          }
-
-          .kd-class-card {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            min-width: 0;
-            min-height: 105px;
-            padding: 18px 20px;
-            border: 1px solid #e7ebe2;
-            border-radius: 14px;
-            background: #fff;
-            color: #30442e;
-            text-align: left;
-            cursor: pointer;
-            transition: border-color .2s, background .2s;
-          }
-
-          .kd-class-card:hover {
-            border-color: #9aaa91;
-          }
-
-          .kd-class-card.selected {
-            border: 1.5px solid #536e4c;
-            background: #f5f7f1;
-          }
-
-          .kd-class-icon {
-            display: grid;
-            place-items: center;
-            width: 48px;
-            height: 48px;
-            flex-shrink: 0;
-            border-radius: 13px;
-            background: #eaf0e5;
-            color: #30442e;
-          }
-
-          .kd-class-info {
-            flex: 1;
-            min-width: 0;
-          }
-
-          .kd-class-info h3 {
-            margin: 0 0 7px;
-            font-size: 16px;
-            font-weight: 700;
-          }
-
-          .kd-class-info p {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            margin: 0;
-            color: #7d8778;
-            font-size: 12px;
-          }
-
-          .kd-class-count {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 3px;
-            min-width: 45px;
-          }
-
-          .kd-class-count strong {
-            font-size: 24px;
-            line-height: 1.2;
-          }
-
-          .kd-class-count span {
-            color: #7d8778;
-            font-size: 11px;
-          }
-
-          .kd-table-card {
-            width: 100%;
-            overflow: hidden;
-            border: 1px solid #e8ebe4;
-            border-radius: 14px;
-            background: #fff;
-          }
-
-          .kd-table-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 18px;
-            flex-wrap: wrap;
-            padding: 21px 22px;
-          }
-
-          .kd-table-header h2 {
-            margin: 0 0 7px;
-            color: #2d3f2c;
-            font-size: 19px;
-            font-weight: 700;
-          }
-
-          .kd-table-header p {
-            margin: 0;
-            color: #7d8778;
-            font-size: 13px;
-          }
-
-          .kd-table-tools {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-          }
-
-          .kd-search {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            width: 225px;
-            min-height: 40px;
-            padding: 10px 12px;
-            border: 1px solid #e1e6dc;
-            border-radius: 9px;
-            color: #7d8778;
-          }
-
-          .kd-search input {
-            width: 100%;
-            min-width: 0;
-            padding: 0;
-            border: none;
-            outline: none;
-            background: transparent;
-            color: #30442e;
-            font: inherit;
-            font-size: 12px;
-          }
-
-          .kd-filter {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            min-height: 40px;
-            padding: 9px 12px;
-            border: 1px solid #e1e6dc;
-            border-radius: 9px;
-            background: #fff;
-            color: #66735f;
-          }
-
-          .kd-filter select {
-            appearance: none;
-            -webkit-appearance: none;
-            max-width: 145px;
-            border: none;
-            outline: none;
-            background: transparent;
-            color: #455441;
-            font: inherit;
-            font-size: 12px;
-            cursor: pointer;
-          }
-
-          .kd-table-wrap {
-            width: 100%;
-            overflow-x: auto;
-          }
-
-          .kd-table {
-            width: 100%;
-            border-collapse: collapse;
-            white-space: nowrap;
-          }
-
-          .kd-table th {
-            padding: 13px 16px;
-            background: #5a734e;
-            color: #fff;
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: .6px;
-            text-align: left;
-          }
-
-          .kd-table td {
-            padding: 14px 16px;
-            border-bottom: 1px solid #edf0e9;
-            color: #485247;
-            font-size: 12px;
-          }
-
-          .kd-table tbody tr:last-child td {
-            border-bottom: none;
-          }
-
-          .kd-table tbody tr:hover {
-            background: #fafbf8;
-          }
-
-          .kd-name {
-            color: #30442e !important;
-            font-weight: 600;
-          }
-
-          .kd-status {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 9px;
-            border-radius: 20px;
-            font-size: 10px;
-            font-weight: 600;
-          }
-
-          .kd-status::before {
-            content: "";
-            width: 6px;
-            height: 6px;
-            flex-shrink: 0;
-            border-radius: 50%;
-            background: currentColor;
-          }
-
-          .kd-status.complete {
-            background: #eaf3e8;
-            color: #417546;
-          }
-
-          .kd-status.incomplete {
-            background: #fff2df;
-            color: #a16d20;
-          }
-
-          .kd-action {
-            padding: 7px 10px;
-            border: 1px solid #dce5d7;
-            border-radius: 7px;
-            background: #f4f7f1;
-            color: #30442e;
-            font-size: 11px;
-            font-weight: 600;
-            cursor: pointer;
-          }
-
-          .kd-action:hover {
-            background: #e7eee2;
-          }
-
-          .kd-empty {
-            padding: 35px 16px !important;
-            text-align: center;
-            color: #7b8577 !important;
-          }
-
-          .kd-table-footer {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            padding: 15px 22px;
-            border-top: 1px solid #edf0e9;
-            color: #7b8577;
-            font-size: 12px;
-          }
-
-          .kd-next {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            padding: 8px 11px;
-            border: 1px solid #e1e6dc;
-            border-radius: 8px;
-            background: #fff;
-            color: #52624e;
-            font-size: 12px;
-            cursor: pointer;
-          }
-
-          .kd-next:hover {
-            background: #f4f6f0;
-          }
-
-          @media (max-width: 1050px) {
-            .kd-table-tools {
-              width: 100%;
-            }
-
-            .kd-search {
-              flex: 1;
-              width: auto;
-            }
-          }
-
-          @media (max-width: 700px) {
-            .kd-heading {
-              margin-bottom: 20px;
-            }
-
-            .kd-heading h1 {
-              font-size: 23px;
-            }
-
-            .kd-year {
-              min-height: 125px;
-              padding: 20px;
-              margin-bottom: 24px;
-            }
-
-            .kd-year h2 {
-              font-size: 22px;
-            }
-
-            .kd-class-grid {
-              grid-template-columns: 1fr;
-            }
-
-            .kd-table-header {
-              padding: 18px;
-            }
-
-            .kd-table-tools {
-              align-items: stretch;
-              flex-direction: column;
-              width: 100%;
-            }
-
-            .kd-search {
-              width: 100%;
-              flex: auto;
-            }
-
-            .kd-filter {
-              justify-content: space-between;
-            }
-
-            .kd-table-footer {
-              padding: 14px 16px;
-            }
-          }
-        `}</style>
-
-        <div className="kd-heading">
-          <h1>Kelas Diampu</h1>
-          <p className="kd-description">
+      <Stack spacing={3} sx={{ width: "100%", minWidth: 0, pb: 3 }}>
+        <Box>
+          <Typography component="h1" variant="h5" fontWeight={800} color="#2D3F2C">
+            Kelas Diampu
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
             Kelola kelas dan pantau santri yang kamu ampu.
-          </p>
-        </div>
+          </Typography>
+        </Box>
 
-        <section className="kd-year">
-          <div>
-            <p className="kd-year-label">TAHUN AJARAN</p>
-            <h2>2026 / 2027</h2>
-            <p className="kd-year-semester">Semester Ganjil</p>
-          </div>
-
-          <div className="kd-year-icon">
-            <BookOpen size={25} />
-          </div>
-        </section>
-
-        <h2 className="kd-section-title">Kelas Saya</h2>
-
-        <div className="kd-class-grid">
-          <button
-            type="button"
-            className={`kd-class-card ${
-              kelasAktif === "pagi" ? "selected" : ""
-            }`}
-            onClick={() => {
-              setKelasAktif("pagi");
-              setSearch("");
-              setFilterStatus("Semua Status");
+        <Paper
+          elevation={0}
+          sx={{
+            minHeight: { xs: 135, sm: 150 },
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 2,
+            px: { xs: 2.5, sm: 3.5 },
+            py: 3,
+            borderRadius: 2,
+            backgroundColor: "#30442E",
+            color: "#fff",
+          }}
+        >
+          <Box>
+            <Typography
+              variant="overline"
+              fontWeight={700}
+              letterSpacing={1.2}
+              sx={{ color: "#DCE4D8" }}
+            >
+              TAHUN AJARAN
+            </Typography>
+            <Typography component="h2" variant="h5" fontWeight={800} sx={{ mt: 0.25 }}>
+              2026 / 2027
+            </Typography>
+            <Typography variant="body2" sx={{ mt: 0.5, color: "#DCE4D8" }}>
+              Semester Ganjil
+            </Typography>
+          </Box>
+          <Box
+            aria-hidden="true"
+            sx={{
+              width: 54,
+              height: 54,
+              display: "grid",
+              placeItems: "center",
+              flex: "0 0 auto",
+              borderRadius: 2,
+              backgroundColor: "rgba(255,255,255,.11)",
             }}
           >
-            <div className="kd-class-icon">
-              <Sun size={23} />
-            </div>
+            <MenuBook />
+          </Box>
+        </Paper>
 
-            <div className="kd-class-info">
-              <h3>Kelas Pagi A</h3>
-              <p><Clock size={14} /> Jadwal pagi</p>
-            </div>
-
-            <div className="kd-class-count">
-              <strong>7</strong>
-              <span>Santri</span>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            className={`kd-class-card ${
-              kelasAktif === "sore" ? "selected" : ""
-            }`}
-            onClick={() => {
-              setKelasAktif("sore");
-              setSearch("");
-              setFilterStatus("Semua Status");
+        <Box>
+          <Typography component="h2" variant="h6" fontWeight={800} color="#2D3F2C" sx={{ mb: 1.5 }}>
+            Kelas Saya
+          </Typography>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", md: "repeat(2, minmax(0, 1fr))" },
+              gap: 2,
             }}
           >
-            <div className="kd-class-icon">
-              <Moon size={23} />
-            </div>
+            {kelas.map(({ id, nama, jadwal, jumlah, icon: Icon }) => {
+              const selected = kelasAktif === id;
 
-            <div className="kd-class-info">
-              <h3>Kelas Sore A</h3>
-              <p><Clock size={14} /> Jadwal sore</p>
-            </div>
+              return (
+                <Card
+                  key={id}
+                  variant="outlined"
+                  sx={{
+                    minWidth: 0,
+                    borderColor: selected ? "#536E4C" : "#E7EBE2",
+                    borderWidth: selected ? 1.5 : 1,
+                    borderRadius: 2,
+                    backgroundColor: selected ? "#F5F7F1" : "#fff",
+                    transition: "border-color .2s, background-color .2s",
+                    "&:hover": { borderColor: "#9AAA91" },
+                  }}
+                >
+                  <Button
+                    onClick={() => pilihKelas(id)}
+                    aria-pressed={selected}
+                    fullWidth
+                    sx={{
+                      minHeight: 105,
+                      justifyContent: "flex-start",
+                      gap: 1.75,
+                      px: { xs: 2, sm: 2.5 },
+                      py: 2,
+                      color: "#30442E",
+                      textAlign: "left",
+                      textTransform: "none",
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        display: "grid",
+                        placeItems: "center",
+                        flex: "0 0 auto",
+                        borderRadius: 2,
+                        backgroundColor: "#EAF0E5",
+                      }}
+                    >
+                      <Icon />
+                    </Box>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography variant="subtitle1" fontWeight={700}>
+                        {nama}
+                      </Typography>
+                      <Stack direction="row" spacing={0.5} sx={{ alignItems: "center", mt: 0.25 }}>
+                        <AccessTime sx={{ fontSize: 15, color: "#7D8778" }} />
+                        <Typography variant="caption" color="text.secondary">
+                          {jadwal}
+                        </Typography>
+                      </Stack>
+                    </Box>
+                    <Stack spacing={0.25} sx={{ alignItems: "center", flex: "0 0 auto" }}>
+                      <Typography variant="h5" fontWeight={800} lineHeight={1.2}>
+                        {jumlah}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Santri
+                      </Typography>
+                    </Stack>
+                  </Button>
+                </Card>
+              );
+            })}
+          </Box>
+        </Box>
 
-            <div className="kd-class-count">
-              <strong>0</strong>
-              <span>Santri</span>
-            </div>
-          </button>
-        </div>
-
-        <section className="kd-table-card">
-          <div className="kd-table-header">
-            <div>
-              <h2>Daftar Santri</h2>
-              <p>
+        <Paper
+          variant="outlined"
+          sx={{
+            width: "100%",
+            overflow: "hidden",
+            borderColor: "#E8EBE4",
+            borderRadius: 2,
+            backgroundColor: "#fff",
+          }}
+        >
+          <Stack
+            direction={{ xs: "column", lg: "row" }}
+            spacing={2}
+            sx={{
+              alignItems: { lg: "center" },
+              justifyContent: "space-between",
+              px: { xs: 2, sm: 2.75 },
+              py: 2,
+            }}
+          >
+            <Box>
+              <Typography component="h2" variant="h6" fontWeight={800} color="#2D3F2C">
+                Daftar Santri
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontSize: 13 }}>
                 {kelasAktif === "pagi" ? "Kelas Pagi A" : "Kelas Sore A"}
                 {" · "}
                 {santriKelas.length} santri
-              </p>
-            </div>
+              </Typography>
+            </Box>
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={1}
+              sx={{ width: { xs: "100%", lg: "auto" } }}
+            >
+              <TextField
+                size="small"
+                placeholder="Cari nama atau NIS..."
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                inputProps={{ "aria-label": "Cari nama atau NIS santri" }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search fontSize="small" />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  width: { xs: "100%", sm: 225 },
+                  "& .MuiOutlinedInput-root": { borderRadius: 2, backgroundColor: "#fff" },
+                  "& .MuiInputBase-input": { fontSize: 12 },
+                }}
+              />
+              <TextField
+                select
+                size="small"
+                label="Status"
+                value={filterStatus}
+                onChange={(event) => setFilterStatus(event.target.value)}
+                inputProps={{ "aria-label": "Filter status santri" }}
+                sx={{
+                  minWidth: { xs: "100%", sm: 165 },
+                  "& .MuiOutlinedInput-root": { borderRadius: 2, backgroundColor: "#fff" },
+                  "& .MuiInputBase-input": { fontSize: 12 },
+                }}
+              >
+                <MenuItem value="Semua Status">Semua Status</MenuItem>
+                <MenuItem value="Lengkap">Lengkap</MenuItem>
+                <MenuItem value="Belum Lengkap">Belum Lengkap</MenuItem>
+              </TextField>
+            </Stack>
+          </Stack>
 
-            <div className="kd-table-tools">
-              <label className="kd-search">
-                <Search size={16} />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Cari nama atau NIS..."
-                />
-              </label>
-
-              <label className="kd-filter">
-                <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                  aria-label="Filter status santri"
-                >
-                  <option>Semua Status</option>
-                  <option>Lengkap</option>
-                  <option>Belum Lengkap</option>
-                </select>
-                <ChevronDown size={14} />
-              </label>
-            </div>
-          </div>
-
-          <div className="kd-table-wrap">
-            <table className="kd-table">
-              <thead>
-                <tr>
-                  <th>NO</th>
-                  <th>NIS</th>
-                  <th>NAMA SANTRI</th>
-                  <th>KELAS</th>
-                  <th>NILAI</th>
-                  <th>STATUS</th>
-                  <th>AKSI</th>
-                </tr>
-              </thead>
-
-              <tbody>
+          <TableContainer sx={{ overflowX: "auto" }}>
+            <Table aria-label="Daftar santri di kelas" sx={{ minWidth: 760 }}>
+              <TableHead>
+                <TableRow sx={{ backgroundColor: "#5A734E" }}>
+                  {["NO", "NIS", "NAMA SANTRI", "KELAS", "NILAI", "STATUS", "AKSI"].map((judul) => (
+                    <TableCell
+                      key={judul}
+                      sx={{
+                        px: 2,
+                        py: 1.5,
+                        color: "#fff",
+                        fontSize: 10,
+                        fontWeight: 700,
+                        letterSpacing: 0.6,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {judul}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
                 {santriDitampilkan.length > 0 ? (
-                  santriDitampilkan.map((santri, index) => (
-                    <tr key={santri.nis}>
-                      <td>{index + 1}.</td>
-                      <td>{santri.nis}</td>
-                      <td className="kd-name">{santri.nama}</td>
-                      <td>{kelasAktif === "pagi" ? "Pagi A" : "Sore A"}</td>
-                      <td>{santri.nilai ?? "-"}</td>
-                      <td>
-                        <span
-                          className={`kd-status ${
-                            santri.status === "Lengkap"
-                              ? "complete"
-                              : "incomplete"
-                          }`}
-                        >
-                          {santri.status}
-                        </span>
-                      </td>
-                      <td>
-                        <button
-                          type="button"
-                          className="kd-action"
-                          onClick={() => onNavigate?.("Input Nilai")}
-                        >
-                          {santri.status === "Lengkap"
-                            ? "Lihat Nilai"
-                            : "Lengkapi"}
-                        </button>
-                      </td>
-                    </tr>
-                  ))
+                  santriDitampilkan.map((santri, index) => {
+                    const lengkap = santri.status === "Lengkap";
+
+                    return (
+                      <TableRow key={santri.nis} hover>
+                        <TableCell sx={{ px: 2, color: "#7B8577", fontSize: 12 }}>
+                          {index + 1}.
+                        </TableCell>
+                        <TableCell sx={{ px: 2, color: "#485247", fontSize: 12 }}>
+                          {santri.nis}
+                        </TableCell>
+                        <TableCell sx={{ px: 2, color: "#30442E", fontSize: 12, fontWeight: 600 }}>
+                          {santri.nama}
+                        </TableCell>
+                        <TableCell sx={{ px: 2, color: "#485247", fontSize: 12 }}>
+                          {kelasAktif === "pagi" ? "Pagi A" : "Sore A"}
+                        </TableCell>
+                        <TableCell sx={{ px: 2, color: "#485247", fontSize: 12 }}>
+                          {santri.nilai ?? "-"}
+                        </TableCell>
+                        <TableCell sx={{ px: 2 }}>
+                          <Chip
+                            size="small"
+                            label={santri.status}
+                            sx={{
+                              height: 26,
+                              backgroundColor: lengkap ? "#EAF3E8" : "#FFF2DF",
+                              color: lengkap ? "#417546" : "#A16D20",
+                              fontSize: 10,
+                              fontWeight: 600,
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell sx={{ px: 2 }}>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={() => onNavigate?.("Input Nilai")}
+                            sx={{
+                              borderColor: "#DCE5D7",
+                              borderRadius: 1.5,
+                              backgroundColor: "#F4F7F1",
+                              color: "#30442E",
+                              fontSize: 11,
+                              textTransform: "none",
+                              whiteSpace: "nowrap",
+                              "&:hover": { borderColor: "#9AAA91", backgroundColor: "#E7EEE2" },
+                            }}
+                          >
+                            {lengkap ? "Lihat Nilai" : "Lengkapi"}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 ) : (
-                  <tr>
-                    <td colSpan={7} className="kd-empty">
+                  <TableRow>
+                    <TableCell colSpan={7} align="center" sx={{ py: 4, color: "#7B8577", fontSize: 13 }}>
                       {kelasAktif === "sore"
                         ? "Belum ada santri di kelas ini."
                         : "Santri tidak ditemukan."}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 )}
-              </tbody>
-            </table>
-          </div>
+              </TableBody>
+            </Table>
+          </TableContainer>
 
-          <div className="kd-table-footer">
-            <span>
-              Menampilkan {santriDitampilkan.length} dari{" "}
-              {santriKelas.length} santri
-            </span>
-
-            <button
-              type="button"
-              className="kd-next"
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={1.5}
+            sx={{
+              alignItems: { sm: "center" },
+              justifyContent: "space-between",
+              px: { xs: 2, sm: 2.75 },
+              py: 1.5,
+              borderTop: "1px solid #EDF0E9",
+            }}
+          >
+            <Typography variant="caption" color="text.secondary">
+              Menampilkan {santriDitampilkan.length} dari {santriKelas.length} santri
+            </Typography>
+            <Button
+              variant="outlined"
+              endIcon={<ArrowForward fontSize="small" />}
               onClick={() => onNavigate?.("Input Nilai")}
+              sx={{
+                borderColor: "#E1E6DC",
+                borderRadius: 2,
+                color: "#52624E",
+                fontSize: 12,
+                textTransform: "none",
+                "&:hover": { backgroundColor: "#F4F6F0", borderColor: "#C7D0C1" },
+              }}
             >
-              Input Nilai <ArrowRight size={14} />
-            </button>
-          </div>
-        </section>
-      </div>
+              Input Nilai
+            </Button>
+          </Stack>
+        </Paper>
+      </Stack>
     </LayoutPengajar>
   );
 }
