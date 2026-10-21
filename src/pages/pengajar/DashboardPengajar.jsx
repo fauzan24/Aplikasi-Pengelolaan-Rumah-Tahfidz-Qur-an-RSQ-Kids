@@ -129,7 +129,6 @@ export default function DashboardPengajar({ onLogout, onNavigate }) {
 
   return (
     <LayoutPengajar
-      activeMenu="Dashboard"
       onNavigate={onNavigate}
       onLogout={onLogout}
     >

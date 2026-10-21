@@ -9,7 +9,6 @@ import {
 import SidebarPengajar from "./SidebarPengajar";
 
 export default function LayoutPengajar({
-  activeMenu = "Dashboard",
   onNavigate,
   onLogout,
   children,
@@ -288,8 +287,6 @@ export default function LayoutPengajar({
 
       {/* SIDEBAR */}
       <SidebarPengajar
-        activeMenu={activeMenu}
-        onNavigate={navigate}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />

@@ -1,16 +1,27 @@
-# React + Vite
+# Aplikasi Pengelolaan Rumah Tahfidz RSQ-Kids
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Aplikasi web untuk pengelolaan Rumah Tahfidz RSQ-Kids, dibangun menggunakan React dan Vite.
 
-Currently, two official plugins are available:
+## Menjalankan aplikasi
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```sh
+npm install
+npm run dev
+```
 
-## React Compiler
+Untuk membuat build produksi, jalankan `npm run build`. Gunakan `npm run lint` untuk memeriksa kode.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Routing
 
-## Expanding the Oxlint configuration
+Navigasi menggunakan API deklaratif React Router: `BrowserRouter` berada di entry point, sedangkan `Routes` dan `Route` mendefinisikan rute bertingkat per peran. `Protected Routes` membatasi akses admin, pengajar, dan wali santri. Sidebar menggunakan `Link` dan `NavLink`; `useNavigate` menangani perpindahan setelah login/logout dan navigasi dari aksi halaman, sementara `useParams` membaca ID santri pada rute detail progres. Setelah login, pengguna diarahkan ke dashboard sesuai perannya; halaman yang tidak diizinkan dialihkan ke login atau dashboard sesuai peran.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+Rute utama:
+
+| Peran | Rute |
+| --- | --- |
+| Umum | `/login` |
+| Admin | `/admin/dashboard`, `/admin/data-santri` |
+| Pengajar | `/pengajar/dashboard`, `/pengajar/kelas-diampu`, `/pengajar/input-nilai`, `/pengajar/progres-belajar`, `/pengajar/progres-belajar/:santriId`, `/pengajar/raport-santri` |
+| Wali santri | `/walisantri/dashboard` |
+
+Rute menu admin yang halamannya belum tersedia tetap diarahkan ke dashboard admin. ID santri untuk rute detail progres diambil dari parameter URL, sehingga detail tetap dapat dibuka langsung menggunakan URL.

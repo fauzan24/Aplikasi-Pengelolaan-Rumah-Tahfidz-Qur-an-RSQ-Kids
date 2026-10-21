@@ -136,7 +136,6 @@ export default function InputNilai({ onNavigate, onLogout }) {
 
   return (
     <LayoutPengajar
-      activeMenu="Input Nilai"
       onNavigate={onNavigate}
       onLogout={onLogout}
     >

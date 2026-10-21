@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  Bell,
   ChevronDown,
   LogOut,
   Menu,
@@ -9,7 +8,6 @@ import {
 import SidebarAdmin from "./SidebarAdmin";
 
 export default function LayoutAdmin({
-  activeMenu = "Beranda",
   onNavigate,
   onLogout,
   children,
@@ -101,8 +99,6 @@ export default function LayoutAdmin({
       )}
 
       <SidebarAdmin
-        activeMenu={activeMenu}
-        onNavigate={navigate}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
@@ -120,9 +116,6 @@ export default function LayoutAdmin({
           </button>
 
           <div className="la-topbar-right">
-            <button type="button" className="la-notification" aria-label="Notifikasi" title="Notifikasi">
-              <Bell size={19} />
-            </button>
             <div className="la-profile-wrap">
               <button
                 type="button"

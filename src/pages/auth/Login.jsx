@@ -86,7 +86,7 @@ const Login = ({ onLogin }) => {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
+        minHeight: '100dvh',
         display: 'flex',
         flexDirection: 'column',
         backgroundColor: '#faf9f5',
@@ -97,23 +97,23 @@ const Login = ({ onLogin }) => {
       <Box
         component="header"
         sx={{
-          minHeight: { xs: 56, sm: 48 },
-          px: { xs: 2, md: 3.5 },
+          minHeight: { xs: 58, sm: 48 },
+          px: { xs: 1.5, sm: 2, md: 3.5 },
           py: { xs: 1, sm: 0 },
           display: 'flex',
-          flexDirection: { xs: 'column', sm: 'row' },
+          flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: 2,
+          gap: { xs: 1, sm: 2 },
           backgroundColor: '#fff',
           borderBottom: '1px solid #eeeee8'
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.75, sm: 1.25 }, minWidth: 0 }}>
           <Box
             sx={{
-              width: 36,
-              height: 36,
+              width: { xs: 32, sm: 36 },
+              height: { xs: 32, sm: 36 },
               flex: '0 0 auto',
               display: 'grid',
               placeItems: 'center',
@@ -129,9 +129,10 @@ const Login = ({ onLogin }) => {
             <Typography
               sx={{
                 fontWeight: 700,
-                fontSize: 14,
+                fontSize: { xs: 11, sm: 14 },
                 lineHeight: 1.2,
-                color: '#293528'
+                color: '#293528',
+                whiteSpace: 'nowrap'
               }}
             >
               Rumah Sahabat Qur'an
@@ -140,9 +141,11 @@ const Login = ({ onLogin }) => {
             <Typography
               sx={{
                 mt: 0.25,
-                fontSize: 10,
+                display: { xs: 'none', sm: 'block' },
+                fontSize: { xs: 8, sm: 10 },
                 lineHeight: 1.2,
-                color: '#7e8478'
+                color: '#7e8478',
+                whiteSpace: 'nowrap'
               }}
             >
               Menginspirasi Generasi Qur'ani di Batam
@@ -154,16 +157,19 @@ const Login = ({ onLogin }) => {
           sx={{
             display: 'flex',
             alignItems: 'center',
-            gap: 0.75,
-            px: 1.5,
+            gap: 0.5,
+            px: { xs: 0.75, sm: 1.5 },
             py: 0.65,
-            alignSelf: { xs: 'flex-start', sm: 'auto' },
             borderRadius: 10,
             backgroundColor: '#eef1e9',
             color: '#65735d',
-            fontSize: 10,
+            fontSize: { xs: 8, sm: 10 },
             fontWeight: 600,
-            whiteSpace: 'nowrap'
+            whiteSpace: { xs: 'normal', sm: 'nowrap' },
+            textAlign: 'center',
+            lineHeight: 1.2,
+            maxWidth: { xs: 112, sm: 'none' },
+            flexShrink: 0
           }}
         >
           <Box component="span" sx={{ color: '#718760', fontSize: 9 }}>
@@ -183,6 +189,7 @@ const Login = ({ onLogin }) => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          px: { xs: 1.5, sm: 0 },
           py: { xs: 2, sm: 1.5, md: 4 }
         }}
       >
@@ -191,10 +198,13 @@ const Login = ({ onLogin }) => {
           sx={{
             width: { xs: '100%', sm: '86%' },
             position: 'relative',
-            height: { xs: 900, sm: 600, md: 620 },
+            height: { xs: 'auto', sm: 600, md: 620 },
+            minHeight: { xs: 0, sm: 600, md: 620 },
+            display: { xs: 'flex', sm: 'block' },
+            flexDirection: 'column',
             overflow: 'hidden',
             border: '1px solid #efefe9',
-            borderRadius: { xs: 3, md: 4 },
+            borderRadius: { xs: 2.5, md: 4 },
             boxShadow: '0 14px 36px rgba(48, 57, 42, 0.09)'
           }}
         >
@@ -209,10 +219,17 @@ const Login = ({ onLogin }) => {
               transition:
                 'top 650ms cubic-bezier(0.22, 1, 0.36, 1), left 650ms cubic-bezier(0.22, 1, 0.36, 1)',
               '@media (max-width: 599.95px)': {
-                top: isRegister ? '60%' : 0,
-                left: 0
+                position: 'relative',
+                top: 'auto',
+                left: 'auto',
+                width: '100%',
+                height: 'auto',
+                minHeight: 0,
+                flex: '0 0 auto',
+                transition: 'none'
               },
-              p: { xs: 3.5, sm: 3.5, md: 4.5 },
+              p: { xs: 2.5, sm: 3.5, md: 4.5 },
+              gap: { xs: 2.5, sm: 0 },
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
@@ -250,8 +267,8 @@ const Login = ({ onLogin }) => {
                 component="h1"
                 sx={{
                   maxWidth: 360,
-                  mb: 1.5,
-                  fontSize: { xs: 26, sm: 24, md: 31 },
+                  mb: { xs: 1, sm: 1.5 },
+                  fontSize: { xs: 23, sm: 24, md: 31 },
                   lineHeight: 1.1,
                   fontWeight: 800,
                   color: '#fff'
@@ -270,7 +287,7 @@ const Login = ({ onLogin }) => {
                 sx={{
                   maxWidth: 390,
                   color: '#e1e9dc',
-                  fontSize: { xs: 12, sm: 11, md: 13 },
+                  fontSize: { xs: 11, sm: 11, md: 13 },
                   lineHeight: 1.5
                 }}
               >
@@ -282,8 +299,8 @@ const Login = ({ onLogin }) => {
 
             <Box
               sx={{
-                mt: 2,
-                pt: 1.5,
+                mt: { xs: 0, sm: 2 },
+                pt: { xs: 1.25, sm: 1.5 },
                 borderTop: '1px solid rgba(255,255,255,0.12)'
               }}
             >
@@ -330,10 +347,19 @@ const Login = ({ onLogin }) => {
               height: { xs: '60%', sm: '100%' },
               transition:
                 'top 650ms cubic-bezier(0.22, 1, 0.36, 1), left 650ms cubic-bezier(0.22, 1, 0.36, 1)',
-              p: { xs: 3, sm: 3, md: 5 },
+              p: { xs: 2.5, sm: 3, md: 5 },
               display: 'flex',
               alignItems: 'center',
-              backgroundColor: '#fff'
+              backgroundColor: '#fff',
+              '@media (max-width: 599.95px)': {
+                position: 'relative',
+                top: 'auto',
+                left: 'auto',
+                width: '100%',
+                height: 'auto',
+                flex: '0 0 auto',
+                transition: 'none'
+              }
             }}
           >
             <Box
@@ -346,7 +372,7 @@ const Login = ({ onLogin }) => {
                 component="h2"
                 sx={{
                   mb: 0.5,
-                  fontSize: 40,
+                  fontSize: { xs: 32, sm: 40 },
                   lineHeight: 1.2,
                   fontWeight: 900,
                   color: '#20261f'
@@ -357,7 +383,7 @@ const Login = ({ onLogin }) => {
 
               <Typography
                 sx={{
-                  mb: 3,
+                  mb: { xs: 2, sm: 3 },
                   color: '#777c73',
                   fontSize: 13,
                   lineHeight: 1.5
@@ -369,7 +395,7 @@ const Login = ({ onLogin }) => {
               </Typography>
 
               {!isRegister && (
-                <Typography sx={{ mb: 1.5, color: '#777c73', fontSize: 10, lineHeight: 1.6 }}>
+                <Typography sx={{ mb: 1.5, color: '#777c73', fontSize: { xs: 9.5, sm: 10 }, lineHeight: 1.6 }}>
                   Akun demo: admin / admin123 (Admin), pengajar / pengajar123 (Pengajar), wali / wali123 (Wali Santri).
                 </Typography>
               )}
@@ -553,7 +579,7 @@ const Login = ({ onLogin }) => {
                 </Link>
               </Box>}
 
-              <Box sx={{ mb: 2.5, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.25 }}>
+              <Box sx={{ mb: 2.5, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: { xs: 1, sm: 1.25 } }}>
                 <Button
                   type="button"
                   variant="outlined"
@@ -634,10 +660,11 @@ const Login = ({ onLogin }) => {
       <Box
         component="footer"
         sx={{
-          minHeight: 36,
+          minHeight: { xs: 52, sm: 36 },
           px: { xs: 2, md: 3.5 },
           py: 1,
           display: 'flex',
+          flexDirection: { xs: 'column', sm: 'row' },
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: 1.5,
@@ -646,11 +673,11 @@ const Login = ({ onLogin }) => {
           color: '#84877e'
         }}
       >
-        <Typography sx={{ fontSize: 9.5 }}>
+        <Typography sx={{ fontSize: 9.5, textAlign: 'center' }}>
           Portal Rumah Sahabat Qur'an • Membimbing Generasi Qur'ani Sejak Dini
         </Typography>
 
-        <Typography sx={{ fontSize: 9.5, textAlign: 'right' }}>
+        <Typography sx={{ fontSize: 9.5, textAlign: { xs: 'center', sm: 'right' } }}>
           © 2024 Rumah Sahabat Qur'an Batam. Hak Cipta Dilindungi.
         </Typography>
       </Box>

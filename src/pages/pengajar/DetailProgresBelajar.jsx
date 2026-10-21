@@ -8,6 +8,7 @@ import {
   SaveOutlined,
 } from "@mui/icons-material";
 import {
+  Alert,
   Avatar,
   Box,
   Button,
@@ -28,7 +29,9 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { useNavigate, useParams } from "react-router-dom";
 import LayoutPengajar from "../../components/pengajar/LayoutPengajar";
+import { dataSantriProgres } from "../../data/santriProgres";
 
 const dataAwal = [
   { id: 1, tanggal: "05/04/2026", pelajaran: "Tahfidz", progres: 30, catatan: "Surat AT-Takatsur" },
@@ -48,7 +51,10 @@ const fieldEdit = [
   { field: "catatan", label: "Catatan", type: "text" },
 ];
 
-export default function DetailProgresBelajar({ santri, onNavigate, onLogout }) {
+export default function DetailProgresBelajar({ onNavigate, onLogout }) {
+  const { santriId } = useParams();
+  const navigate = useNavigate();
+  const santri = dataSantriProgres.find((item) => item.id === santriId);
   const [daftarProgres, setDaftarProgres] = useState(dataAwal);
   const [dataEdit, setDataEdit] = useState(null);
 
@@ -81,9 +87,31 @@ export default function DetailProgresBelajar({ santri, onNavigate, onLogout }) {
     dataEdit.catatan.trim() &&
     progresValid;
 
+  if (!santri) {
+    return (
+      <LayoutPengajar onNavigate={onNavigate} onLogout={onLogout}>
+        <Stack spacing={2} sx={{ width: "100%", minWidth: 0 }}>
+          <Typography component="h1" variant="h5" fontWeight={800} color="#28352C">
+            Detail Progres Belajar
+          </Typography>
+          <Alert severity="error">
+            Data santri dengan ID {santriId} tidak ditemukan.
+          </Alert>
+          <Button
+            startIcon={<ArrowBack />}
+            variant="outlined"
+            onClick={() => navigate("/pengajar/progres-belajar")}
+            sx={{ alignSelf: "flex-start", textTransform: "none" }}
+          >
+            Kembali ke daftar santri
+          </Button>
+        </Stack>
+      </LayoutPengajar>
+    );
+  }
+
   return (
     <LayoutPengajar
-      activeMenu="Progres Belajar"
       onNavigate={onNavigate}
       onLogout={onLogout}
     >
@@ -95,7 +123,7 @@ export default function DetailProgresBelajar({ santri, onNavigate, onLogout }) {
         <Button
           startIcon={<ArrowBack />}
           variant="outlined"
-          onClick={() => onNavigate?.("Progres Belajar")}
+          onClick={() => navigate("/pengajar/progres-belajar")}
           sx={{
             alignSelf: "flex-start",
             borderColor: "#DCDDD3",
@@ -132,10 +160,10 @@ export default function DetailProgresBelajar({ santri, onNavigate, onLogout }) {
             </Avatar>
             <Box sx={{ minWidth: 0 }}>
               <Typography component="h2" variant="subtitle1" fontWeight={800} color="#28352C">
-                {santri?.nama || "Santri"}
+                {santri?.nama || "Santri tidak ditemukan"}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mt: 0.75, fontSize: 12 }}>
-                NIS: {santri?.id || "-"}
+                NIS: {santri?.id || santriId}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontSize: 12 }}>
                 Kelas: {santri?.kelas || "-"}

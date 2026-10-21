@@ -66,7 +66,6 @@ export default function KelasDiampu({ onNavigate, onLogout }) {
 
   return (
     <LayoutPengajar
-      activeMenu="Kelas Diampu"
       onNavigate={onNavigate}
       onLogout={onLogout}
     >

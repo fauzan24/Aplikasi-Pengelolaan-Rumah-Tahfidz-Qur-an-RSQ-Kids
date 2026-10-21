@@ -15,12 +15,7 @@ import {
   Typography,
 } from "@mui/material";
 import LayoutPengajar from "../../components/pengajar/LayoutPengajar";
-
-const dataSantri = [
-  { id: "RSQ001", nama: "Jauza Askana", kelas: "Pagi A" },
-  { id: "RSQ004", nama: "Dede Ridho", kelas: "Pagi A" },
-  { id: "RSQ006", nama: "Fauzan", kelas: "Pagi A" },
-];
+import { dataSantriProgres } from "../../data/santriProgres";
 
 export default function ProgresBelajar({ onNavigate, onLogout, onDetail }) {
   const [keyword, setKeyword] = useState("");
@@ -28,7 +23,7 @@ export default function ProgresBelajar({ onNavigate, onLogout, onDetail }) {
   const dataTampil = useMemo(() => {
     const cari = keyword.toLowerCase().trim();
 
-    return dataSantri.filter(
+    return dataSantriProgres.filter(
       (santri) =>
         santri.nama.toLowerCase().includes(cari) ||
         santri.id.toLowerCase().includes(cari)
@@ -37,7 +32,6 @@ export default function ProgresBelajar({ onNavigate, onLogout, onDetail }) {
 
   return (
     <LayoutPengajar
-      activeMenu="Progres Belajar"
       onNavigate={onNavigate}
       onLogout={onLogout}
     >

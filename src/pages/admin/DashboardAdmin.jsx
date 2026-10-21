@@ -39,7 +39,6 @@ const pendaftaranTerbaru = [
 export default function DashboardAdmin({ onNavigate, onLogout }) {
   return (
     <LayoutAdmin
-      activeMenu="Beranda"
       onNavigate={onNavigate}
       onLogout={onLogout}
     >

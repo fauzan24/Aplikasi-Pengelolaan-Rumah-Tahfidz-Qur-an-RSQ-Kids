@@ -1,167 +1,157 @@
 import {
-  BookOpen,
-  ChartNoAxesColumn,
-  ClipboardList,
-  CreditCard,
-  GraduationCap,
-  Home,
-  UsersRound,
-  X,
-} from "lucide-react";
+  Book as BookIcon,
+  Class as ClassIcon,
+  CreditCard as CreditCardIcon,
+  Home as HomeIcon,
+  MenuBook as MenuBookIcon,
+  People as PeopleIcon,
+  School as SchoolIcon,
+  Assessment as AssessmentIcon,
+  Close as CloseIcon,
+} from "@mui/icons-material";
+import {
+  Box,
+  Drawer,
+  IconButton,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Typography,
+  useMediaQuery,
+} from "@mui/material";
+import { Link, NavLink } from "react-router-dom";
 
 const menuAdmin = [
-  { label: "Beranda", icon: Home },
-  { label: "Data Santri", icon: UsersRound },
-  { label: "Data Pengajar", icon: GraduationCap },
-  { label: "Daftar Kelas", icon: BookOpen },
-  { label: "Progres Belajar", icon: ChartNoAxesColumn },
-  { label: "Pembayaran SPP", icon: CreditCard },
-  { label: "Raport", icon: ClipboardList },
+  { label: "Beranda", to: "/admin/dashboard", icon: HomeIcon },
+  { label: "Data Santri", to: "/admin/data-santri", icon: PeopleIcon },
+  { label: "Data Pengajar", to: "/admin/data-pengajar", icon: SchoolIcon },
+  { label: "Daftar Kelas", to: "/admin/daftar-kelas", icon: ClassIcon },
+  { label: "Progres Belajar", to: "/admin/progres-belajar", icon: AssessmentIcon },
+  { label: "Pembayaran SPP", to: "/admin/pembayaran-spp", icon: CreditCardIcon },
+  { label: "Raport", to: "/admin/raport", icon: MenuBookIcon },
 ];
 
-export default function SidebarAdmin({
-  activeMenu = "Beranda",
-  onNavigate,
-  isOpen = false,
-  onClose,
-}) {
+const drawerWidth = 245;
+
+export default function SidebarAdmin({ isOpen = false, onClose }) {
+  const isMobile = useMediaQuery("(max-width:800px)");
+
   return (
-    <>
-      <style>{`
-        .sa-sidebar {
-          position: sticky;
-          top: 0;
-          left: 0;
-          z-index: 1001;
-          flex: 0 0 245px;
-          width: 245px;
-          min-width: 245px;
-          height: 100vh;
-          height: 100dvh;
-          display: flex;
-          flex-direction: column;
-          padding: 25px 15px 18px;
-          overflow-y: auto;
-          background: #30442E;
-          color: #fff;
-          font-family: 'Plus Jakarta Sans', sans-serif;
-          box-sizing: border-box;
-        }
-
-        .sa-sidebar *,
-        .sa-sidebar *::before,
-        .sa-sidebar *::after { box-sizing: border-box; }
-
-        .sa-brand {
-          display: flex;
-          align-items: center;
-          gap: 11px;
-          padding: 0 8px;
-          margin-bottom: 35px;
-        }
-
-        .sa-logo {
-          width: 43px;
-          height: 43px;
-          display: grid;
-          place-items: center;
-          flex: 0 0 auto;
-          border: 1px solid rgba(255,255,255,.42);
-          border-radius: 11px;
-          color: #F8F7EF;
-        }
-
-        .sa-brand h2 { margin: 0 0 4px; font-size: 17px; font-weight: 800; }
-        .sa-brand p { margin: 0; color: #D5DFCE; font-size: 9px; white-space: nowrap; }
-        .sa-close { display: none; margin-left: auto; padding: 4px; border: 0; background: transparent; color: #fff; cursor: pointer; }
-        .sa-menu { display: flex; flex-direction: column; gap: 6px; }
-
-        .sa-menu-item {
-          width: 100%;
-          min-height: 44px;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 0 13px;
-          border: 0;
-          border-radius: 9px;
-          background: transparent;
-          color: #E1E8DC;
-          text-align: left;
-          font-family: inherit;
-          cursor: pointer;
-          transition: background .18s ease;
-        }
-
-        .sa-menu-item span { font-size: 11px; font-weight: 500; }
-        .sa-menu-item:hover, .sa-menu-item.active { background: #506748; color: #fff; }
-        .sa-menu-item.active { box-shadow: inset 3px 0 #D5E1CA; }
-
-        .sa-footer {
-          margin-top: auto;
-          padding: 15px 10px 0;
-          color: #D5DFCE;
-          font-size: 10px;
-          line-height: 1.6;
-        }
-
-        @media (max-width: 800px) {
-          .sa-sidebar {
-            position: fixed;
-            inset: 0 auto 0 0;
-            width: 255px;
-            min-width: 255px;
-            padding-top: 22px;
-            transform: translateX(-100%);
-            transition: transform .25s ease;
-            box-shadow: 8px 0 24px rgba(0,0,0,.12);
-          }
-
-          .sa-sidebar.sa-open { transform: translateX(0); }
-          .sa-close { display: flex; align-items: center; justify-content: center; }
-        }
-      `}</style>
-
-      <aside
-        className={`sa-sidebar ${isOpen ? "sa-open" : ""}`}
-        aria-label="Menu admin"
+    <Drawer
+      variant={isMobile ? "temporary" : "permanent"}
+      open={isMobile ? isOpen : true}
+      onClose={onClose}
+      ModalProps={{ keepMounted: true }}
+      sx={{
+        width: isMobile ? 255 : drawerWidth,
+        flexShrink: 0,
+        "& .MuiDrawer-paper": {
+          position: isMobile ? "fixed" : "relative",
+          width: isMobile ? 255 : drawerWidth,
+          height: "100dvh",
+          boxSizing: "border-box",
+          overflowX: "hidden",
+          border: 0,
+          bgcolor: "#30442E",
+          color: "#fff",
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+        },
+      }}
+    >
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          minHeight: "100%",
+          p: isMobile ? "22px 15px 18px" : "25px 15px 18px",
+        }}
       >
-        <div className="sa-brand">
-          <div className="sa-logo"><BookOpen size={27} /></div>
-          <div>
-            <h2>RSQ-Kids</h2>
-            <p>Rumah Tahfidz Qur'an</p>
-          </div>
-          <button
-            type="button"
-            className="sa-close"
+        <Box sx={{ display: "flex", alignItems: "center", mb: "35px", px: "8px" }}>
+          <Box
+            component={Link}
+            to="/admin/dashboard"
             onClick={onClose}
-            aria-label="Tutup sidebar"
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: "11px",
+              color: "inherit",
+              textDecoration: "none",
+              minWidth: 0,
+            }}
           >
-            <X size={20} />
-          </button>
-        </div>
-
-        <nav className="sa-menu">
-          {menuAdmin.map(({ label, icon: Icon }) => (
-            <button
-              type="button"
-              key={label}
-              className={`sa-menu-item ${activeMenu === label ? "active" : ""}`}
-              aria-current={activeMenu === label ? "page" : undefined}
-              onClick={() => {
-                onNavigate?.(label);
-                onClose?.();
+            <Box
+              sx={{
+                width: 43,
+                height: 43,
+                display: "grid",
+                placeItems: "center",
+                flexShrink: 0,
+                border: "1px solid rgba(255,255,255,.42)",
+                borderRadius: "11px",
+                color: "#F8F7EF",
               }}
             >
-              <Icon size={18} />
-              <span>{label}</span>
-            </button>
-          ))}
-        </nav>
+              <BookIcon fontSize="medium" />
+            </Box>
+            <Box>
+              <Typography sx={{ mb: "4px", fontSize: 17, fontWeight: 800, lineHeight: 1.2 }}>
+                RSQ-Kids
+              </Typography>
+              <Typography sx={{ color: "#D5DFCE", fontSize: 9, whiteSpace: "nowrap" }}>
+                Rumah Tahfidz Qur&apos;an
+              </Typography>
+            </Box>
+          </Box>
+          {isMobile && (
+            <IconButton
+              aria-label="Tutup sidebar"
+              onClick={onClose}
+              sx={{ ml: "auto", color: "#fff" }}
+            >
+              <CloseIcon />
+            </IconButton>
+          )}
+        </Box>
 
-        <div className="sa-footer">Tahun Ajaran 2026 / 2027<br />Semester Ganjil</div>
-      </aside>
-    </>
+        <List component="nav" aria-label="Menu admin" disablePadding sx={{ display: "grid", gap: "6px" }}>
+          {menuAdmin.map(({ label, to, icon: Icon }) => (
+            <ListItemButton
+              key={label}
+              component={NavLink}
+              to={to}
+              onClick={onClose}
+              className={({ isActive }) => (isActive ? "active" : "")}
+              sx={{
+                minHeight: 44,
+                px: "13px",
+                gap: "12px",
+                borderRadius: "9px",
+                color: "#E1E8DC",
+                transition: "background .18s ease",
+                "& .MuiListItemIcon-root": { minWidth: 0, color: "inherit" },
+                "& .MuiListItemText-primary": {
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontSize: 11,
+                  fontWeight: 500,
+                },
+                "&:hover, &.active": { bgcolor: "#506748", color: "#fff" },
+                "&.active": { boxShadow: "inset 3px 0 #D5E1CA" },
+              }}
+            >
+              <ListItemIcon><Icon fontSize="small" /></ListItemIcon>
+              <ListItemText primary={label} />
+            </ListItemButton>
+          ))}
+        </List>
+
+        <Typography sx={{ mt: "auto", px: "10px", pt: "15px", color: "#D5DFCE", fontSize: 10, lineHeight: 1.6 }}>
+          Tahun Ajaran 2026 / 2027
+          <br />
+          Semester Ganjil
+        </Typography>
+      </Box>
+    </Drawer>
   );
 }
