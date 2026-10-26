@@ -1,369 +1,199 @@
 import { useState } from "react";
 import {
-  Bell,
-  ChevronDown,
+  Avatar,
+  Badge,
+  Box,
+  IconButton,
   Menu,
-  LogOut,
-  Settings,
-} from "lucide-react";
+  MenuItem,
+  Typography,
+} from "@mui/material";
+import {
+  ExpandMore as ExpandMoreIcon,
+  Logout as LogoutIcon,
+  Menu as MenuIcon,
+  NotificationsNone as NotificationsIcon,
+  Settings as SettingsIcon,
+} from "@mui/icons-material";
 import SidebarPengajar from "./SidebarPengajar";
 
-export default function LayoutPengajar({
-  onNavigate,
-  onLogout,
-  children,
-}) {
+export default function LayoutPengajar({ onNavigate, onLogout, children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
+  const [profileAnchor, setProfileAnchor] = useState(null);
 
   const navigate = (label) => {
-    setProfileOpen(false);
+    setProfileAnchor(null);
     setSidebarOpen(false);
     onNavigate?.(label);
   };
 
+  const handleLogout = () => {
+    setProfileAnchor(null);
+    onLogout?.();
+  };
+
   return (
-    <div className="lp-layout">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-
-        .lp-layout {
-          display: flex;
-          height: 100vh;
-          height: 100dvh;
-          min-height: 0;
-          width: 100%;
-          overflow: hidden;
-          background: #FBF9F3;
-          color: #28352C;
-          font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-
-        .lp-layout,
-        .lp-layout * {
-          box-sizing: border-box;
-        }
-
-        /* AREA UTAMA */
-        .lp-main {
-          display: flex;
-          flex: 1;
-          flex-direction: column;
-          min-width: 0;
-          min-height: 0;
-          width: 0;
-          overflow: hidden;
-        }
-
-        /* TOP BAR TETAP DI ATAS */
-        .lp-topbar {
-          position: relative;
-          z-index: 900;
-          flex-shrink: 0;
-          height: 76px;
-          min-height: 76px;
-          display: flex;
-          align-items: center;
-          justify-content: flex-end;
-          padding: 0 30px;
-          gap: 20px;
-          border-bottom: 1px solid #E8E6DE;
-          background: #FFFFFF;
-        }
-
-        .lp-topbar-right {
-          display: flex;
-          align-items: center;
-          gap: 20px;
-        }
-
-        .lp-mobile-menu {
-          display: none;
-          align-items: center;
-          justify-content: center;
-          padding: 5px;
-          border: none;
-          background: transparent;
-          color: #30442E;
-          cursor: pointer;
-        }
-
-        .lp-notification {
-          position: relative;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 7px;
-          border: none;
-          background: transparent;
-          color: #5A734E;
-          cursor: pointer;
-        }
-
-        .lp-notification-dot {
-          position: absolute;
-          top: 3px;
-          right: 3px;
-          width: 8px;
-          height: 8px;
-          border: 1px solid white;
-          border-radius: 50%;
-          background: #D89B3D;
-        }
-
-        .lp-profile-wrap {
-          position: relative;
-        }
-
-        .lp-profile-button {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          padding: 0;
-          border: none;
-          background: transparent;
-          color: #28352C;
-          text-align: left;
-          cursor: pointer;
-        }
-
-        .lp-avatar {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 39px;
-          height: 39px;
-          flex-shrink: 0;
-          border: 2px solid #E1E8DA;
-          border-radius: 50%;
-          background: #5A734E;
-          color: white;
-          font-size: 12px;
-          font-weight: 700;
-        }
-
-        .lp-profile-info {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-
-        .lp-profile-info strong {
-          font-size: 11px;
-        }
-
-        .lp-profile-info span {
-          color: #838B82;
-          font-size: 10px;
-        }
-
-        .lp-dropdown {
-          position: absolute;
-          top: 48px;
-          right: 0;
-          z-index: 1100;
-          width: 155px;
-          padding: 6px;
-          border: 1px solid #E8E6DE;
-          border-radius: 10px;
-          background: white;
-          box-shadow: 0 8px 24px rgba(30,45,30,.1);
-        }
-
-        .lp-dropdown button {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          width: 100%;
-          padding: 10px;
-          border: none;
-          border-radius: 7px;
-          background: white;
-          color: #28352C;
-          text-align: left;
-          font-family: inherit;
-          font-size: 11px;
-          cursor: pointer;
-        }
-
-        .lp-dropdown button:hover {
-          background: #FBF9F3;
-        }
-
-        /* HANYA BAGIAN KONTEN INI YANG SCROLL */
-        .lp-content {
-          flex: 1;
-          min-width: 0;
-          min-height: 0;
-          width: 100%;
-          padding: 28px 30px 32px;
-          overflow-x: hidden;
-          overflow-y: auto;
-          overscroll-behavior-y: contain;
-          -webkit-overflow-scrolling: touch;
-          box-sizing: border-box;
-        }
-
-        .lp-content > * {
-          min-width: 0;
-        }
-
-        /* OVERLAY MENU MOBILE */
-        .lp-overlay {
-          display: none;
-        }
-
-        @media (max-width: 1100px) {
-          .lp-content {
-            padding: 24px 22px 28px;
-          }
-
-          .lp-topbar {
-            padding: 0 22px;
-          }
-        }
-
-        @media (max-width: 800px) {
-          .lp-topbar {
-            height: 66px;
-            min-height: 66px;
-            padding: 0 15px;
-            gap: 12px;
-          }
-
-          .lp-mobile-menu {
-            display: flex;
-            margin-right: auto;
-          }
-
-          .lp-overlay {
-            display: block;
-            position: fixed;
-            inset: 0;
-            z-index: 1000;
-            border: none;
-            background: rgba(20,30,20,.4);
-          }
-
-          .lp-topbar-right {
-            gap: 12px;
-          }
-
-          .lp-content {
-            padding: 22px 18px 28px;
-          }
-        }
-
-        @media (max-width: 560px) {
-          .lp-topbar {
-            padding: 0 10px;
-            gap: 8px;
-          }
-
-          .lp-topbar-right {
-            gap: 7px;
-          }
-
-          .lp-profile-info,
-          .lp-profile-button > svg {
-            display: none;
-          }
-
-          .lp-content {
-            padding: 18px 12px 24px;
-          }
-        }
-      `}</style>
-
-      {/* OVERLAY UNTUK MENU MOBILE */}
-      {sidebarOpen && (
-        <button
-          type="button"
-          className="lp-overlay"
-          aria-label="Tutup menu"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* SIDEBAR */}
+    <Box
+      sx={{
+        display: "flex",
+        width: "100%",
+        height: "100vh",
+        "@supports (height: 100dvh)": { height: "100dvh" },
+        minHeight: 0,
+        overflow: "hidden",
+        bgcolor: "#FBF9F3",
+        color: "#28352C",
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
+      }}
+    >
       <SidebarPengajar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
 
-      {/* KONTEN UTAMA */}
-      <main className="lp-main">
-        {/* TOP BAR */}
-        <header className="lp-topbar">
-          <button
-            type="button"
-            className="lp-mobile-menu"
+      <Box
+        component="main"
+        sx={{
+          display: "flex",
+          flex: 1,
+          flexDirection: "column",
+          minWidth: 0,
+          minHeight: 0,
+          overflow: "hidden",
+        }}
+      >
+        <Box
+          component="header"
+          sx={{
+            zIndex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            flexShrink: 0,
+            height: { xs: 66, md: 76 },
+            px: { xs: 1.25, sm: 2.75, md: 3.75 },
+            borderBottom: "1px solid #E8E6DE",
+            bgcolor: "#fff",
+          }}
+        >
+          <IconButton
             aria-label="Buka menu"
             aria-expanded={sidebarOpen}
             onClick={() => setSidebarOpen(true)}
+            sx={{
+              display: "none",
+              "@media (max-width:800px)": { display: "inline-flex" },
+              mr: "auto",
+              color: "#30442E",
+            }}
           >
-            <Menu size={22} />
-          </button>
+            <MenuIcon />
+          </IconButton>
 
-          <div className="lp-topbar-right">
-            <button
-              type="button"
-              className="lp-notification"
+          <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.5, sm: 1.5 } }}>
+            <IconButton
               aria-label="Notifikasi"
               title="Notifikasi"
+              sx={{ color: "#5A734E" }}
             >
-              <Bell size={20} />
-              <span className="lp-notification-dot" />
-            </button>
-
-            <div className="lp-profile-wrap">
-              <button
-                type="button"
-                className="lp-profile-button"
-                aria-expanded={profileOpen}
-                onClick={() => setProfileOpen((prev) => !prev)}
+              <Badge
+                variant="dot"
+                overlap="circular"
+                sx={{
+                  "& .MuiBadge-badge": {
+                    top: 4,
+                    right: 4,
+                    border: "1px solid #fff",
+                    bgcolor: "#D89B3D",
+                  },
+                }}
               >
-                <div className="lp-avatar">UA</div>
+                <NotificationsIcon />
+              </Badge>
+            </IconButton>
 
-                <div className="lp-profile-info">
-                  <strong>Ustadzah Aisyah</strong>
-                  <span>Pengajar</span>
-                </div>
+            <IconButton
+              aria-label="Buka menu profil"
+              aria-haspopup="menu"
+              aria-expanded={Boolean(profileAnchor)}
+              onClick={(event) => setProfileAnchor(event.currentTarget)}
+              sx={{ display: "flex", gap: 1.25, borderRadius: 2 }}
+            >
+              <Avatar
+                sx={{
+                  width: 39,
+                  height: 39,
+                  border: "2px solid #E1E8DA",
+                  bgcolor: "#5A734E",
+                  fontSize: 12,
+                  fontWeight: 700,
+                }}
+              >
+                UA
+              </Avatar>
+              <Box
+                sx={{
+                  display: { xs: "none", sm: "flex" },
+                  flexDirection: "column",
+                  alignItems: "flex-start",
+                  gap: 0.25,
+                }}
+              >
+                <Typography sx={{ color: "#28352C", fontSize: 11, fontWeight: 700 }}>
+                  Ustadzah Aisyah
+                </Typography>
+                <Typography sx={{ color: "#838B82", fontSize: 10 }}>
+                  Pengajar
+                </Typography>
+              </Box>
+              <ExpandMoreIcon
+                sx={{ display: { xs: "none", sm: "block" }, fontSize: 18 }}
+              />
+            </IconButton>
+            <Menu
+              anchorEl={profileAnchor}
+              open={Boolean(profileAnchor)}
+              onClose={() => setProfileAnchor(null)}
+              MenuListProps={{ "aria-label": "Menu profil" }}
+              sx={{
+                "& .MuiPaper-root": {
+                  minWidth: 155,
+                  border: "1px solid #E8E6DE",
+                  boxShadow: "0 8px 24px rgba(30,45,30,.1)",
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                },
+                "& .MuiMenuItem-root": { gap: 1, fontSize: 12 },
+              }}
+            >
+              <MenuItem onClick={() => navigate("Pengaturan")}>
+                <SettingsIcon fontSize="small" />
+                Pengaturan
+              </MenuItem>
+              <MenuItem onClick={handleLogout}>
+                <LogoutIcon fontSize="small" />
+                Keluar
+              </MenuItem>
+            </Menu>
+          </Box>
+        </Box>
 
-                <ChevronDown size={16} />
-              </button>
-
-              {profileOpen && (
-                <div className="lp-dropdown">
-                  <button
-                    type="button"
-                    onClick={() => navigate("Pengaturan")}
-                  >
-                    <Settings size={15} />
-                    Pengaturan
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setProfileOpen(false);
-                      onLogout?.();
-                    }}
-                  >
-                    <LogOut size={15} />
-                    Keluar
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </header>
-
-        {/* AREA SCROLL HALAMAN */}
-        <div className="lp-content">
+        <Box
+          component="section"
+          sx={{
+            flex: 1,
+            minWidth: 0,
+            minHeight: 0,
+            overflowX: "hidden",
+            overflowY: "auto",
+            overscrollBehaviorY: "contain",
+            WebkitOverflowScrolling: "touch",
+            "& > *": { minWidth: 0 },
+            p: { xs: "18px 12px 24px", sm: "22px 18px 28px", md: "28px 30px 32px" },
+          }}
+        >
           {children}
-        </div>
-      </main>
-    </div>
+        </Box>
+      </Box>
+    </Box>
   );
 }
