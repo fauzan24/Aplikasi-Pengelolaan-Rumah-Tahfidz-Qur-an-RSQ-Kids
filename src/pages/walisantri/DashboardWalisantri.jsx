@@ -86,8 +86,8 @@ export default function DashboardWalisantri({ pengguna, onLogout }) {
 						<div className="dw-child">
 							<div className="dw-child-avatar">AA</div>
 							<div>
-								<strong>Ahmad Al-Fatih</strong>
-								<p>NIS RSQ020 · Kelas Pagi A</p>
+								<strong>Fauzan Najib Ali</strong>
+								<p>NIS RSQ006 · Kelas Pagi A</p>
 							</div>
 						</div>
 						<div className="dw-progress-label"><span>Progres belajar semester ini</span><strong>64%</strong></div>
