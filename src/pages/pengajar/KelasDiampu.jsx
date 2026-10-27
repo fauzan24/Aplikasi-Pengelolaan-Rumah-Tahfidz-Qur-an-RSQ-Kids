@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useMemo, useState } from "react";
 import {
   AccessTime,
   ArrowForward,
@@ -25,38 +26,83 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+
 import LayoutPengajar from "../../components/pengajar/LayoutPengajar";
+import { useNilai } from "../../context/NilaiContext";
 
-const dataSantri = [
-  { nis: "RSQ001", nama: "Jauza Askana", nilai: 89, status: "Belum Lengkap" },
-  { nis: "RSQ002", nama: "Dinda Azzahra", nilai: 90, status: "Lengkap" },
-  { nis: "RSQ003", nama: "Raffa Fadilla", nilai: null, status: "Belum Lengkap" },
-  { nis: "RSQ004", nama: "Dede Ridho", nilai: 88, status: "Lengkap" },
-  { nis: "RSQ005", nama: "Kalila Haura", nilai: 92, status: "Lengkap" },
-  { nis: "RSQ006", nama: "Aisyah Putri", nilai: null, status: "Belum Lengkap" },
-  { nis: "RSQ007", nama: "Muhammad Fikri", nilai: 87, status: "Belum Lengkap" },
+const warnaHijau = "#5C7652";
+
+const aspekPenilaian = [
+  "bacaan",
+  "doa",
+  "tahfidz",
+  "hadits",
+  "adab",
 ];
 
-const kelas = [
-  { id: "pagi", nama: "Kelas Pagi A", jadwal: "Jadwal pagi", jumlah: dataSantri.length, icon: WbSunny },
-  { id: "sore", nama: "Kelas Sore A", jadwal: "Jadwal sore", jumlah: 0, icon: NightsStay },
+const daftarKelas = [
+  {
+    id: "Pagi",
+    nama: "Kelas Pagi",
+    jadwal: "Jadwal pagi",
+    icon: WbSunny,
+  },
+  {
+    id: "Sore",
+    nama: "Kelas Sore",
+    jadwal: "Jadwal sore",
+    icon: NightsStay,
+  },
 ];
+
+const hitungRataRata = (santri) => {
+  const total = aspekPenilaian.reduce(
+    (jumlah, aspek) => jumlah + Number(santri[aspek] || 0),
+    0
+  );
+
+  return (total / aspekPenilaian.length).toFixed(1);
+};
+
+const cekStatus = (santri) => {
+  const lengkap = aspekPenilaian.every(
+    (aspek) =>
+      santri[aspek] !== "" &&
+      santri[aspek] !== null &&
+      santri[aspek] !== undefined &&
+      Number.isFinite(Number(santri[aspek]))
+  );
+
+  return lengkap ? "Lengkap" : "Belum Lengkap";
+};
 
 export default function KelasDiampu({ onNavigate, onLogout }) {
-  const [kelasAktif, setKelasAktif] = useState("pagi");
+  const { santri } = useNilai();
+
+  const [kelasAktif, setKelasAktif] = useState("Pagi");
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("Semua Status");
 
-  const santriKelas = kelasAktif === "pagi" ? dataSantri : [];
-  const santriDitampilkan = santriKelas.filter((santri) => {
-    const cocokSearch = `${santri.nis} ${santri.nama}`
-      .toLowerCase()
-      .includes(search.toLowerCase());
-    const cocokStatus =
-      filterStatus === "Semua Status" || santri.status === filterStatus;
+  // Mengambil data santri langsung dari NilaiContext
+  const santriKelas = useMemo(
+    () => santri.filter((item) => item.kelas === kelasAktif),
+    [santri, kelasAktif]
+  );
 
-    return cocokSearch && cocokStatus;
-  });
+  // Pencarian dan filter status
+  const santriDitampilkan = useMemo(() => {
+    return santriKelas.filter((item) => {
+      const cocokSearch = `${item.nis} ${item.nama}`
+        .toLowerCase()
+        .includes(search.trim().toLowerCase());
+
+      const cocokStatus =
+        filterStatus === "Semua Status" ||
+        cekStatus(item) === filterStatus;
+
+      return cocokSearch && cocokStatus;
+    });
+  }, [santriKelas, search, filterStatus]);
 
   const pilihKelas = (id) => {
     setKelasAktif(id);
@@ -70,15 +116,23 @@ export default function KelasDiampu({ onNavigate, onLogout }) {
       onLogout={onLogout}
     >
       <Stack spacing={3} sx={{ width: "100%", minWidth: 0, pb: 3 }}>
+        {/* Judul halaman */}
         <Box>
-          <Typography component="h1" variant="h5" fontWeight={800} color="#2D3F2C">
+          <Typography
+            component="h1"
+            variant="h5"
+            fontWeight={800}
+            color="#2D3F2C"
+          >
             Kelas Diampu
           </Typography>
+
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
             Kelola kelas dan pantau santri yang kamu ampu.
           </Typography>
         </Box>
 
+        {/* Informasi tahun ajaran */}
         <Paper
           elevation={0}
           sx={{
@@ -103,13 +157,21 @@ export default function KelasDiampu({ onNavigate, onLogout }) {
             >
               TAHUN AJARAN
             </Typography>
-            <Typography component="h2" variant="h5" fontWeight={800} sx={{ mt: 0.25 }}>
+
+            <Typography
+              component="h2"
+              variant="h5"
+              fontWeight={800}
+              sx={{ mt: 0.25 }}
+            >
               2026 / 2027
             </Typography>
+
             <Typography variant="body2" sx={{ mt: 0.5, color: "#DCE4D8" }}>
               Semester Ganjil
             </Typography>
           </Box>
+
           <Box
             aria-hidden="true"
             sx={{
@@ -126,19 +188,33 @@ export default function KelasDiampu({ onNavigate, onLogout }) {
           </Box>
         </Paper>
 
+        {/* Pilihan kelas */}
         <Box>
-          <Typography component="h2" variant="h6" fontWeight={800} color="#2D3F2C" sx={{ mb: 1.5 }}>
+          <Typography
+            component="h2"
+            variant="h6"
+            fontWeight={800}
+            color="#2D3F2C"
+            sx={{ mb: 1.5 }}
+          >
             Kelas Saya
           </Typography>
+
           <Box
             sx={{
               display: "grid",
-              gridTemplateColumns: { xs: "1fr", md: "repeat(2, minmax(0, 1fr))" },
+              gridTemplateColumns: {
+                xs: "1fr",
+                md: "repeat(2, minmax(0, 1fr))",
+              },
               gap: 2,
             }}
           >
-            {kelas.map(({ id, nama, jadwal, jumlah, icon: Icon }) => {
+            {daftarKelas.map(({ id, nama, jadwal, icon: Icon }) => {
               const selected = kelasAktif === id;
+              const jumlahSantri = santri.filter(
+                (item) => item.kelas === id
+              ).length;
 
               return (
                 <Card
@@ -146,7 +222,7 @@ export default function KelasDiampu({ onNavigate, onLogout }) {
                   variant="outlined"
                   sx={{
                     minWidth: 0,
-                    borderColor: selected ? "#536E4C" : "#E7EBE2",
+                    borderColor: selected ? warnaHijau : "#E7EBE2",
                     borderWidth: selected ? 1.5 : 1,
                     borderRadius: 2,
                     backgroundColor: selected ? "#F5F7F1" : "#fff",
@@ -182,21 +258,35 @@ export default function KelasDiampu({ onNavigate, onLogout }) {
                     >
                       <Icon />
                     </Box>
+
                     <Box sx={{ flex: 1, minWidth: 0 }}>
                       <Typography variant="subtitle1" fontWeight={700}>
                         {nama}
                       </Typography>
-                      <Stack direction="row" spacing={0.5} sx={{ alignItems: "center", mt: 0.25 }}>
-                        <AccessTime sx={{ fontSize: 15, color: "#7D8778" }} />
+
+                      <Stack
+                        direction="row"
+                        spacing={0.5}
+                        sx={{ alignItems: "center", mt: 0.25 }}
+                      >
+                        <AccessTime
+                          sx={{ fontSize: 15, color: "#7D8778" }}
+                        />
+
                         <Typography variant="caption" color="text.secondary">
                           {jadwal}
                         </Typography>
                       </Stack>
                     </Box>
-                    <Stack spacing={0.25} sx={{ alignItems: "center", flex: "0 0 auto" }}>
+
+                    <Stack
+                      spacing={0.25}
+                      sx={{ alignItems: "center", flex: "0 0 auto" }}
+                    >
                       <Typography variant="h5" fontWeight={800} lineHeight={1.2}>
-                        {jumlah}
+                        {jumlahSantri}
                       </Typography>
+
                       <Typography variant="caption" color="text.secondary">
                         Santri
                       </Typography>
@@ -208,6 +298,7 @@ export default function KelasDiampu({ onNavigate, onLogout }) {
           </Box>
         </Box>
 
+        {/* Daftar santri */}
         <Paper
           variant="outlined"
           sx={{
@@ -229,15 +320,26 @@ export default function KelasDiampu({ onNavigate, onLogout }) {
             }}
           >
             <Box>
-              <Typography component="h2" variant="h6" fontWeight={800} color="#2D3F2C">
+              <Typography
+                component="h2"
+                variant="h6"
+                fontWeight={800}
+                color="#2D3F2C"
+              >
                 Daftar Santri
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontSize: 13 }}>
-                {kelasAktif === "pagi" ? "Kelas Pagi A" : "Kelas Sore A"}
+
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ mt: 0.5, fontSize: 13 }}
+              >
+                {daftarKelas.find((item) => item.id === kelasAktif)?.nama}
                 {" · "}
                 {santriKelas.length} santri
               </Typography>
             </Box>
+
             <Stack
               direction={{ xs: "column", sm: "row" }}
               spacing={1}
@@ -258,10 +360,14 @@ export default function KelasDiampu({ onNavigate, onLogout }) {
                 }}
                 sx={{
                   width: { xs: "100%", sm: 225 },
-                  "& .MuiOutlinedInput-root": { borderRadius: 2, backgroundColor: "#fff" },
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 2,
+                    backgroundColor: "#fff",
+                  },
                   "& .MuiInputBase-input": { fontSize: 12 },
                 }}
               />
+
               <TextField
                 select
                 size="small"
@@ -271,7 +377,10 @@ export default function KelasDiampu({ onNavigate, onLogout }) {
                 inputProps={{ "aria-label": "Filter status santri" }}
                 sx={{
                   minWidth: { xs: "100%", sm: 165 },
-                  "& .MuiOutlinedInput-root": { borderRadius: 2, backgroundColor: "#fff" },
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 2,
+                    backgroundColor: "#fff",
+                  },
                   "& .MuiInputBase-input": { fontSize: 12 },
                 }}
               >
@@ -286,7 +395,15 @@ export default function KelasDiampu({ onNavigate, onLogout }) {
             <Table aria-label="Daftar santri di kelas" sx={{ minWidth: 760 }}>
               <TableHead>
                 <TableRow sx={{ backgroundColor: "#5A734E" }}>
-                  {["NO", "NIS", "NAMA SANTRI", "KELAS", "NILAI", "STATUS", "AKSI"].map((judul) => (
+                  {[
+                    "NO",
+                    "NIS",
+                    "NAMA SANTRI",
+                    "KELAS",
+                    "NILAI",
+                    "STATUS",
+                    "AKSI",
+                  ].map((judul) => (
                     <TableCell
                       key={judul}
                       sx={{
@@ -304,32 +421,63 @@ export default function KelasDiampu({ onNavigate, onLogout }) {
                   ))}
                 </TableRow>
               </TableHead>
+
               <TableBody>
                 {santriDitampilkan.length > 0 ? (
-                  santriDitampilkan.map((santri, index) => {
-                    const lengkap = santri.status === "Lengkap";
+                  santriDitampilkan.map((item, index) => {
+                    const status = cekStatus(item);
+                    const lengkap = status === "Lengkap";
 
                     return (
-                      <TableRow key={santri.nis} hover>
-                        <TableCell sx={{ px: 2, color: "#7B8577", fontSize: 12 }}>
+                      <TableRow key={item.nis} hover>
+                        <TableCell
+                          sx={{ px: 2, color: "#7B8577", fontSize: 12 }}
+                        >
                           {index + 1}.
                         </TableCell>
-                        <TableCell sx={{ px: 2, color: "#485247", fontSize: 12 }}>
-                          {santri.nis}
+
+                        <TableCell
+                          sx={{ px: 2, color: "#485247", fontSize: 12 }}
+                        >
+                          {item.nis}
                         </TableCell>
-                        <TableCell sx={{ px: 2, color: "#30442E", fontSize: 12, fontWeight: 600 }}>
-                          {santri.nama}
+
+                        <TableCell
+                          sx={{
+                            px: 2,
+                            color: "#30442E",
+                            fontSize: 12,
+                            fontWeight: 600,
+                          }}
+                        >
+                          {item.nama}
                         </TableCell>
-                        <TableCell sx={{ px: 2, color: "#485247", fontSize: 12 }}>
-                          {kelasAktif === "pagi" ? "Pagi A" : "Sore A"}
-                        </TableCell>
-                        <TableCell sx={{ px: 2, color: "#485247", fontSize: 12 }}>
-                          {santri.nilai ?? "-"}
-                        </TableCell>
+
                         <TableCell sx={{ px: 2 }}>
                           <Chip
                             size="small"
-                            label={santri.status}
+                            label={`Kelas ${item.kelas}`}
+                            sx={{
+                              backgroundColor:
+                                item.kelas === "Pagi" ? "#E8F0E4" : "#FFF1D2",
+                              color:
+                                item.kelas === "Pagi" ? "#476640" : "#8A6820",
+                              fontSize: 10,
+                              fontWeight: 700,
+                            }}
+                          />
+                        </TableCell>
+
+                        <TableCell
+                          sx={{ px: 2, color: "#485247", fontSize: 12 }}
+                        >
+                          {hitungRataRata(item)}
+                        </TableCell>
+
+                        <TableCell sx={{ px: 2 }}>
+                          <Chip
+                            size="small"
+                            label={status}
                             sx={{
                               height: 26,
                               backgroundColor: lengkap ? "#EAF3E8" : "#FFF2DF",
@@ -339,6 +487,7 @@ export default function KelasDiampu({ onNavigate, onLogout }) {
                             }}
                           />
                         </TableCell>
+
                         <TableCell sx={{ px: 2 }}>
                           <Button
                             size="small"
@@ -352,7 +501,10 @@ export default function KelasDiampu({ onNavigate, onLogout }) {
                               fontSize: 11,
                               textTransform: "none",
                               whiteSpace: "nowrap",
-                              "&:hover": { borderColor: "#9AAA91", backgroundColor: "#E7EEE2" },
+                              "&:hover": {
+                                borderColor: "#9AAA91",
+                                backgroundColor: "#E7EEE2",
+                              },
                             }}
                           >
                             {lengkap ? "Lihat Nilai" : "Lengkapi"}
@@ -363,8 +515,12 @@ export default function KelasDiampu({ onNavigate, onLogout }) {
                   })
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={7} align="center" sx={{ py: 4, color: "#7B8577", fontSize: 13 }}>
-                      {kelasAktif === "sore"
+                    <TableCell
+                      colSpan={7}
+                      align="center"
+                      sx={{ py: 4, color: "#7B8577", fontSize: 13 }}
+                    >
+                      {santriKelas.length === 0
                         ? "Belum ada santri di kelas ini."
                         : "Santri tidak ditemukan."}
                     </TableCell>
@@ -374,6 +530,7 @@ export default function KelasDiampu({ onNavigate, onLogout }) {
             </Table>
           </TableContainer>
 
+          {/* Informasi jumlah santri */}
           <Stack
             direction={{ xs: "column", sm: "row" }}
             spacing={1.5}
@@ -388,6 +545,7 @@ export default function KelasDiampu({ onNavigate, onLogout }) {
             <Typography variant="caption" color="text.secondary">
               Menampilkan {santriDitampilkan.length} dari {santriKelas.length} santri
             </Typography>
+
             <Button
               variant="outlined"
               endIcon={<ArrowForward fontSize="small" />}
@@ -398,7 +556,10 @@ export default function KelasDiampu({ onNavigate, onLogout }) {
                 color: "#52624E",
                 fontSize: 12,
                 textTransform: "none",
-                "&:hover": { backgroundColor: "#F4F6F0", borderColor: "#C7D0C1" },
+                "&:hover": {
+                  backgroundColor: "#F4F6F0",
+                  borderColor: "#C7D0C1",
+                },
               }}
             >
               Input Nilai

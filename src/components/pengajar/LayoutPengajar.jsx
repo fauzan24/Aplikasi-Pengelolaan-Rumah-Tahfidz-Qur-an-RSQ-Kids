@@ -1,44 +1,42 @@
 import { useState } from "react";
 import {
+  NotificationsOutlined,
+  ExpandMore,
+  Logout,
+  Menu as MenuIcon,
+  SettingsOutlined,
+} from "@mui/icons-material";
+import {
+  AppBar,
   Avatar,
   Badge,
   Box,
   IconButton,
   Menu,
   MenuItem,
+  Toolbar,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
-import {
-  ExpandMore as ExpandMoreIcon,
-  Logout as LogoutIcon,
-  Menu as MenuIcon,
-  NotificationsNone as NotificationsIcon,
-  Settings as SettingsIcon,
-} from "@mui/icons-material";
 import SidebarPengajar from "./SidebarPengajar";
 
-export default function LayoutPengajar({ onNavigate, onLogout, children }) {
+export default function LayoutPengajar({
+  onLogout,
+  children,
+}) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileAnchor, setProfileAnchor] = useState(null);
+  const isMobile = useMediaQuery("(max-width:800px)");
 
-  const navigate = (label) => {
-    setProfileAnchor(null);
-    setSidebarOpen(false);
-    onNavigate?.(label);
-  };
-
-  const handleLogout = () => {
-    setProfileAnchor(null);
-    onLogout?.();
-  };
+  const tutupProfil = () => setProfileAnchor(null);
 
   return (
     <Box
       sx={{
         display: "flex",
         width: "100%",
-        height: "100vh",
-        "@supports (height: 100dvh)": { height: "100dvh" },
+        height: "100dvh",
+        "@supports not (height: 100dvh)": { height: "100vh" },
         minHeight: 0,
         overflow: "hidden",
         bgcolor: "#FBF9F3",
@@ -46,6 +44,10 @@ export default function LayoutPengajar({ onNavigate, onLogout, children }) {
         fontFamily: "'Plus Jakarta Sans', sans-serif",
       }}
     >
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+      `}</style>
+
       <SidebarPengajar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
@@ -62,35 +64,38 @@ export default function LayoutPengajar({ onNavigate, onLogout, children }) {
           overflow: "hidden",
         }}
       >
-        <Box
+        <AppBar
           component="header"
+          position="static"
+          elevation={0}
           sx={{
-            zIndex: 1,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-end",
             flexShrink: 0,
-            height: { xs: 66, md: 76 },
-            px: { xs: 1.25, sm: 2.75, md: 3.75 },
-            borderBottom: "1px solid #E8E6DE",
             bgcolor: "#fff",
+            color: "#28352C",
+            borderBottom: "1px solid #E8E6DE",
+            zIndex: (theme) => theme.zIndex.drawer + 1,
           }}
         >
-          <IconButton
-            aria-label="Buka menu"
-            aria-expanded={sidebarOpen}
-            onClick={() => setSidebarOpen(true)}
+          <Toolbar
+            disableGutters
             sx={{
-              display: "none",
-              "@media (max-width:800px)": { display: "inline-flex" },
-              mr: "auto",
-              color: "#30442E",
+              minHeight: { xs: 66, sm: 76 },
+              px: { xs: 1.25, sm: 2.75, lg: 3.75 },
+              justifyContent: "flex-end",
+              gap: { xs: 1, sm: 2.5 },
             }}
           >
-            <MenuIcon />
-          </IconButton>
+            {isMobile && (
+              <IconButton
+                aria-label="Buka menu"
+                aria-expanded={sidebarOpen}
+                onClick={() => setSidebarOpen(true)}
+                sx={{ mr: "auto", color: "#30442E" }}
+              >
+                <MenuIcon />
+              </IconButton>
+            )}
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.5, sm: 1.5 } }}>
             <IconButton
               aria-label="Notifikasi"
               title="Notifikasi"
@@ -98,26 +103,38 @@ export default function LayoutPengajar({ onNavigate, onLogout, children }) {
             >
               <Badge
                 variant="dot"
+                color="warning"
                 overlap="circular"
                 sx={{
                   "& .MuiBadge-badge": {
                     top: 4,
                     right: 4,
                     border: "1px solid #fff",
-                    bgcolor: "#D89B3D",
                   },
                 }}
               >
-                <NotificationsIcon />
+                <NotificationsOutlined />
               </Badge>
             </IconButton>
 
-            <IconButton
-              aria-label="Buka menu profil"
+            <Box
+              component="button"
+              type="button"
               aria-haspopup="menu"
               aria-expanded={Boolean(profileAnchor)}
               onClick={(event) => setProfileAnchor(event.currentTarget)}
-              sx={{ display: "flex", gap: 1.25, borderRadius: 2 }}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: { xs: 0, sm: 1.25 },
+                p: 0,
+                border: 0,
+                bgcolor: "transparent",
+                color: "inherit",
+                textAlign: "left",
+                cursor: "pointer",
+                font: "inherit",
+              }}
             >
               <Avatar
                 sx={{
@@ -125,70 +142,75 @@ export default function LayoutPengajar({ onNavigate, onLogout, children }) {
                   height: 39,
                   border: "2px solid #E1E8DA",
                   bgcolor: "#5A734E",
+                  color: "#fff",
                   fontSize: 12,
                   fontWeight: 700,
                 }}
               >
                 UA
               </Avatar>
-              <Box
-                sx={{
-                  display: { xs: "none", sm: "flex" },
-                  flexDirection: "column",
-                  alignItems: "flex-start",
-                  gap: 0.25,
-                }}
-              >
-                <Typography sx={{ color: "#28352C", fontSize: 11, fontWeight: 700 }}>
+              <Box sx={{ display: { xs: "none", sm: "flex" }, flexDirection: "column", gap: 0.35 }}>
+                <Typography component="strong" sx={{ fontSize: 11, fontWeight: 700 }}>
                   Ustadzah Aisyah
                 </Typography>
-                <Typography sx={{ color: "#838B82", fontSize: 10 }}>
+                <Typography component="span" sx={{ color: "#838B82", fontSize: 10 }}>
                   Pengajar
                 </Typography>
               </Box>
-              <ExpandMoreIcon
-                sx={{ display: { xs: "none", sm: "block" }, fontSize: 18 }}
-              />
-            </IconButton>
+              <ExpandMore sx={{ display: { xs: "none", sm: "block" }, fontSize: 18 }} />
+            </Box>
+
             <Menu
               anchorEl={profileAnchor}
               open={Boolean(profileAnchor)}
-              onClose={() => setProfileAnchor(null)}
-              MenuListProps={{ "aria-label": "Menu profil" }}
-              sx={{
-                "& .MuiPaper-root": {
-                  minWidth: 155,
-                  border: "1px solid #E8E6DE",
-                  boxShadow: "0 8px 24px rgba(30,45,30,.1)",
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+              onClose={tutupProfil}
+              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+              transformOrigin={{ vertical: "top", horizontal: "right" }}
+              slotProps={{
+                paper: {
+                  sx: {
+                    mt: 1,
+                    minWidth: 160,
+                    border: "1px solid #E8E6DE",
+                    borderRadius: 2,
+                    boxShadow: "0 8px 24px rgba(30,45,30,.1)",
+                  },
                 },
-                "& .MuiMenuItem-root": { gap: 1, fontSize: 12 },
               }}
             >
-              <MenuItem onClick={() => navigate("Pengaturan")}>
-                <SettingsIcon fontSize="small" />
-                Pengaturan
+              <MenuItem
+                onClick={tutupProfil}
+                sx={{ gap: 1, fontSize: 12 }}
+              >
+                <SettingsOutlined fontSize="small" />
+                Profil
               </MenuItem>
-              <MenuItem onClick={handleLogout}>
-                <LogoutIcon fontSize="small" />
+              <MenuItem
+                onClick={() => {
+                  tutupProfil();
+                  onLogout?.();
+                }}
+                sx={{ gap: 1, fontSize: 12 }}
+              >
+                <Logout fontSize="small" />
                 Keluar
               </MenuItem>
             </Menu>
-          </Box>
-        </Box>
+          </Toolbar>
+        </AppBar>
 
         <Box
-          component="section"
           sx={{
             flex: 1,
             minWidth: 0,
             minHeight: 0,
+            width: "100%",
+            p: { xs: "18px 12px 24px", sm: "22px 18px 28px", md: "24px 22px 28px", lg: "28px 30px 32px" },
             overflowX: "hidden",
             overflowY: "auto",
             overscrollBehaviorY: "contain",
             WebkitOverflowScrolling: "touch",
             "& > *": { minWidth: 0 },
-            p: { xs: "18px 12px 24px", sm: "22px 18px 28px", md: "28px 30px 32px" },
           }}
         >
           {children}

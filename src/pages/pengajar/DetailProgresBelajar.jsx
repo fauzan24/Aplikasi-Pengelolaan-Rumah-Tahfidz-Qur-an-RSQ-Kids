@@ -34,9 +34,34 @@ import LayoutPengajar from "../../components/pengajar/LayoutPengajar";
 import { dataSantriProgres } from "../../data/santriProgres";
 
 const dataAwal = [
-  { id: 1, tanggal: "05/04/2026", pelajaran: "Tahfidz", progres: 30, catatan: "Surat AT-Takatsur" },
-  { id: 2, tanggal: "13/04/2026", pelajaran: "Bacaan", progres: 60, catatan: "AT-Takwir" },
-  { id: 3, tanggal: "15/04/2026", pelajaran: "Iqro", progres: 50, catatan: "Jilid 3" },
+  {
+    id: 1,
+    tanggal: "05/04/2026",
+    pelajaran: "Bacaan Iqro/Al-Qur'an",
+    progres: 30,
+    catatan: "Iqro jilid 3",
+  },
+  {
+    id: 2,
+    tanggal: "13/04/2026",
+    pelajaran: "Hafalan Tahfidz",
+    progres: 60,
+    catatan: "Surat At-Takatsur",
+  },
+  {
+    id: 3,
+    tanggal: "15/04/2026",
+    pelajaran: "Hafalan Doa",
+    progres: 50,
+    catatan: "Doa sebelum makan",
+  },
+  {
+    id: 4,
+    tanggal: "18/04/2026",
+    pelajaran: "Hafalan Hadits",
+    progres: 40,
+    catatan: "Hadits kebersihan",
+  },
 ];
 
 const tanggalValid = (tanggal) => {
@@ -46,15 +71,19 @@ const tanggalValid = (tanggal) => {
 
 const fieldEdit = [
   { field: "tanggal", label: "Tanggal (DD/MM/YYYY)", type: "text" },
-  { field: "pelajaran", label: "Mata Pelajaran", type: "text" },
+  { field: "pelajaran", label: "Aspek Pembelajaran", type: "text" },
   { field: "progres", label: "Progres (%)", type: "number" },
-  { field: "catatan", label: "Catatan", type: "text" },
+  { field: "catatan", label: "Catatan Perkembangan", type: "text" },
 ];
 
 export default function DetailProgresBelajar({ onNavigate, onLogout }) {
   const { santriId } = useParams();
   const navigate = useNavigate();
-  const santri = dataSantriProgres.find((item) => item.id === santriId);
+
+  const santri = dataSantriProgres.find(
+    (item) => String(item.id) === String(santriId)
+  );
+
   const [daftarProgres, setDaftarProgres] = useState(dataAwal);
   const [dataEdit, setDataEdit] = useState(null);
 
@@ -63,9 +92,12 @@ export default function DetailProgresBelajar({ onNavigate, onLogout }) {
   const simpanEdit = (event) => {
     event.preventDefault();
 
+    if (!formValid) return;
+
     setDaftarProgres((data) =>
       data.map((item) => (item.id === dataEdit.id ? dataEdit : item))
     );
+
     setDataEdit(null);
   };
 
@@ -80,6 +112,7 @@ export default function DetailProgresBelajar({ onNavigate, onLogout }) {
     dataEdit.progres !== "" &&
     Number(dataEdit.progres) >= 0 &&
     Number(dataEdit.progres) <= 100;
+
   const formValid =
     dataEdit &&
     tanggalValid(dataEdit.tanggal) &&
@@ -91,12 +124,19 @@ export default function DetailProgresBelajar({ onNavigate, onLogout }) {
     return (
       <LayoutPengajar onNavigate={onNavigate} onLogout={onLogout}>
         <Stack spacing={2} sx={{ width: "100%", minWidth: 0 }}>
-          <Typography component="h1" variant="h5" fontWeight={800} color="#28352C">
+          <Typography
+            component="h1"
+            variant="h5"
+            fontWeight={800}
+            color="#28352C"
+          >
             Detail Progres Belajar
           </Typography>
+
           <Alert severity="error">
             Data santri dengan ID {santriId} tidak ditemukan.
           </Alert>
+
           <Button
             startIcon={<ArrowBack />}
             variant="outlined"
@@ -111,12 +151,14 @@ export default function DetailProgresBelajar({ onNavigate, onLogout }) {
   }
 
   return (
-    <LayoutPengajar
-      onNavigate={onNavigate}
-      onLogout={onLogout}
-    >
+    <LayoutPengajar onNavigate={onNavigate} onLogout={onLogout}>
       <Stack spacing={3} sx={{ width: "100%", minWidth: 0, pb: 3 }}>
-        <Typography component="h1" variant="h5" fontWeight={800} color="#28352C">
+        <Typography
+          component="h1"
+          variant="h5"
+          fontWeight={800}
+          color="#28352C"
+        >
           Detail Progres Belajar
         </Typography>
 
@@ -136,6 +178,7 @@ export default function DetailProgresBelajar({ onNavigate, onLogout }) {
           Kembali ke daftar santri
         </Button>
 
+        {/* Informasi santri */}
         <Paper
           variant="outlined"
           sx={{
@@ -147,7 +190,11 @@ export default function DetailProgresBelajar({ onNavigate, onLogout }) {
             backgroundColor: "#fff",
           }}
         >
-          <Stack direction="row" spacing={{ xs: 1.75, sm: 2.5 }} sx={{ alignItems: "center" }}>
+          <Stack
+            direction="row"
+            spacing={{ xs: 1.75, sm: 2.5 }}
+            sx={{ alignItems: "center" }}
+          >
             <Avatar
               sx={{
                 width: { xs: 65, sm: 86 },
@@ -158,19 +205,131 @@ export default function DetailProgresBelajar({ onNavigate, onLogout }) {
             >
               <Person sx={{ fontSize: { xs: 36, sm: 46 } }} />
             </Avatar>
+
             <Box sx={{ minWidth: 0 }}>
-              <Typography component="h2" variant="subtitle1" fontWeight={800} color="#28352C">
-                {santri?.nama || "Santri tidak ditemukan"}
+              <Typography
+                component="h2"
+                variant="subtitle1"
+                fontWeight={800}
+                color="#28352C"
+              >
+                {santri.nama}
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.75, fontSize: 12 }}>
-                NIS: {santri?.id || santriId}
+
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ mt: 0.75, fontSize: 12 }}
+              >
+                NIS: {santri.id}
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontSize: 12 }}>
-                Kelas: {santri?.kelas || "-"}
+
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ mt: 0.5, fontSize: 12 }}
+              >
+                Kelas: {santri.kelas || "-"}
               </Typography>
             </Box>
           </Stack>
         </Paper>
+
+        {/* Ringkasan 4 aspek pembelajaran */}
+        <Typography
+          component="h2"
+          variant="h6"
+          fontWeight={800}
+          color="#28352C"
+        >
+          Ringkasan Progres Pembelajaran
+        </Typography>
+
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          flexWrap="wrap"
+          gap={2}
+        >
+          {[
+            "Bacaan Iqro/Al-Qur'an",
+            "Hafalan Tahfidz",
+            "Hafalan Doa",
+            "Hafalan Hadits",
+          ].map((aspek) => {
+            const item = daftarProgres.find(
+              (progres) => progres.pelajaran === aspek
+            );
+
+            const nilai = item
+              ? Math.min(100, Math.max(0, Number(item.progres) || 0))
+              : 0;
+
+            return (
+              <Paper
+                key={aspek}
+                variant="outlined"
+                sx={{
+                  p: 2,
+                  flex: "1 1 220px",
+                  minWidth: 0,
+                  borderColor: "#EAE7DF",
+                  borderRadius: 2.5,
+                  backgroundColor: "#fff",
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  fontWeight={700}
+                  color="#526D48"
+                  sx={{ mb: 1.5 }}
+                >
+                  {aspek}
+                </Typography>
+
+                <Typography
+                  variant="h5"
+                  fontWeight={800}
+                  color="#28352C"
+                  sx={{ mb: 1 }}
+                >
+                  {nilai}%
+                </Typography>
+
+                <LinearProgress
+                  variant="determinate"
+                  value={nilai}
+                  sx={{
+                    height: 9,
+                    borderRadius: 5,
+                    backgroundColor: "#E9E7E0",
+                    "& .MuiLinearProgress-bar": {
+                      borderRadius: 5,
+                      backgroundColor: "#5A734E",
+                    },
+                  }}
+                />
+
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: "block", mt: 1 }}
+                >
+                  {item?.catatan || "Belum ada catatan"}
+                </Typography>
+              </Paper>
+            );
+          })}
+        </Stack>
+
+        {/* Tabel detail progres */}
+        <Typography
+          component="h2"
+          variant="h6"
+          fontWeight={800}
+          color="#28352C"
+        >
+          Riwayat Progres Belajar
+        </Typography>
 
         <Paper
           variant="outlined"
@@ -184,43 +343,68 @@ export default function DetailProgresBelajar({ onNavigate, onLogout }) {
           }}
         >
           <TableContainer sx={{ overflowX: "auto", borderRadius: 1.5 }}>
-            <Table aria-label="Detail progres belajar" sx={{ minWidth: 850 }}>
+            <Table
+              aria-label="Detail progres belajar"
+              sx={{ minWidth: 850 }}
+            >
               <TableHead>
                 <TableRow sx={{ backgroundColor: "#5A734E" }}>
-                  {["No", "Tanggal", "Mata Pelajaran", "Progres", "Catatan", "Aksi"].map(
-                    (label) => (
-                      <TableCell
-                        key={label}
-                        align={label === "Aksi" ? "center" : "left"}
-                        sx={{
-                          height: 60,
-                          px: 2.25,
-                          color: "#fff",
-                          fontSize: 12,
-                          fontWeight: 700,
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {label}
-                      </TableCell>
-                    )
-                  )}
+                  {[
+                    "No",
+                    "Tanggal",
+                    "Aspek Pembelajaran",
+                    "Progres",
+                    "Catatan",
+                    "Aksi",
+                  ].map((label) => (
+                    <TableCell
+                      key={label}
+                      align={label === "Aksi" ? "center" : "left"}
+                      sx={{
+                        height: 60,
+                        px: 2.25,
+                        color: "#fff",
+                        fontSize: 12,
+                        fontWeight: 700,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {label}
+                    </TableCell>
+                  ))}
                 </TableRow>
               </TableHead>
+
               <TableBody>
                 {daftarProgres.length > 0 ? (
                   daftarProgres.map((item, index) => {
-                    const persentase = Math.min(100, Math.max(0, Number(item.progres) || 0));
+                    const persentase = Math.min(
+                      100,
+                      Math.max(0, Number(item.progres) || 0)
+                    );
 
                     return (
                       <TableRow key={item.id} hover>
-                        <TableCell sx={tableCellSx}>{index + 1}.</TableCell>
-                        <TableCell sx={{ ...tableCellSx, whiteSpace: "nowrap" }}>
+                        <TableCell sx={tableCellSx}>
+                          {index + 1}.
+                        </TableCell>
+
+                        <TableCell
+                          sx={{ ...tableCellSx, whiteSpace: "nowrap" }}
+                        >
                           {item.tanggal}
                         </TableCell>
-                        <TableCell sx={tableCellSx}>{item.pelajaran}</TableCell>
+
                         <TableCell sx={tableCellSx}>
-                          <Stack direction="row" spacing={1.5} sx={{ minWidth: 155, alignItems: "center" }}>
+                          {item.pelajaran}
+                        </TableCell>
+
+                        <TableCell sx={tableCellSx}>
+                          <Stack
+                            direction="row"
+                            spacing={1.5}
+                            sx={{ minWidth: 155, alignItems: "center" }}
+                          >
                             <LinearProgress
                               variant="determinate"
                               value={persentase}
@@ -235,6 +419,7 @@ export default function DetailProgresBelajar({ onNavigate, onLogout }) {
                                 },
                               }}
                             />
+
                             <Typography
                               variant="body2"
                               fontWeight={800}
@@ -245,9 +430,17 @@ export default function DetailProgresBelajar({ onNavigate, onLogout }) {
                             </Typography>
                           </Stack>
                         </TableCell>
-                        <TableCell sx={tableCellSx}>{item.catatan}</TableCell>
+
+                        <TableCell sx={tableCellSx}>
+                          {item.catatan}
+                        </TableCell>
+
                         <TableCell align="center" sx={tableCellSx}>
-                          <Stack direction="row" spacing={1} sx={{ justifyContent: "center" }}>
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            sx={{ justifyContent: "center" }}
+                          >
                             <IconButton
                               title="Edit progres"
                               aria-label={`Edit progres ${item.pelajaran}`}
@@ -258,11 +451,14 @@ export default function DetailProgresBelajar({ onNavigate, onLogout }) {
                                 borderRadius: 1.5,
                                 backgroundColor: "#EBECE5",
                                 color: "#526D48",
-                                "&:hover": { backgroundColor: "#DDE4D6" },
+                                "&:hover": {
+                                  backgroundColor: "#DDE4D6",
+                                },
                               }}
                             >
                               <EditOutlined fontSize="small" />
                             </IconButton>
+
                             <IconButton
                               title="Hapus progres"
                               aria-label={`Hapus progres ${item.pelajaran}`}
@@ -273,7 +469,9 @@ export default function DetailProgresBelajar({ onNavigate, onLogout }) {
                                 borderRadius: 1.5,
                                 backgroundColor: "#F9DFDF",
                                 color: "#CB3E36",
-                                "&:hover": { backgroundColor: "#F4CCCC" },
+                                "&:hover": {
+                                  backgroundColor: "#F4CCCC",
+                                },
                               }}
                             >
                               <Delete fontSize="small" />
@@ -285,7 +483,15 @@ export default function DetailProgresBelajar({ onNavigate, onLogout }) {
                   })
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 4, color: "#626B60", fontSize: 13 }}>
+                    <TableCell
+                      colSpan={6}
+                      align="center"
+                      sx={{
+                        py: 4,
+                        color: "#626B60",
+                        fontSize: 13,
+                      }}
+                    >
                       Belum ada catatan progres belajar.
                     </TableCell>
                   </TableRow>
@@ -295,6 +501,7 @@ export default function DetailProgresBelajar({ onNavigate, onLogout }) {
           </TableContainer>
         </Paper>
 
+        {/* Dialog edit progres */}
         <Dialog
           open={Boolean(dataEdit)}
           onClose={() => setDataEdit(null)}
@@ -303,20 +510,38 @@ export default function DetailProgresBelajar({ onNavigate, onLogout }) {
           aria-labelledby="dpb-modal-title"
         >
           <DialogTitle sx={{ p: 3, pb: 1.5 }}>
-            <Stack direction="row" spacing={2} sx={{ alignItems: "center", justifyContent: "space-between" }}>
-              <Typography id="dpb-modal-title" component="h2" variant="h6" fontWeight={800} color="#28352C">
+            <Stack
+              direction="row"
+              spacing={2}
+              sx={{
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <Typography
+                id="dpb-modal-title"
+                component="h2"
+                variant="h6"
+                fontWeight={800}
+                color="#28352C"
+              >
                 Edit Progres Belajar
               </Typography>
+
               <IconButton
                 aria-label="Tutup"
                 onClick={() => setDataEdit(null)}
                 size="small"
-                sx={{ backgroundColor: "#F2F3EE", color: "#52614E" }}
+                sx={{
+                  backgroundColor: "#F2F3EE",
+                  color: "#52614E",
+                }}
               >
                 <Close fontSize="small" />
               </IconButton>
             </Stack>
           </DialogTitle>
+
           <Box component="form" onSubmit={simpanEdit}>
             <DialogContent sx={{ px: 3, pt: 1.5 }}>
               <Stack spacing={2}>
@@ -339,9 +564,15 @@ export default function DetailProgresBelajar({ onNavigate, onLogout }) {
                         ? { min: 0, max: 100, step: 1 }
                         : undefined
                     }
-                    error={field === "tanggal" && Boolean(dataEdit) && !tanggalValid(dataEdit.tanggal)}
+                    error={
+                      field === "tanggal" &&
+                      Boolean(dataEdit) &&
+                      !tanggalValid(dataEdit.tanggal)
+                    }
                     helperText={
-                      field === "tanggal" && dataEdit && !tanggalValid(dataEdit.tanggal)
+                      field === "tanggal" &&
+                      dataEdit &&
+                      !tanggalValid(dataEdit.tanggal)
                         ? "Isi tanggal dengan format DD/MM/YYYY."
                         : undefined
                     }
@@ -355,6 +586,7 @@ export default function DetailProgresBelajar({ onNavigate, onLogout }) {
                 ))}
               </Stack>
             </DialogContent>
+
             <DialogActions sx={{ px: 3, pb: 3, pt: 1, gap: 1 }}>
               <Button
                 type="button"
@@ -370,6 +602,7 @@ export default function DetailProgresBelajar({ onNavigate, onLogout }) {
               >
                 Batal
               </Button>
+
               <Button
                 type="submit"
                 variant="contained"
@@ -380,7 +613,9 @@ export default function DetailProgresBelajar({ onNavigate, onLogout }) {
                   borderRadius: 1.5,
                   backgroundColor: "#5A734E",
                   textTransform: "none",
-                  "&:hover": { backgroundColor: "#30442E" },
+                  "&:hover": {
+                    backgroundColor: "#30442E",
+                  },
                 }}
               >
                 Simpan

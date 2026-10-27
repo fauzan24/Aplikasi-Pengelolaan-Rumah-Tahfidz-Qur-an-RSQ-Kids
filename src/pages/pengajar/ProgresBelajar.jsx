@@ -1,8 +1,10 @@
+
 import { useMemo, useState } from "react";
 import { Assessment, Search } from "@mui/icons-material";
 import {
   Button,
   InputAdornment,
+  MenuItem,
   Paper,
   Stack,
   Table,
@@ -17,18 +19,29 @@ import {
 import LayoutPengajar from "../../components/pengajar/LayoutPengajar";
 import { dataSantriProgres } from "../../data/santriProgres";
 
-export default function ProgresBelajar({ onNavigate, onLogout, onDetail }) {
+export default function ProgresBelajar({
+  onNavigate,
+  onLogout,
+  onDetail,
+}) {
   const [keyword, setKeyword] = useState("");
+  const [filterKelas, setFilterKelas] = useState("Semua Kelas");
 
   const dataTampil = useMemo(() => {
     const cari = keyword.toLowerCase().trim();
 
-    return dataSantriProgres.filter(
-      (santri) =>
+    return dataSantriProgres.filter((santri) => {
+      const cocokPencarian =
         santri.nama.toLowerCase().includes(cari) ||
-        santri.id.toLowerCase().includes(cari)
-    );
-  }, [keyword]);
+        santri.id.toLowerCase().includes(cari);
+
+      const cocokKelas =
+        filterKelas === "Semua Kelas" ||
+        santri.kelas === filterKelas;
+
+      return cocokPencarian && cocokKelas;
+    });
+  }, [keyword, filterKelas]);
 
   return (
     <LayoutPengajar
@@ -36,53 +49,62 @@ export default function ProgresBelajar({ onNavigate, onLogout, onDetail }) {
       onLogout={onLogout}
     >
       <Stack spacing={3} sx={{ width: "100%", minWidth: 0, pb: 3 }}>
-        <Typography component="h1" variant="h5" fontWeight={800} color="#28352C">
+        <Typography
+          component="h1"
+          variant="h5"
+          fontWeight={800}
+          color="#28352C"
+        >
           Progres Belajar
         </Typography>
 
         <Stack
-          component="form"
-          direction={{ xs: "column", sm: "row" }}
+          direction={{ xs: "column", md: "row" }}
           spacing={1.5}
-          onSubmit={(event) => {
-            event.preventDefault();
-            setKeyword(keyword.trim());
-          }}
+          sx={{ width: "100%" }}
         >
           <TextField
             fullWidth
-            type="search"
-            placeholder="Cari Santri"
+            placeholder="Cari nama atau NIS santri..."
             value={keyword}
             onChange={(event) => setKeyword(event.target.value)}
-            inputProps={{ "aria-label": "Cari nama atau NIS santri" }}
+            inputProps={{
+              "aria-label": "Cari nama atau NIS santri",
+            }}
             InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
+              startAdornment: (
+                <InputAdornment position="start">
                   <Search sx={{ color: "#5A734E" }} />
                 </InputAdornment>
               ),
             }}
             sx={{
-              "& .MuiOutlinedInput-root": { borderRadius: 2, backgroundColor: "#fff" },
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 2,
+                backgroundColor: "#fff",
+              },
               "& .MuiInputBase-input": { fontSize: 12 },
             }}
           />
-          <Button
-            type="submit"
-            variant="contained"
+
+          <TextField
+            select
+            value={filterKelas}
+            onChange={(event) => setFilterKelas(event.target.value)}
             sx={{
-              minWidth: { xs: "100%", sm: 120 },
-              borderRadius: 2,
-              backgroundColor: "#5A734E",
-              fontSize: 12,
-              fontWeight: 700,
-              textTransform: "none",
-              "&:hover": { backgroundColor: "#30442E" },
+              minWidth: { xs: "100%", md: 190 },
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 2,
+                backgroundColor: "#fff",
+              },
+              "& .MuiSelect-select": { fontSize: 12 },
             }}
+            inputProps={{ "aria-label": "Filter kelas santri" }}
           >
-            Tampilkan
-          </Button>
+            <MenuItem value="Semua Kelas">Semua Kelas</MenuItem>
+            <MenuItem value="Pagi">Kelas Pagi</MenuItem>
+            <MenuItem value="Sore">Kelas Sore</MenuItem>
+          </TextField>
         </Stack>
 
         <Paper
@@ -96,35 +118,53 @@ export default function ProgresBelajar({ onNavigate, onLogout, onDetail }) {
           }}
         >
           <TableContainer sx={{ overflowX: "auto", borderRadius: 1.5 }}>
-            <Table aria-label="Daftar santri dan progres belajar" sx={{ minWidth: 570 }}>
+            <Table
+              aria-label="Daftar santri dan progres belajar"
+              sx={{ minWidth: 650 }}
+            >
               <TableHead>
                 <TableRow sx={{ backgroundColor: "#5A734E" }}>
-                  {["No", "NIS", "Nama", "Aksi"].map((label) => (
-                    <TableCell
-                      key={label}
-                      sx={{
-                        height: 60,
-                        px: { xs: 1.5, sm: 2.5 },
-                        color: "#fff",
-                        fontSize: 12,
-                        fontWeight: 700,
-                        whiteSpace: "nowrap",
-                        "&:first-of-type": { borderTopLeftRadius: 1.5 },
-                        "&:last-child": { textAlign: "center", borderTopRightRadius: 1.5 },
-                      }}
-                    >
-                      {label}
-                    </TableCell>
-                  ))}
+                  {["No", "NIS", "Nama Santri", "Kelas", "Aksi"].map(
+                    (label) => (
+                      <TableCell
+                        key={label}
+                        sx={{
+                          height: 55,
+                          px: { xs: 1.5, sm: 2.5 },
+                          color: "#fff",
+                          fontSize: 12,
+                          fontWeight: 700,
+                          whiteSpace: "nowrap",
+                          "&:last-child": { textAlign: "center" },
+                        }}
+                      >
+                        {label}
+                      </TableCell>
+                    )
+                  )}
                 </TableRow>
               </TableHead>
+
               <TableBody>
                 {dataTampil.length > 0 ? (
                   dataTampil.map((santri, index) => (
                     <TableRow key={santri.id} hover>
-                      <TableCell sx={tableCellSx}>{index + 1}.</TableCell>
-                      <TableCell sx={tableCellSx}>{santri.id}</TableCell>
-                      <TableCell sx={tableCellSx}>{santri.nama}</TableCell>
+                      <TableCell sx={tableCellSx}>
+                        {index + 1}.
+                      </TableCell>
+
+                      <TableCell sx={tableCellSx}>
+                        {santri.id}
+                      </TableCell>
+
+                      <TableCell sx={tableCellSx}>
+                        {santri.nama}
+                      </TableCell>
+
+                      <TableCell sx={tableCellSx}>
+                        {santri.kelas}
+                      </TableCell>
+
                       <TableCell align="center" sx={tableCellSx}>
                         <Button
                           variant="outlined"
@@ -153,8 +193,19 @@ export default function ProgresBelajar({ onNavigate, onLogout, onDetail }) {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
-                      <Assessment sx={{ display: "block", mx: "auto", mb: 1, color: "#7B8577" }} />
+                    <TableCell
+                      colSpan={5}
+                      align="center"
+                      sx={{ py: 4 }}
+                    >
+                      <Assessment
+                        sx={{
+                          display: "block",
+                          mx: "auto",
+                          mb: 1,
+                          color: "#7B8577",
+                        }}
+                      />
                       <Typography variant="body2" color="text.secondary">
                         Santri tidak ditemukan.
                       </Typography>
@@ -164,6 +215,19 @@ export default function ProgresBelajar({ onNavigate, onLogout, onDetail }) {
               </TableBody>
             </Table>
           </TableContainer>
+
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{
+              display: "block",
+              px: 1.5,
+              py: 1.5,
+              borderTop: "1px solid #ECEAE3",
+            }}
+          >
+            Menampilkan {dataTampil.length} dari {dataSantriProgres.length} santri
+          </Typography>
         </Paper>
       </Stack>
     </LayoutPengajar>
@@ -171,7 +235,7 @@ export default function ProgresBelajar({ onNavigate, onLogout, onDetail }) {
 }
 
 const tableCellSx = {
-  height: 89,
+  height: 75,
   px: { xs: 1.5, sm: 2.5 },
   py: 1.75,
   borderBottomColor: "#ECEAE3",

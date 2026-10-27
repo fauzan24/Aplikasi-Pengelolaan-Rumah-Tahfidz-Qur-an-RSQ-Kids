@@ -1,3 +1,4 @@
+
 import { useMemo, useState } from "react";
 import {
   Add,
@@ -31,13 +32,76 @@ import {
 import LayoutPengajar from "../../components/pengajar/LayoutPengajar";
 
 const dataAwal = [
-  { id: "RSQ001", nama: "Jauza Askana", kelas: "Pagi A", nilai: 89, lengkap: false },
-  { id: "RSQ002", nama: "Dinda Azzahra", kelas: "Pagi A", nilai: 90, lengkap: true },
-  { id: "RSQ003", nama: "Raffa Fadilla", kelas: "Pagi A", nilai: 0, lengkap: false },
-  { id: "RSQ004", nama: "Dede Ridho", kelas: "Pagi A", nilai: 88, lengkap: true },
-  { id: "RSQ005", nama: "Kalila Haura", kelas: "Pagi A", nilai: 92, lengkap: true },
-  { id: "RSQ006", nama: "Aisyah Putri", kelas: "Pagi A", nilai: 0, lengkap: false },
-  { id: "RSQ007", nama: "Muhammad Fikri", kelas: "Pagi A", nilai: 87, lengkap: false },
+  {
+    id: "RSQ001",
+    nama: "Jauza Askana",
+    kelas: "Pagi",
+    nilai: 89,
+    lengkap: true,
+  },
+  {
+    id: "RSQ002",
+    nama: "Dinda Azzahra",
+    kelas: "Pagi",
+    nilai: 89,
+    lengkap: true,
+  },
+  {
+    id: "RSQ003",
+    nama: "Raffa Fadila",
+    kelas: "Pagi",
+    nilai: 0,
+    lengkap: false,
+  },
+  {
+    id: "RSQ004",
+    nama: "Dede Ridho",
+    kelas: "Pagi",
+    nilai: 88,
+    lengkap: true,
+  },
+  {
+    id: "RSQ005",
+    nama: "Kalila Haura",
+    kelas: "Pagi",
+    nilai: 89,
+    lengkap: true,
+  },
+  {
+    id: "RSQ006",
+    nama: "Fauzan Najib Ali",
+    kelas: "Pagi",
+    nilai: 89,
+    lengkap: true,
+  },
+  {
+    id: "RSQ007",
+    nama: "Muhammad Fikri",
+    kelas: "Pagi",
+    nilai: 88,
+    lengkap: true,
+  },
+  {
+    id: "RSQ008",
+    nama: "Aisyah Putri",
+    kelas: "Sore",
+    nilai: 89,
+    lengkap: true,
+  },
+  {
+    id: "RSQ009",
+    nama: "Ahmad Rizky",
+    kelas: "Sore",
+    nilai: 88,
+    lengkap: true,
+  },
+  {
+    id: "RSQ010",
+    nama: "Zahra Nabila",
+    kelas: "Sore",
+    nilai: 90,
+    lengkap: true,
+  },
 ];
 
 const warnaKartu = {
@@ -57,9 +121,11 @@ export default function DashboardPengajar({ onLogout, onNavigate }) {
   const dataTampil = useMemo(() => {
     return dataAwal.filter((santri) => {
       const kataKunci = keyword.toLowerCase();
+
       const cocokNama =
         santri.nama.toLowerCase().includes(kataKunci) ||
         santri.id.toLowerCase().includes(kataKunci);
+
       const cocokStatus =
         filterStatus === "Semua Status" ||
         (filterStatus === "Lengkap" && santri.lengkap) ||
@@ -71,6 +137,7 @@ export default function DashboardPengajar({ onLogout, onNavigate }) {
 
   const unduhRekap = () => {
     const header = ["NIS", "Nama Santri", "Kelas", "Nilai", "Status"];
+
     const rows = dataTampil.map((santri) => [
       santri.id,
       santri.nama,
@@ -78,10 +145,19 @@ export default function DashboardPengajar({ onLogout, onNavigate }) {
       santri.nilai || "-",
       santri.lengkap ? "Lengkap" : "Belum Lengkap",
     ]);
+
     const csv = [header, ...rows]
-      .map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(","))
+      .map((row) =>
+        row
+          .map((value) => `"${String(value).replace(/"/g, '""')}"`)
+          .join(",")
+      )
       .join("\n");
-    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+
+    const blob = new Blob(["\uFEFF" + csv], {
+      type: "text/csv;charset=utf-8;",
+    });
+
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
 
@@ -104,8 +180,8 @@ export default function DashboardPengajar({ onLogout, onNavigate }) {
     },
     {
       label: "Kelas Diampu",
-      angka: 1,
-      deskripsi: "Kelas Pagi A",
+      angka: 2,
+      deskripsi: "Kelas Pagi A & Kelas Sore A",
       icon: MenuBook,
       warna: "kuning",
     },
@@ -136,17 +212,35 @@ export default function DashboardPengajar({ onLogout, onNavigate }) {
         <Stack
           direction={{ xs: "column", md: "row" }}
           spacing={2}
-          sx={{ alignItems: { md: "center" }, justifyContent: "space-between" }}
+          sx={{
+            alignItems: { md: "center" },
+            justifyContent: "space-between",
+          }}
         >
           <Box>
-            <Typography component="h1" variant="h5" fontWeight={800} color="#28352C">
+            <Typography
+              component="h1"
+              variant="h5"
+              fontWeight={800}
+              color="#28352C"
+            >
               Selamat Datang, Pengajar 👋
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ mt: 0.5 }}
+            >
               Pantau perkembangan santri, nilai, dan jadwal mengajar kamu hari ini.
             </Typography>
           </Box>
-          <Stack direction="row" spacing={1} sx={{ width: { xs: "100%", md: "auto" } }}>
+
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{ width: { xs: "100%", md: "auto" } }}
+          >
             <Button
               variant="outlined"
               startIcon={<Download />}
@@ -163,6 +257,7 @@ export default function DashboardPengajar({ onLogout, onNavigate }) {
             >
               Unduh Rekap
             </Button>
+
             <Button
               variant="contained"
               startIcon={<Add />}
@@ -193,76 +288,109 @@ export default function DashboardPengajar({ onLogout, onNavigate }) {
             gap: 1.75,
           }}
         >
-          {kartu.map(({ label, angka, deskripsi, badge, icon: Icon, warna }) => (
-            <Card
-              key={label}
-              variant="outlined"
-              sx={{
-                minWidth: 0,
-                borderColor: "#E9E6DD",
-                borderRadius: 2,
-                boxShadow: "0 2px 5px rgba(40,53,44,.025)",
-              }}
-            >
-              <CardContent
+          {kartu.map(
+            ({ label, angka, deskripsi, badge, icon: Icon, warna }) => (
+              <Card
+                key={label}
+                variant="outlined"
                 sx={{
-                  p: { xs: 1.5, sm: 2 },
-                  "&:last-child": { pb: { xs: 1.5, sm: 2 } },
+                  minWidth: 0,
+                  borderColor: "#E9E6DD",
+                  borderRadius: 2,
+                  boxShadow: "0 2px 5px rgba(40,53,44,.025)",
                 }}
               >
-                <Stack direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: "space-between" }}>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: 11, sm: 12 } }}>
-                    {label}
-                  </Typography>
-                  <Box
+                <CardContent
+                  sx={{
+                    p: { xs: 1.5, sm: 2 },
+                    "&:last-child": { pb: { xs: 1.5, sm: 2 } },
+                  }}
+                >
+                  <Stack
+                    direction="row"
+                    spacing={1}
                     sx={{
-                      width: { xs: 34, sm: 42 },
-                      height: { xs: 34, sm: 42 },
-                      display: "grid",
-                      placeItems: "center",
-                      flex: "0 0 auto",
-                      borderRadius: 2,
-                      backgroundColor: warnaKartu[warna].latar,
-                      color: warnaKartu[warna].warna,
+                      alignItems: "center",
+                      justifyContent: "space-between",
                     }}
                   >
-                    <Icon fontSize="small" />
-                  </Box>
-                </Stack>
-                <Typography
-                  variant="h4"
-                  fontWeight={800}
-                  color="#28352C"
-                  sx={{ mt: 1.5, mb: 1, fontSize: { xs: 25, sm: 30 } }}
-                >
-                  {angka}
-                </Typography>
-                <Stack
-                  direction={{ xs: "column", sm: "row" }}
-                  spacing={0.75}
-                  sx={{ alignItems: { sm: "center" }, justifyContent: "space-between" }}
-                >
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: 11 }}>
-                    {deskripsi}
-                  </Typography>
-                  {badge && (
-                    <Chip
-                      size="small"
-                      label={badge}
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ fontSize: { xs: 11, sm: 12 } }}
+                    >
+                      {label}
+                    </Typography>
+
+                    <Box
                       sx={{
-                        alignSelf: { xs: "flex-start", sm: "auto" },
-                        height: 24,
-                        backgroundColor: warna === "jingga" ? "#FFF9EA" : "#EEF3E8",
-                        color: warna === "jingga" ? "#A96A09" : "#628255",
-                        border: warna === "jingga" ? "1px solid #F6D58A" : "none",
-                        fontSize: 10,
+                        width: { xs: 34, sm: 42 },
+                        height: { xs: 34, sm: 42 },
+                        display: "grid",
+                        placeItems: "center",
+                        flex: "0 0 auto",
+                        borderRadius: 2,
+                        backgroundColor: warnaKartu[warna].latar,
+                        color: warnaKartu[warna].warna,
                       }}
-                    />
-                  )}
-                </Stack>
-              </CardContent>
-            </Card>
-          ))}
+                    >
+                      <Icon fontSize="small" />
+                    </Box>
+                  </Stack>
+
+                  <Typography
+                    variant="h4"
+                    fontWeight={800}
+                    color="#28352C"
+                    sx={{
+                      mt: 1.5,
+                      mb: 1,
+                      fontSize: { xs: 25, sm: 30 },
+                    }}
+                  >
+                    {angka}
+                  </Typography>
+
+                  <Stack
+                    direction={{ xs: "column", sm: "row" }}
+                    spacing={0.75}
+                    sx={{
+                      alignItems: { sm: "center" },
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ fontSize: 11 }}
+                    >
+                      {deskripsi}
+                    </Typography>
+
+                    {badge && (
+                      <Chip
+                        size="small"
+                        label={badge}
+                        sx={{
+                          alignSelf: { xs: "flex-start", sm: "auto" },
+                          height: 24,
+                          backgroundColor:
+                            warna === "jingga" ? "#FFF9EA" : "#EEF3E8",
+                          color:
+                            warna === "jingga" ? "#A96A09" : "#628255",
+                          border:
+                            warna === "jingga"
+                              ? "1px solid #F6D58A"
+                              : "none",
+                          fontSize: 10,
+                        }}
+                      />
+                    )}
+                  </Stack>
+                </CardContent>
+              </Card>
+            )
+          )}
         </Box>
 
         <Paper
@@ -286,10 +414,24 @@ export default function DashboardPengajar({ onLogout, onNavigate }) {
             }}
           >
             <Box>
-              <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 0.75, flexWrap: "wrap" }}>
-                <Typography component="h2" variant="h6" fontWeight={800} color="#28352C">
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{
+                  alignItems: "center",
+                  mb: 0.75,
+                  flexWrap: "wrap",
+                }}
+              >
+                <Typography
+                  component="h2"
+                  variant="h6"
+                  fontWeight={800}
+                  color="#28352C"
+                >
                   Daftar Santri
                 </Typography>
+
                 <Chip
                   size="small"
                   label={`${dataAwal.length} Santri`}
@@ -301,17 +443,29 @@ export default function DashboardPengajar({ onLogout, onNavigate }) {
                   }}
                 />
               </Stack>
-              <Typography variant="body2" color="text.secondary" sx={{ fontSize: 12 }}>
+
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ fontSize: 12 }}
+              >
                 Pantau nilai dan kelengkapan data santri yang kamu ampu.
               </Typography>
             </Box>
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={1} sx={{ width: { xs: "100%", lg: "auto" } }}>
+
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={1}
+              sx={{ width: { xs: "100%", lg: "auto" } }}
+            >
               <TextField
                 size="small"
                 placeholder="Cari nama santri..."
                 value={keyword}
                 onChange={(event) => setKeyword(event.target.value)}
-                inputProps={{ "aria-label": "Cari nama atau NIS santri" }}
+                inputProps={{
+                  "aria-label": "Cari nama atau NIS santri",
+                }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -321,25 +475,44 @@ export default function DashboardPengajar({ onLogout, onNavigate }) {
                 }}
                 sx={{
                   width: { xs: "100%", sm: 230 },
-                  "& .MuiOutlinedInput-root": { backgroundColor: "#FCFBF8", borderRadius: 2.5 },
-                  "& .MuiInputBase-input": { fontSize: 12 },
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "#FCFBF8",
+                    borderRadius: 2.5,
+                  },
+                  "& .MuiInputBase-input": {
+                    fontSize: 12,
+                  },
                 }}
               />
+
+              {/* Filter status tanpa label kecil di atas dropdown */}
               <TextField
                 select
                 size="small"
-                label="Status"
                 value={filterStatus}
-                onChange={(event) => setFilterStatus(event.target.value)}
+                onChange={(e) => setFilterStatus(e.target.value)}
                 sx={{
-                  minWidth: { xs: "100%", sm: 155 },
-                  "& .MuiOutlinedInput-root": { backgroundColor: "#FCFBF8", borderRadius: 2.5 },
-                  "& .MuiInputBase-input": { fontSize: 12 },
+                  minWidth: 190,
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "#FCFBF8",
+                    borderRadius: 2.5,
+                  },
+                  "& .MuiSelect-select": {
+                    fontSize: 12,
+                  },
                 }}
               >
-                <MenuItem value="Semua Status">Semua Status</MenuItem>
-                <MenuItem value="Lengkap">Lengkap</MenuItem>
-                <MenuItem value="Belum Lengkap">Belum Lengkap</MenuItem>
+                <MenuItem value="Semua Status">
+                  Semua Status
+                </MenuItem>
+
+                <MenuItem value="Lengkap">
+                  Lengkap
+                </MenuItem>
+
+                <MenuItem value="Belum Lengkap">
+                  Belum Lengkap
+                </MenuItem>
               </TextField>
             </Stack>
           </Stack>
@@ -348,7 +521,14 @@ export default function DashboardPengajar({ onLogout, onNavigate }) {
             <Table aria-label="Daftar santri" sx={{ minWidth: 700 }}>
               <TableHead>
                 <TableRow sx={{ backgroundColor: "#5A734E" }}>
-                  {["NO", "NIS", "NAMA SANTRI", "KELAS", "NILAI", "STATUS"].map((judul) => (
+                  {[
+                    "NO",
+                    "NIS",
+                    "NAMA SANTRI",
+                    "KELAS",
+                    "NILAI",
+                    "STATUS",
+                  ].map((judul) => (
                     <TableCell
                       key={judul}
                       sx={{
@@ -366,16 +546,40 @@ export default function DashboardPengajar({ onLogout, onNavigate }) {
                   ))}
                 </TableRow>
               </TableHead>
+
               <TableBody>
                 {dataTampil.length > 0 ? (
                   dataTampil.map((santri, index) => (
                     <TableRow key={santri.id} hover>
-                      <TableCell sx={{ pl: 2.75, width: 55, color: "#A1A69E", fontSize: 12 }}>
+                      <TableCell
+                        sx={{
+                          pl: 2.75,
+                          width: 55,
+                          color: "#A1A69E",
+                          fontSize: 12,
+                        }}
+                      >
                         {index + 1}.
                       </TableCell>
-                      <TableCell sx={{ color: "#5D685D", fontSize: 12 }}>{santri.id}</TableCell>
-                      <TableCell sx={{ color: "#28352C", fontSize: 12, fontWeight: 600 }}>
-                        <Stack direction="row" spacing={1.25} sx={{ alignItems: "center" }}>
+
+                      <TableCell
+                        sx={{ color: "#5D685D", fontSize: 12 }}
+                      >
+                        {santri.id}
+                      </TableCell>
+
+                      <TableCell
+                        sx={{
+                          color: "#28352C",
+                          fontSize: 12,
+                          fontWeight: 600,
+                        }}
+                      >
+                        <Stack
+                          direction="row"
+                          spacing={1.25}
+                          sx={{ alignItems: "center" }}
+                        >
                           <Box
                             aria-hidden="true"
                             sx={{
@@ -397,20 +601,42 @@ export default function DashboardPengajar({ onLogout, onNavigate }) {
                               .slice(0, 2)
                               .join("")}
                           </Box>
+
                           {santri.nama}
                         </Stack>
                       </TableCell>
-                      <TableCell sx={{ color: "#5D685D", fontSize: 12 }}>{santri.kelas}</TableCell>
-                      <TableCell sx={{ color: "#5D685D", fontSize: 12 }}>{santri.nilai || "-"}</TableCell>
+
+                      <TableCell
+                        sx={{ color: "#5D685D", fontSize: 12 }}
+                      >
+                        {santri.kelas}
+                      </TableCell>
+
+                      <TableCell
+                        sx={{ color: "#5D685D", fontSize: 12 }}
+                      >
+                        {santri.nilai || "-"}
+                      </TableCell>
+
                       <TableCell>
                         <Chip
                           size="small"
-                          label={santri.lengkap ? "Lengkap" : "Belum Lengkap"}
+                          label={
+                            santri.lengkap
+                              ? "Lengkap"
+                              : "Belum Lengkap"
+                          }
                           sx={{
                             height: 26,
-                            border: santri.lengkap ? "1px solid #A9E7D1" : "1px solid #F4D78B",
-                            backgroundColor: santri.lengkap ? "#EDFBF5" : "#FFF9EA",
-                            color: santri.lengkap ? "#14805E" : "#A56A0B",
+                            border: santri.lengkap
+                              ? "1px solid #A9E7D1"
+                              : "1px solid #F4D78B",
+                            backgroundColor: santri.lengkap
+                              ? "#EDFBF5"
+                              : "#FFF9EA",
+                            color: santri.lengkap
+                              ? "#14805E"
+                              : "#A56A0B",
                             fontSize: 11,
                           }}
                         />
@@ -419,8 +645,18 @@ export default function DashboardPengajar({ onLogout, onNavigate }) {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 4, color: "#899287" }}>
-                      <AssignmentTurnedIn sx={{ display: "block", mx: "auto", mb: 1 }} />
+                    <TableCell
+                      colSpan={6}
+                      align="center"
+                      sx={{ py: 4, color: "#899287" }}
+                    >
+                      <AssignmentTurnedIn
+                        sx={{
+                          display: "block",
+                          mx: "auto",
+                          mb: 1,
+                        }}
+                      />
                       Santri tidak ditemukan.
                     </TableCell>
                   </TableRow>
