@@ -1,134 +1,488 @@
+import { useState } from "react";
 import {
-	Bell,
-	BookOpen,
-	CalendarDays,
-	CheckCircle2,
-	LogOut,
-	Wallet,
-} from "lucide-react";
+  Box,
+  AppBar,
+  Toolbar,
+  Typography,
+  Container,
+  Paper,
+  Stack,
+  Avatar,
+  Chip,
+  Button,
+  LinearProgress,
+  Card,
+  CardContent,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  IconButton,
+  Badge,
+  Tooltip,
+} from "@mui/material";
+import {
+  MenuBook,
+  Logout,
+  NotificationsOutlined,
+  CheckCircleRounded,
+  AccountBalanceWalletOutlined,
+  CalendarTodayOutlined,
+  WhatsApp,
+  Download,
+  SchoolOutlined,
+  TrendingUpRounded,
+  StarRounded,
+} from "@mui/icons-material";
 
 const aktivitasSantri = [
-	{ tanggal: "15 Okt 2026", materi: "Surah Al-Mulk ayat 1-5", nilai: "Sangat baik" },
-	{ tanggal: "13 Okt 2026", materi: "Murajaah Juz 30", nilai: "Baik" },
-	{ tanggal: "10 Okt 2026", materi: "Surah An-Naba ayat 1-10", nilai: "Baik" },
+  { tanggal: "25 Okt 2026", materi: "Surah Al-Mulk ayat 1-10", capaian: "Sangat Baik (Mumtaz)", ustadzah: "Ust. Aisyah" },
+  { tanggal: "22 Okt 2026", materi: "Muroja'ah Juz 30 (Surah An-Naba)", capaian: "Lancar (Jayyid Jiddan)", ustadzah: "Ust. Aisyah" },
+  { tanggal: "19 Okt 2026", materi: "Iqro Jilid 4 Halaman 12-14", capaian: "Lancar & Makhraj Tepat", ustadzah: "Ust. Aisyah" },
+  { tanggal: "15 Okt 2026", materi: "Hafalan Doa Sebelum & Sesudah Wudhu", capaian: "Hafal Lengkap", ustadzah: "Ust. Aisyah" },
+  { tanggal: "12 Okt 2026", materi: "Hadits Menuntut Ilmu", capaian: "Lancar", ustadzah: "Ust. Aisyah" },
 ];
 
 export default function DashboardWalisantri({ pengguna, onLogout }) {
-	return (
-		<main className="dw-page">
-			<style>{`
-				.dw-page { min-height: 100vh; background: #FBF9F3; color: #28352C; font-family: 'Plus Jakarta Sans', sans-serif; }
-				.dw-page *, .dw-page *::before, .dw-page *::after { box-sizing: border-box; }
-				.dw-topbar { height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 5vw; border-bottom: 1px solid #E8E6DE; background: #fff; }
-				.dw-brand { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 800; }
-				.dw-brand-mark { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; background: #EFF3EA; color: #5A734E; }
-				.dw-user { display: flex; align-items: center; gap: 12px; }
-				.dw-user-name { font-size: 11px; font-weight: 700; }
-				.dw-user-role { margin-top: 3px; color: #838B82; font-size: 10px; }
-				.dw-logout { display: inline-flex; align-items: center; gap: 7px; padding: 8px 11px; border: 1px solid #E2E0D6; border-radius: 8px; background: #fff; color: #566752; font: inherit; font-size: 11px; cursor: pointer; }
-				.dw-content { width: min(1080px, calc(100% - 48px)); margin: 0 auto; padding: 34px 0 48px; }
-				.dw-heading { margin-bottom: 24px; }
-				.dw-heading h1 { margin: 0 0 6px; font-size: 26px; font-weight: 800; }
-				.dw-heading p { margin: 0; color: #879085; font-size: 12px; line-height: 1.6; }
-				.dw-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(250px, .8fr); gap: 16px; }
-				.dw-panel { min-width: 0; padding: 20px; border: 1px solid #E9E6DD; border-radius: 12px; background: #fff; }
-				.dw-panel h2 { margin: 0 0 17px; font-size: 15px; font-weight: 800; }
-				.dw-child { display: flex; align-items: center; gap: 14px; }
-				.dw-child-avatar { width: 48px; height: 48px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 50%; background: #EFF3EA; color: #5A734E; font-size: 13px; font-weight: 800; }
-				.dw-child strong { font-size: 13px; }
-				.dw-child p { margin: 5px 0 0; color: #879085; font-size: 11px; }
-				.dw-progress-label { display: flex; justify-content: space-between; gap: 12px; margin: 20px 0 8px; color: #6C7669; font-size: 11px; }
-				.dw-progress-track { height: 9px; overflow: hidden; border-radius: 9px; background: #EDF0E7; }
-				.dw-progress-fill { width: 64%; height: 100%; border-radius: inherit; background: #68835D; }
-				.dw-stat { display: flex; align-items: center; gap: 13px; padding: 15px 0; border-bottom: 1px solid #ECEAE3; }
-				.dw-stat:last-child { padding-bottom: 0; border-bottom: 0; }
-				.dw-stat-icon { width: 36px; height: 36px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 10px; background: #EFF3EA; color: #5A734E; }
-				.dw-stat-icon.wallet { background: #F8F1E2; color: #B18A4C; }
-				.dw-stat-text span { display: block; color: #879085; font-size: 10px; }
-				.dw-stat-text strong { display: block; margin-top: 4px; font-size: 12px; }
-				.dw-activity { grid-column: 1 / -1; }
-				.dw-table-wrap { overflow-x: auto; }
-				.dw-table { width: 100%; border-collapse: collapse; text-align: left; white-space: nowrap; }
-				.dw-table th { padding: 11px 12px; background: #5A734E; color: #fff; font-size: 10px; }
-				.dw-table td { padding: 13px 12px; border-bottom: 1px solid #ECEAE3; color: #5D685D; font-size: 11px; }
-				.dw-table tr:last-child td { border-bottom: 0; }
-				.dw-grade { color: #218365 !important; font-weight: 700; }
-				@media (max-width: 700px) { .dw-grid { grid-template-columns: 1fr; } .dw-activity { grid-column: auto; } }
-				@media (max-width: 520px) { .dw-topbar { height: 64px; padding: 0 14px; } .dw-brand { font-size: 12px; } .dw-user-name, .dw-user-role { display: none; } .dw-logout { padding: 8px; font-size: 0; } .dw-content { width: calc(100% - 28px); padding-top: 24px; } .dw-heading h1 { font-size: 22px; } .dw-panel { padding: 16px 13px; } }
-			`}</style>
+  const [filter, setFilter] = useState("Semua");
 
-			<header className="dw-topbar">
-				<div className="dw-brand">
-					<span className="dw-brand-mark"><BookOpen size={20} /></span>
-					Rumah Sahabat Qur'an
-				</div>
-				<div className="dw-user">
-					<Bell size={18} color="#5A734E" aria-label="Notifikasi" />
-					<div>
-						<div className="dw-user-name">{pengguna?.nama ?? "Wali Santri"}</div>
-						<div className="dw-user-role">Wali Santri</div>
-					</div>
-					<button type="button" className="dw-logout" onClick={onLogout}>
-						<LogOut size={15} /> Keluar
-					</button>
-				</div>
-			</header>
+  const unduhLaporan = () => {
+    alert("Mengunduh rangkuman capaian hafalan ananda Fauzan Najib Ali (PDF)...");
+  };
 
-			<div className="dw-content">
-				<section className="dw-heading">
-					<h1>Selamat Datang, {pengguna?.nama ?? "Wali Santri"}</h1>
-					<p>Pantau perkembangan belajar dan informasi administrasi ananda.</p>
-				</section>
+  const hubungiUstadzah = () => {
+    window.open("https://wa.me/6282172819921?text=Assalamu'alaikum%20Ustadzah%20Aisyah,%20saya%20wali%20santri%20dari%20Fauzan%20Najib%20Ali", "_blank");
+  };
 
-				<div className="dw-grid">
-					<section className="dw-panel">
-						<h2>Profil Santri</h2>
-						<div className="dw-child">
-							<div className="dw-child-avatar">AA</div>
-							<div>
-								<strong>Fauzan Najib Ali</strong>
-								<p>NIS RSQ006 · Kelas Pagi A</p>
-							</div>
-						</div>
-						<div className="dw-progress-label"><span>Progres belajar semester ini</span><strong>64%</strong></div>
-						<div className="dw-progress-track"><div className="dw-progress-fill" /></div>
-					</section>
+  return (
+    <Box
+      sx={{
+        minHeight: "100vh",
+        backgroundColor: "#F8FAF8",
+        color: "#1A251D",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      {/* Top Navbar */}
+      <AppBar
+        position="sticky"
+        elevation={0}
+        sx={{
+          backgroundColor: "rgba(255, 255, 255, 0.9)",
+          backdropFilter: "blur(12px)",
+          borderBottom: "1px solid #E5ECE4",
+          color: "#1A251D",
+        }}
+      >
+        <Toolbar
+          sx={{
+            minHeight: { xs: 64, md: 72 },
+            px: { xs: 2, sm: 4, md: 6 },
+            justifyContent: "space-between",
+          }}
+        >
+          {/* Logo Brand */}
+          <Stack direction="row" spacing={1.5} alignItems="center">
+            <Box
+              sx={{
+                width: 42,
+                height: 42,
+                borderRadius: "12px",
+                background: "linear-gradient(135deg, #2E6F40 0%, #1A4426 100%)",
+                display: "grid",
+                placeItems: "center",
+                color: "#FFF",
+                boxShadow: "0 4px 12px rgba(46, 111, 64, 0.25)",
+              }}
+            >
+              <MenuBook sx={{ fontSize: 24 }} />
+            </Box>
+            <Box>
+              <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#1B2A1E", lineHeight: 1.2 }}>
+                RSQ-Kids Batam
+              </Typography>
+              <Typography variant="caption" sx={{ color: "#6A7D6E", fontWeight: 500 }}>
+                Portal Pantau Wali Santri
+              </Typography>
+            </Box>
+          </Stack>
 
-					<section className="dw-panel">
-						<h2>Informasi</h2>
-						<div className="dw-stat">
-							<div className="dw-stat-icon"><CheckCircle2 size={19} /></div>
-							<div className="dw-stat-text"><span>Status belajar</span><strong>Aktif</strong></div>
-						</div>
-						<div className="dw-stat">
-							<div className="dw-stat-icon wallet"><Wallet size={19} /></div>
-							<div className="dw-stat-text"><span>Pembayaran SPP</span><strong>Oktober · Lunas</strong></div>
-						</div>
-						<div className="dw-stat">
-							<div className="dw-stat-icon"><CalendarDays size={19} /></div>
-							<div className="dw-stat-text"><span>Jadwal berikutnya</span><strong>Besok, 08.00</strong></div>
-						</div>
-					</section>
+          {/* User & Logout */}
+          <Stack direction="row" spacing={2} alignItems="center">
+            <IconButton
+              sx={{
+                color: "#46594A",
+                backgroundColor: "#F0F5F0",
+                "&:hover": { backgroundColor: "#E3ECE3" },
+              }}
+            >
+              <Badge badgeContent={1} color="warning">
+                <NotificationsOutlined sx={{ fontSize: 20 }} />
+              </Badge>
+            </IconButton>
 
-					<section className="dw-panel dw-activity">
-						<h2>Aktivitas Belajar Terbaru</h2>
-						<div className="dw-table-wrap">
-							<table className="dw-table">
-								<thead><tr><th>TANGGAL</th><th>MATERI</th><th>HASIL</th></tr></thead>
-								<tbody>
-									{aktivitasSantri.map((aktivitas) => (
-										<tr key={aktivitas.tanggal}>
-											<td>{aktivitas.tanggal}</td>
-											<td>{aktivitas.materi}</td>
-											<td className="dw-grade">{aktivitas.nilai}</td>
-										</tr>
-									))}
-								</tbody>
-							</table>
-						</div>
-					</section>
-				</div>
-			</div>
-		</main>
-	);
+            <Stack direction="row" spacing={1.25} alignItems="center">
+              <Avatar
+                sx={{
+                  width: 38,
+                  height: 38,
+                  backgroundColor: "#D97706",
+                  color: "#FFF",
+                  fontWeight: 700,
+                  fontSize: "0.85rem",
+                }}
+              >
+                {pengguna?.nama ? pengguna.nama.slice(0, 2).toUpperCase() : "WA"}
+              </Avatar>
+              <Box sx={{ display: { xs: "none", sm: "block" } }}>
+                <Typography variant="body2" sx={{ fontWeight: 700, color: "#1B2A1E", lineHeight: 1.2 }}>
+                  {pengguna?.nama || "Bapak Ahmad"}
+                </Typography>
+                <Typography variant="caption" sx={{ color: "#6A7D6E" }}>
+                  Wali dari Fauzan
+                </Typography>
+              </Box>
+            </Stack>
+
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<Logout />}
+              onClick={onLogout}
+              sx={{
+                borderRadius: "10px",
+                borderColor: "#E0E8DF",
+                color: "#DC2626",
+                "&:hover": {
+                  borderColor: "#DC2626",
+                  backgroundColor: "#FEF2F2",
+                },
+              }}
+            >
+              Keluar
+            </Button>
+          </Stack>
+        </Toolbar>
+      </AppBar>
+
+      {/* Main Content */}
+      <Container maxWidth="lg" sx={{ flex: 1, py: { xs: 3, md: 4.5 }, px: { xs: 2, sm: 3 } }}>
+        <Stack spacing={3.5}>
+          {/* Welcome Banner */}
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 3, sm: 4 },
+              borderRadius: "20px",
+              background: "linear-gradient(135deg, #2E6F40 0%, #173E22 100%)",
+              color: "#FFFFFF",
+              boxShadow: "0 10px 30px rgba(30, 75, 42, 0.15)",
+              display: "flex",
+              flexDirection: { xs: "column", md: "row" },
+              justifyContent: "space-between",
+              alignItems: { xs: "flex-start", md: "center" },
+              gap: 2.5,
+            }}
+          >
+            <Box>
+              <Chip
+                label="PORTAL SANTRI TAHFIDZ"
+                size="small"
+                sx={{
+                  backgroundColor: "rgba(255,255,255,0.15)",
+                  color: "#FBBF24",
+                  fontWeight: 800,
+                  fontSize: "0.72rem",
+                  letterSpacing: "0.06em",
+                  mb: 1.5,
+                  border: "1px solid rgba(255,255,255,0.25)",
+                }}
+              />
+              <Typography variant="h4" sx={{ fontWeight: 800, color: "#FFF", mb: 0.75 }}>
+                Ahlan wa Sahlan, {pengguna?.nama || "Bapak Ahmad"} 👋
+              </Typography>
+              <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.85)", maxWidth: 540 }}>
+                Pantau langsung capaian ayat hafalan, absensi halaqah, dan evaluasi raport ananda secara berkala dari mana saja.
+              </Typography>
+            </Box>
+
+            <Stack direction="row" spacing={1.5}>
+              <Button
+                variant="outlined"
+                startIcon={<Download />}
+                onClick={unduhLaporan}
+                sx={{
+                  color: "#FFF",
+                  borderColor: "rgba(255,255,255,0.4)",
+                  backgroundColor: "rgba(255,255,255,0.08)",
+                  borderRadius: "12px",
+                  fontWeight: 700,
+                  "&:hover": {
+                    borderColor: "#FFF",
+                    backgroundColor: "rgba(255,255,255,0.18)",
+                  },
+                }}
+              >
+                Unduh Rapor Ananda
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<WhatsApp />}
+                onClick={hubungiUstadzah}
+                sx={{
+                  backgroundColor: "#22C55E",
+                  color: "#FFF",
+                  borderRadius: "12px",
+                  fontWeight: 700,
+                  boxShadow: "0 4px 14px rgba(34, 197, 94, 0.35)",
+                  "&:hover": { backgroundColor: "#16A34A" },
+                }}
+              >
+                Hubungi Asatidz
+              </Button>
+            </Stack>
+          </Paper>
+
+          {/* Grid: Child Progress Card + Info Widgets */}
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", lg: "1.4fr 1fr" },
+              gap: 3,
+            }}
+          >
+            {/* Child Profile & Progress Card */}
+            <Paper
+              elevation={0}
+              sx={{
+                p: { xs: 2.5, sm: 3.5 },
+                borderRadius: "20px",
+                border: "1px solid #E5ECE4",
+                backgroundColor: "#FFFFFF",
+              }}
+            >
+              <Typography variant="h6" sx={{ fontWeight: 800, color: "#1B2A1E", mb: 2.5 }}>
+                Profil & Capaian Belajar Ananda
+              </Typography>
+
+              <Stack direction="row" spacing={2.5} alignItems="center" mb={3}>
+                <Avatar
+                  sx={{
+                    width: 64,
+                    height: 64,
+                    backgroundColor: "#2E6F40",
+                    color: "#FFF",
+                    fontSize: "1.35rem",
+                    fontWeight: 800,
+                    boxShadow: "0 4px 12px rgba(46, 111, 64, 0.25)",
+                  }}
+                >
+                  FN
+                </Avatar>
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 800, color: "#1B2A1E" }}>
+                    Fauzan Najib Ali
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    NIS: RSQ006 · Kelas Pagi A
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: "#2E6F40", fontWeight: 700, display: "block", mt: 0.25 }}>
+                    Pembimbing: Ustadzah Aisyah
+                  </Typography>
+                </Box>
+              </Stack>
+
+              <Box sx={{ p: 2.5, borderRadius: "14px", backgroundColor: "#F9FAF8", border: "1px solid #E5ECE4" }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#2E6F40" }}>
+                    Progres Target Hafalan Semester Ini (Juz 30)
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 800, color: "#2E6F40" }}>
+                    78%
+                  </Typography>
+                </Stack>
+
+                <LinearProgress
+                  variant="determinate"
+                  value={78}
+                  sx={{
+                    height: 10,
+                    borderRadius: "999px",
+                    backgroundColor: "#E2ECE2",
+                    "& .MuiLinearProgress-bar": {
+                      borderRadius: "999px",
+                      backgroundColor: "#2E6F40",
+                    },
+                  }}
+                />
+
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1.5 }}>
+                  <StarRounded sx={{ color: "#D97706", fontSize: 18 }} />
+                  <Typography variant="caption" sx={{ color: "#5F7463", fontWeight: 600 }}>
+                    Capaian Terakhir: Surah Al-Mulk ayat 1-10 & Muroja'ah Surah An-Naba
+                  </Typography>
+                </Stack>
+              </Box>
+            </Paper>
+
+            {/* Academic & Administrative Status */}
+            <Paper
+              elevation={0}
+              sx={{
+                p: { xs: 2.5, sm: 3.5 },
+                borderRadius: "20px",
+                border: "1px solid #E5ECE4",
+                backgroundColor: "#FFFFFF",
+              }}
+            >
+              <Typography variant="h6" sx={{ fontWeight: 800, color: "#1B2A1E", mb: 2.5 }}>
+                Informasi & Status
+              </Typography>
+
+              <Stack spacing={2}>
+                <Card sx={{ p: 2, borderRadius: "14px", backgroundColor: "#FBFDFB" }}>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Box
+                      sx={{
+                        width: 42,
+                        height: 42,
+                        borderRadius: "10px",
+                        backgroundColor: "#DCFCE7",
+                        color: "#166534",
+                        display: "grid",
+                        placeItems: "center",
+                      }}
+                    >
+                      <CheckCircleRounded sx={{ fontSize: 22 }} />
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="caption" color="text.secondary">STATUS BELAJAR</Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#166534" }}>
+                        Aktif Mengikuti Halaqah
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Card>
+
+                <Card sx={{ p: 2, borderRadius: "14px", backgroundColor: "#FBFDFB" }}>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Box
+                      sx={{
+                        width: 42,
+                        height: 42,
+                        borderRadius: "10px",
+                        backgroundColor: "#FEF3C7",
+                        color: "#B45309",
+                        display: "grid",
+                        placeItems: "center",
+                      }}
+                    >
+                      <AccountBalanceWalletOutlined sx={{ fontSize: 22 }} />
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="caption" color="text.secondary">STATUS SPP TAHFIDZ</Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#B45309" }}>
+                        Bulan Oktober · Lunas ✓
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Card>
+
+                <Card sx={{ p: 2, borderRadius: "14px", backgroundColor: "#FBFDFB" }}>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Box
+                      sx={{
+                        width: 42,
+                        height: 42,
+                        borderRadius: "10px",
+                        backgroundColor: "#EFF6FF",
+                        color: "#2563EB",
+                        display: "grid",
+                        placeItems: "center",
+                      }}
+                    >
+                      <CalendarTodayOutlined sx={{ fontSize: 20 }} />
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="caption" color="text.secondary">JADWAL KELAS SELANJUTNYA</Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#1E40AF" }}>
+                        Rabu, 08.00 WIB (Ruang Abu Bakar)
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Card>
+              </Stack>
+            </Paper>
+          </Box>
+
+          {/* Activity Log Table */}
+          <Paper
+            elevation={0}
+            sx={{
+              borderRadius: "18px",
+              border: "1px solid #E5ECE4",
+              backgroundColor: "#FFFFFF",
+              overflow: "hidden",
+            }}
+          >
+            <Box sx={{ p: { xs: 2.5, sm: 3 }, borderBottom: "1px solid #EEF3ED" }}>
+              <Typography variant="h6" sx={{ fontWeight: 800, color: "#1B2A1E" }}>
+                Aktivitas & Catatan Setoran Terbaru Ananda
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Catatan mutaba'ah harian dari Ustadzah pembimbing.
+              </Typography>
+            </Box>
+
+            <TableContainer>
+              <Table sx={{ minWidth: 650 }}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell align="center" sx={{ width: 60 }}>NO</TableCell>
+                    <TableCell>TANGGAL</TableCell>
+                    <TableCell>MATERI / SURAH SETORAN</TableCell>
+                    <TableCell>CAPAIAN & HASIL</TableCell>
+                    <TableCell>PEMBIMBING</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {aktivitasSantri.map((item, idx) => (
+                    <TableRow key={item.tanggal} hover>
+                      <TableCell align="center" sx={{ color: "#8E9E90", fontWeight: 600 }}>
+                        {idx + 1}
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: 600, color: "#1A251D" }}>
+                        {item.tanggal}
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: 700, color: "#2E6F40" }}>
+                        {item.materi}
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={item.capaian}
+                          size="small"
+                          sx={{
+                            backgroundColor: "#DCFCE7",
+                            color: "#166534",
+                            fontWeight: 700,
+                            fontSize: "0.75rem",
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell sx={{ color: "#5F7463", fontWeight: 500 }}>
+                        {item.ustadzah}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        </Stack>
+      </Container>
+    </Box>
+  );
 }

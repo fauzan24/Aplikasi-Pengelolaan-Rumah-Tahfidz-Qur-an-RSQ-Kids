@@ -1,4 +1,3 @@
-
 import { useMemo, useState } from "react";
 import {
   Box,
@@ -20,76 +19,61 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
+  Chip,
+  Avatar,
+  Tabs,
+  Tab,
+  Snackbar,
+  Alert,
 } from "@mui/material";
-
-import SearchIcon from "@mui/icons-material/Search";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-import DeleteIcon from "@mui/icons-material/Delete";
-
+import {
+  Search,
+  EditOutlined,
+  Delete,
+  SaveOutlined,
+  Close,
+} from "@mui/icons-material";
 import LayoutPengajar from "../../components/pengajar/LayoutPengajar";
 import { useNilai } from "../../context/NilaiContext";
 
-const warnaHijau = "#5C7652";
-
 const aspekPenilaian = [
-  { key: "bacaan", label: "Bacaan Iqro/Al-Qur'an" },
-  { key: "doa", label: "Hafalan Doa" },
-  { key: "tahfidz", label: "Hafalan Tahfidz" },
-  { key: "hadits", label: "Hafalan Hadits" },
-  { key: "adab", label: "Adab & Kedisiplinan" },
+  { key: "bacaan", label: "Bacaan Iqro / Al-Qur'an", short: "Bacaan" },
+  { key: "doa", label: "Hafalan Doa Harian", short: "Doa" },
+  { key: "tahfidz", label: "Hafalan Surat Pendek (Tahfidz)", short: "Tahfidz" },
+  { key: "hadits", label: "Hafalan Hadits Pilihan", short: "Hadits" },
+  { key: "adab", label: "Adab & Kedisiplinan", short: "Adab" },
 ];
 
 const hitungRataRata = (item) => {
-  const total = aspekPenilaian.reduce(
-    (jumlah, aspek) => jumlah + Number(item[aspek.key] || 0),
-    0
-  );
-
+  const total = aspekPenilaian.reduce((sum, a) => sum + Number(item[a.key] || 0), 0);
   return (total / aspekPenilaian.length).toFixed(1);
 };
 
-const gayaHeader = {
-  color: "#FFFFFF",
-  fontWeight: 700,
-  fontSize: 12,
-  whiteSpace: "nowrap",
-  borderBottom: "none",
-  py: 2,
-};
-
-const gayaIsi = {
-  color: "#6D786C",
-  fontSize: 12,
-  whiteSpace: "nowrap",
+const getPredikat = (score) => {
+  const num = Number(score);
+  if (num >= 90) return { grade: "A", label: "Sangat Baik", color: "#166534", bg: "#DCFCE7" };
+  if (num >= 80) return { grade: "B", label: "Baik", color: "#0E7490", bg: "#CFFAFE" };
+  if (num >= 70) return { grade: "C", label: "Cukup", color: "#B45309", bg: "#FEF3C7" };
+  return { grade: "D", label: "Perlu Latihan", color: "#991B1B", bg: "#FEE2E2" };
 };
 
 export default function InputNilai({ onLogout, onNavigate }) {
   const { santri, setSantri } = useNilai();
-
-  const [keywordInput, setKeywordInput] = useState("");
   const [keyword, setKeyword] = useState("");
   const [filterKelas, setFilterKelas] = useState("Semua");
   const [santriEdit, setSantriEdit] = useState(null);
   const [dialogEdit, setDialogEdit] = useState(false);
   const [santriHapus, setSantriHapus] = useState(null);
   const [dialogHapus, setDialogHapus] = useState(false);
+  const [toast, setToast] = useState({ open: false, message: "" });
 
-  // Filter berdasarkan nama, NIS, dan kelas
   const daftarSantri = useMemo(() => {
     const kata = keyword.trim().toLowerCase();
-
     return santri.filter((item) => {
       const cocokPencarian =
-        item.nama.toLowerCase().includes(kata) ||
-        item.nis.toLowerCase().includes(kata);
-
-      const cocokKelas =
-        filterKelas === "Semua" || item.kelas === filterKelas;
-
+        item.nama.toLowerCase().includes(kata) || item.nis.toLowerCase().includes(kata);
+      const cocokKelas = filterKelas === "Semua" || item.kelas === filterKelas;
       return cocokPencarian && cocokKelas;
     });
   }, [santri, keyword, filterKelas]);
@@ -102,335 +86,247 @@ export default function InputNilai({ onLogout, onNavigate }) {
   const simpanNilai = () => {
     if (!santriEdit) return;
 
-    setSantri((sebelumnya) =>
-      sebelumnya.map((item) =>
-        item.nis === santriEdit.nis ? { ...santriEdit } : item
-      )
+    setSantri((prev) =>
+      prev.map((item) => (item.nis === santriEdit.nis ? { ...santriEdit } : item))
     );
-
     setDialogEdit(false);
     setSantriEdit(null);
+    setToast({ open: true, message: `Nilai untuk santri ${santriEdit.nama} berhasil disimpan!` });
   };
 
   const konfirmasiHapus = () => {
     if (!santriHapus) return;
 
-    setSantri((sebelumnya) =>
-      sebelumnya.filter((item) => item.nis !== santriHapus.nis)
-    );
-
+    setSantri((prev) => prev.filter((item) => item.nis !== santriHapus.nis));
     setDialogHapus(false);
     setSantriHapus(null);
+    setToast({ open: true, message: `Data nilai santri ${santriHapus.nama} berhasil dihapus.` });
   };
 
   return (
     <LayoutPengajar onLogout={onLogout} onNavigate={onNavigate}>
-      <Box
-        sx={{
-          width: "100%",
-          minWidth: 0,
-          minHeight: "100vh",
-          backgroundColor: "#FAF8F2",
-          p: { xs: 2, md: 3 },
-        }}
-      >
-        {/* Judul halaman */}
-        <Box sx={{ mb: 3 }}>
-          <Typography
-            variant="h5"
-            sx={{ fontWeight: 700, color: "#303D32", mb: 0.5 }}
-          >
-            Input Nilai
+      <Stack spacing={3.5} sx={{ width: "100%", maxWidth: 1380, mx: "auto", pb: 4 }}>
+        {/* Header Title */}
+        <Box>
+          <Typography variant="h5" sx={{ fontWeight: 800, color: "#1B2A1E" }}>
+            Input & Penilaian Santri
           </Typography>
-
-          <Typography variant="body2" color="text.secondary">
-            Kelola nilai bacaan Al-Qur'an, hafalan, dan Iqro santri yang kamu ampu.
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            Kelola nilai hafalan Al-Qur'an, doa, hadits, dan adab santri secara akurat dan terintegrasi.
           </Typography>
         </Box>
 
-        {/* Pencarian dan filter kelas */}
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={1.5}
-          sx={{ mb: 3 }}
-        >
-          <TextField
-            fullWidth
-            size="small"
-            placeholder="Cari nama atau NIS santri..."
-            value={keywordInput}
-            onChange={(e) => setKeywordInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") setKeyword(keywordInput);
-            }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon sx={{ color: "#8A9386" }} />
-                </InputAdornment>
-              ),
-            }}
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                backgroundColor: "#FFFFFF",
-                borderRadius: 2.5,
-              },
-            }}
-          />
-
-          <FormControl
-            size="small"
-            sx={{
-              minWidth: { xs: "100%", sm: 160 },
-              backgroundColor: "#FFFFFF",
-              borderRadius: 2.5,
-            }}
-          >
-            <InputLabel id="filter-kelas-label">Kelas</InputLabel>
-            <Select
-              labelId="filter-kelas-label"
-              value={filterKelas}
-              label="Kelas"
-              onChange={(e) => setFilterKelas(e.target.value)}
-            >
-              <MenuItem value="Semua">Semua Kelas</MenuItem>
-              <MenuItem value="Pagi">Kelas Pagi</MenuItem>
-              <MenuItem value="Sore">Kelas Sore</MenuItem>
-            </Select>
-          </FormControl>
-
-          <Button
-            variant="contained"
-            onClick={() => setKeyword(keywordInput)}
-            sx={{
-              minWidth: 145,
-              minHeight: 42,
-              borderRadius: 2.5,
-              backgroundColor: warnaHijau,
-              fontWeight: 700,
-              textTransform: "none",
-              "&:hover": { backgroundColor: "#455D3D" },
-            }}
-          >
-            Tampilkan
-          </Button>
-        </Stack>
-
-        {/* Tabel nilai santri */}
+        {/* Paper Container */}
         <Paper
           elevation={0}
           sx={{
-            p: { xs: 1.25, md: 1.75 },
-            border: "1px solid #EAE7DE",
-            borderRadius: 3,
+            borderRadius: "18px",
+            border: "1px solid #E5ECE4",
             backgroundColor: "#FFFFFF",
+            overflow: "hidden",
           }}
         >
-          <TableContainer sx={{ overflowX: "auto" }}>
-            <Table
-              sx={{ minWidth: 1360 }}
-              aria-label="Tabel input nilai santri"
+          {/* Controls Bar */}
+          <Box sx={{ p: { xs: 2, sm: 2.75 }, borderBottom: "1px solid #EEF3ED" }}>
+            <Stack
+              direction={{ xs: "column", md: "row" }}
+              spacing={2}
+              alignItems={{ md: "center" }}
+              justifyContent="space-between"
             >
+              <Tabs
+                value={filterKelas}
+                onChange={(_, val) => setFilterKelas(val)}
+                sx={{
+                  minHeight: 40,
+                  "& .MuiTab-root": {
+                    minHeight: 38,
+                    textTransform: "none",
+                    fontWeight: 700,
+                    fontSize: "0.85rem",
+                    color: "#6A7D6E",
+                    "&.Mui-selected": { color: "#2E6F40" },
+                  },
+                  "& .MuiTabs-indicator": { backgroundColor: "#2E6F40", height: 3, borderRadius: "3px" },
+                }}
+              >
+                <Tab value="Semua" label={`Semua Kelas (${santri.length})`} />
+                <Tab value="Pagi" label={`Kelas Pagi (${santri.filter((x) => x.kelas === "Pagi").length})`} />
+                <Tab value="Sore" label={`Kelas Sore (${santri.filter((x) => x.kelas === "Sore").length})`} />
+              </Tabs>
+
+              <TextField
+                size="small"
+                placeholder="Cari nama atau NIS santri..."
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                sx={{ width: { xs: "100%", sm: 260 } }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search sx={{ color: "#8E9E90", fontSize: 20 }} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Stack>
+          </Box>
+
+          {/* Table */}
+          <TableContainer>
+            <Table sx={{ minWidth: 1050 }}>
               <TableHead>
-                <TableRow sx={{ backgroundColor: warnaHijau }}>
-                  <TableCell rowSpan={2} align="center" sx={gayaHeader}>
-                    No
-                  </TableCell>
-
-                  <TableCell rowSpan={2} align="center" sx={gayaHeader}>
-                    NIS
-                  </TableCell>
-
-                  <TableCell
-                    rowSpan={2}
-                    sx={{ ...gayaHeader, minWidth: 170 }}
-                  >
-                    Nama Santri
-                  </TableCell>
-
-                  <TableCell
-                    rowSpan={2}
-                    align="center"
-                    sx={{ ...gayaHeader, minWidth: 110 }}
-                  >
-                    Kelas
-                  </TableCell>
-
-                  <TableCell colSpan={5} align="center" sx={gayaHeader}>
-                    Penilaian
-                  </TableCell>
-
-                  <TableCell rowSpan={2} align="center" sx={gayaHeader}>
-                    Rata-rata
-                  </TableCell>
-
-                  <TableCell rowSpan={2} align="center" sx={gayaHeader}>
-                    Aksi
-                  </TableCell>
-                </TableRow>
-
-                <TableRow sx={{ backgroundColor: warnaHijau }}>
-                  {aspekPenilaian.map((aspek) => (
-                    <TableCell
-                      key={aspek.key}
-                      align="center"
-                      sx={{
-                        ...gayaHeader,
-                        minWidth: 135,
-                        fontSize: 11,
-                        whiteSpace: "normal",
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      {aspek.label}
-                    </TableCell>
-                  ))}
+                <TableRow>
+                  <TableCell align="center" sx={{ width: 55 }}>NO</TableCell>
+                  <TableCell>NIS</TableCell>
+                  <TableCell sx={{ minWidth: 170 }}>NAMA SANTRI</TableCell>
+                  <TableCell align="center">KELAS</TableCell>
+                  <TableCell align="center">BACAAN</TableCell>
+                  <TableCell align="center">DOA</TableCell>
+                  <TableCell align="center">TAHFIDZ</TableCell>
+                  <TableCell align="center">HADITS</TableCell>
+                  <TableCell align="center">ADAB</TableCell>
+                  <TableCell align="center">RATA-RATA</TableCell>
+                  <TableCell align="center">PREDIKAT</TableCell>
+                  <TableCell align="center">AKSI</TableCell>
                 </TableRow>
               </TableHead>
 
               <TableBody>
                 {daftarSantri.length > 0 ? (
-                  daftarSantri.map((item, index) => (
-                    <TableRow
-                      key={item.nis}
-                      hover
-                      sx={{
-                        "& td": {
-                          borderBottom: "1px solid #ECE9E0",
-                          py: 2.25,
-                        },
-                      }}
-                    >
-                      <TableCell align="center" sx={gayaIsi}>
-                        {index + 1}.
-                      </TableCell>
+                  daftarSantri.map((item, idx) => {
+                    const avg = hitungRataRata(item);
+                    const pred = getPredikat(avg);
+                    const initials = item.nama
+                      .split(" ")
+                      .map((n) => n[0])
+                      .slice(0, 2)
+                      .join("");
 
-                      <TableCell align="center" sx={gayaIsi}>
-                        {item.nis}
-                      </TableCell>
-
-                      <TableCell
-                        sx={{
-                          ...gayaIsi,
-                          fontWeight: 700,
-                          color: "#303D32",
-                        }}
-                      >
-                        {item.nama}
-                      </TableCell>
-
-                      {/* Kolom kelas */}
-                      <TableCell align="center">
-                        <Box
-                          sx={{
-                            display: "inline-block",
-                            px: 1.5,
-                            py: 0.75,
-                            borderRadius: 2,
-                            fontSize: 11,
-                            fontWeight: 700,
-                            whiteSpace: "nowrap",
-                            color:
-                              item.kelas === "Pagi"
-                                ? "#476640"
-                                : item.kelas === "Sore"
-                                ? "#8A6820"
-                                : "#626B60",
-                            backgroundColor:
-                              item.kelas === "Pagi"
-                                ? "#E8F0E4"
-                                : item.kelas === "Sore"
-                                ? "#FFF1D2"
-                                : "#ECEEE7",
-                          }}
-                        >
-                          {item.kelas ? `Kelas ${item.kelas}` : "-"}
-                        </Box>
-                      </TableCell>
-
-                      {aspekPenilaian.map((aspek) => (
-                        <TableCell
-                          key={aspek.key}
-                          align="center"
-                          sx={{
-                            ...gayaIsi,
-                            fontWeight: 700,
-                            color: "#303D32",
-                          }}
-                        >
-                          {item[aspek.key]}
+                    return (
+                      <TableRow key={item.nis} hover>
+                        <TableCell align="center" sx={{ color: "#8E9E90", fontWeight: 600 }}>
+                          {idx + 1}
                         </TableCell>
-                      ))}
-
-                      <TableCell
-                        align="center"
-                        sx={{
-                          ...gayaIsi,
-                          fontWeight: 800,
-                          color: "#303D32",
-                        }}
-                      >
-                        {hitungRataRata(item)}
-                      </TableCell>
-
-                      <TableCell align="center">
-                        <Stack
-                          direction="row"
-                          spacing={1}
-                          justifyContent="center"
-                        >
-                          <Tooltip title="Edit nilai">
-                            <IconButton
-                              onClick={() => bukaEdit(item)}
-                              aria-label={`Edit nilai ${item.nama}`}
+                        <TableCell sx={{ fontWeight: 700, color: "#2E6F40", fontSize: "0.84rem" }}>
+                          {item.nis}
+                        </TableCell>
+                        <TableCell>
+                          <Stack direction="row" spacing={1.5} alignItems="center">
+                            <Avatar
                               sx={{
-                                width: 42,
-                                height: 42,
-                                borderRadius: 2,
-                                backgroundColor: "#ECEEE7",
-                                color: warnaHijau,
-                                "&:hover": {
-                                  backgroundColor: "#DDE4D5",
-                                },
+                                width: 34,
+                                height: 34,
+                                fontSize: "0.78rem",
+                                fontWeight: 700,
+                                backgroundColor: "#E3EFE5",
+                                color: "#2E6F40",
                               }}
                             >
-                              <EditOutlinedIcon />
-                            </IconButton>
-                          </Tooltip>
+                              {initials}
+                            </Avatar>
+                            <Typography variant="body2" sx={{ fontWeight: 700, color: "#1A251D" }}>
+                              {item.nama}
+                            </Typography>
+                          </Stack>
+                        </TableCell>
+                        <TableCell align="center">
+                          <Chip
+                            label={`Kelas ${item.kelas}`}
+                            size="small"
+                            sx={{
+                              backgroundColor: item.kelas === "Pagi" ? "#FEF3C7" : "#EFF6FF",
+                              color: item.kelas === "Pagi" ? "#92400E" : "#1E40AF",
+                              fontWeight: 700,
+                              fontSize: "0.74rem",
+                            }}
+                          />
+                        </TableCell>
 
-                          <Tooltip title="Hapus santri">
-                            <IconButton
-                              onClick={() => {
-                                setSantriHapus(item);
-                                setDialogHapus(true);
-                              }}
-                              aria-label={`Hapus ${item.nama}`}
-                              sx={{
-                                width: 42,
-                                height: 42,
-                                borderRadius: 2,
-                                backgroundColor: "#FBE1E1",
-                                color: "#C63832",
-                                "&:hover": {
-                                  backgroundColor: "#F5CCCC",
-                                },
-                              }}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Tooltip>
-                        </Stack>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                        {/* Aspek Penilaian */}
+                        {aspekPenilaian.map((a) => {
+                          const val = item[a.key];
+                          const isValid = val !== "" && val !== null && val !== "-";
+                          return (
+                            <TableCell key={a.key} align="center">
+                              <Box
+                                sx={{
+                                  display: "inline-block",
+                                  px: 1.25,
+                                  py: 0.35,
+                                  borderRadius: "6px",
+                                  fontWeight: 700,
+                                  fontSize: "0.82rem",
+                                  backgroundColor: isValid ? "#F1F5F2" : "#FEE2E2",
+                                  color: isValid ? "#2E4733" : "#DC2626",
+                                }}
+                              >
+                                {isValid ? val : "-"}
+                              </Box>
+                            </TableCell>
+                          );
+                        })}
+
+                        <TableCell align="center">
+                          <Typography variant="body2" sx={{ fontWeight: 800, color: "#1B2A1E" }}>
+                            {avg}
+                          </Typography>
+                        </TableCell>
+
+                        <TableCell align="center">
+                          <Chip
+                            size="small"
+                            label={`${pred.grade} (${pred.label})`}
+                            sx={{
+                              backgroundColor: pred.bg,
+                              color: pred.color,
+                              fontWeight: 700,
+                              fontSize: "0.74rem",
+                            }}
+                          />
+                        </TableCell>
+
+                        <TableCell align="center">
+                          <Stack direction="row" spacing={0.5} justifyContent="center">
+                            <Tooltip title="Input / Edit Nilai">
+                              <IconButton
+                                size="small"
+                                onClick={() => bukaEdit(item)}
+                                sx={{
+                                  color: "#2E6F40",
+                                  backgroundColor: "#EBF5ED",
+                                  "&:hover": { backgroundColor: "#D7EBDC" },
+                                }}
+                              >
+                                <EditOutlined fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+
+                            <Tooltip title="Hapus dari daftar">
+                              <IconButton
+                                size="small"
+                                onClick={() => {
+                                  setSantriHapus(item);
+                                  setDialogHapus(true);
+                                }}
+                                sx={{
+                                  color: "#DC2626",
+                                  backgroundColor: "#FEF2F2",
+                                  "&:hover": { backgroundColor: "#FEE2E2" },
+                                }}
+                              >
+                                <Delete fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </Stack>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 ) : (
                   <TableRow>
-                    <TableCell
-                      colSpan={11}
-                      align="center"
-                      sx={{ py: 5, color: "#7B8478" }}
-                    >
-                      Santri tidak ditemukan.
+                    <TableCell colSpan={12} align="center" sx={{ py: 6, color: "#8E9E90" }}>
+                      Santri tidak ditemukan pada filter ini.
                     </TableCell>
                   </TableRow>
                 )}
@@ -438,165 +334,167 @@ export default function InputNilai({ onLogout, onNavigate }) {
             </Table>
           </TableContainer>
 
-          {/* Informasi jumlah data */}
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={1}
+          <Box
             sx={{
+              p: 2,
+              px: 3,
+              backgroundColor: "#FCFDFC",
+              borderTop: "1px solid #EEF3ED",
+              display: "flex",
               justifyContent: "space-between",
-              px: 1,
-              pt: 2,
-              pb: 0.5,
+              alignItems: "center",
             }}
           >
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="caption" color="text.secondary">
               Menampilkan {daftarSantri.length} dari {santri.length} santri
             </Typography>
-
-            <Typography variant="body2" color="text.secondary">
-              Semester Ganjil · Tahun Ajaran 2026/2027
+            <Typography variant="caption" color="text.secondary">
+              Semester Ganjil · T.A 2026/2027
             </Typography>
-          </Stack>
+          </Box>
         </Paper>
+      </Stack>
 
-        {/* Dialog edit nilai */}
-        <Dialog
-          open={dialogEdit}
-          onClose={() => {
-            setDialogEdit(false);
-            setSantriEdit(null);
-          }}
-          fullWidth
-          maxWidth="sm"
-        >
-          <DialogTitle sx={{ color: "#303D32", fontWeight: 700 }}>
-            Edit Nilai Santri
-          </DialogTitle>
+      {/* Modal Edit Nilai */}
+      <Dialog
+        open={dialogEdit}
+        onClose={() => setDialogEdit(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle sx={{ fontWeight: 800, color: "#1B2A1E", pt: 3, px: 3 }}>
+          Input & Edit Nilai Santri
+        </DialogTitle>
 
-          <DialogContent dividers>
-            {santriEdit && (
-              <>
-                <Typography sx={{ fontWeight: 700, mb: 0.5 }}>
+        <DialogContent dividers sx={{ px: 3, py: 2.5 }}>
+          {santriEdit && (
+            <Stack spacing={2.5}>
+              <Box
+                sx={{
+                  p: 2,
+                  borderRadius: "12px",
+                  backgroundColor: "#F4FAF5",
+                  border: "1px solid #D8EAD9",
+                }}
+              >
+                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: "#2E6F40" }}>
                   {santriEdit.nama}
                 </Typography>
-
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ mb: 2.5 }}
-                >
-                  NIS: {santriEdit.nis} · Kelas: {santriEdit.kelas || "-"}
+                <Typography variant="caption" color="text.secondary">
+                  NIS: {santriEdit.nis} · Kelas {santriEdit.kelas}
                 </Typography>
+              </Box>
 
-                <Stack spacing={2}>
-                  {aspekPenilaian.map((aspek) => (
-                    <TextField
-                      key={aspek.key}
-                      fullWidth
-                      type="number"
-                      label={aspek.label}
-                      size="small"
-                      value={santriEdit[aspek.key]}
-                      inputProps={{ min: 0, max: 100 }}
-                      onChange={(e) => {
-                        const nilai = e.target.value;
+              <Typography variant="caption" sx={{ fontWeight: 700, color: "#4B5E4F" }}>
+                MASUKKAN NILAI (SKALA 0 - 100):
+              </Typography>
 
-                        setSantriEdit((sebelumnya) => ({
-                          ...sebelumnya,
-                          [aspek.key]:
-                            nilai === ""
-                              ? ""
-                              : Math.max(
-                                  0,
-                                  Math.min(100, Number(nilai))
-                                ),
-                        }));
-                      }}
-                    />
-                  ))}
+              {aspekPenilaian.map((aspek) => (
+                <Stack
+                  key={aspek.key}
+                  direction={{ xs: "column", sm: "row" }}
+                  alignItems={{ sm: "center" }}
+                  justifyContent="space-between"
+                  spacing={1}
+                >
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: "#2A3D2F" }}>
+                    {aspek.label}
+                  </Typography>
+
+                  <TextField
+                    type="number"
+                    size="small"
+                    value={santriEdit[aspek.key] === "-" ? "" : santriEdit[aspek.key]}
+                    placeholder="0-100"
+                    inputProps={{ min: 0, max: 100 }}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setSantriEdit((prev) => ({
+                        ...prev,
+                        [aspek.key]: val === "" ? "" : Math.max(0, Math.min(100, Number(val))),
+                      }));
+                    }}
+                    sx={{ width: { xs: "100%", sm: 110 } }}
+                  />
                 </Stack>
-              </>
-            )}
-          </DialogContent>
+              ))}
 
-          <DialogActions sx={{ p: 2 }}>
-            <Button
-              onClick={() => {
-                setDialogEdit(false);
-                setSantriEdit(null);
-              }}
-              sx={{ textTransform: "none", color: "#626B60" }}
-            >
-              Batal
-            </Button>
+              <Box
+                sx={{
+                  p: 2,
+                  borderRadius: "12px",
+                  backgroundColor: "#F9FAF8",
+                  border: "1px solid #E5ECE4",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Typography variant="body2" sx={{ fontWeight: 700, color: "#1B2A1E" }}>
+                  Estimasi Rata-rata:
+                </Typography>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: "#2E6F40" }}>
+                  {hitungRataRata(santriEdit)}
+                </Typography>
+              </Box>
+            </Stack>
+          )}
+        </DialogContent>
 
-            <Button
-              variant="contained"
-              onClick={simpanNilai}
-              disabled={
-                !santriEdit ||
-                aspekPenilaian.some(
-                  (aspek) =>
-                    santriEdit[aspek.key] === "" ||
-                    !Number.isFinite(Number(santriEdit[aspek.key])) ||
-                    Number(santriEdit[aspek.key]) < 0 ||
-                    Number(santriEdit[aspek.key]) > 100
-                )
-              }
-              sx={{
-                backgroundColor: warnaHijau,
-                textTransform: "none",
-                "&:hover": { backgroundColor: "#455D3D" },
-              }}
-            >
-              Simpan Nilai
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <DialogActions sx={{ p: 2.5, px: 3, gap: 1 }}>
+          <Button onClick={() => setDialogEdit(false)} sx={{ color: "#6A7D6E" }}>
+            Batal
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<SaveOutlined />}
+            onClick={simpanNilai}
+            sx={{
+              backgroundColor: "#2E6F40",
+              "&:hover": { backgroundColor: "#235933" },
+            }}
+          >
+            Simpan Nilai Santri
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-        {/* Dialog konfirmasi hapus */}
-        <Dialog
-          open={dialogHapus}
-          onClose={() => {
-            setDialogHapus(false);
-            setSantriHapus(null);
-          }}
-          fullWidth
-          maxWidth="xs"
-        >
-          <DialogTitle sx={{ fontWeight: 700 }}>
-            Hapus Data Santri?
-          </DialogTitle>
+      {/* Modal Hapus */}
+      <Dialog
+        open={dialogHapus}
+        onClose={() => setDialogHapus(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 800, color: "#1B2A1E", pt: 3, px: 3 }}>
+          Hapus Data Nilai?
+        </DialogTitle>
+        <DialogContent sx={{ px: 3 }}>
+          <Typography variant="body2" color="text.secondary">
+            Apakah Anda yakin ingin menghapus catatan nilai untuk santri{" "}
+            <strong>{santriHapus?.nama}</strong>?
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 3, gap: 1 }}>
+          <Button onClick={() => setDialogHapus(false)} sx={{ color: "#6A7D6E" }}>
+            Batal
+          </Button>
+          <Button onClick={konfirmasiHapus} color="error" variant="contained">
+            Ya, Hapus
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-          <DialogContent>
-            <Typography variant="body2" color="text.secondary">
-              Apakah kamu yakin ingin menghapus data nilai{" "}
-              <strong>{santriHapus?.nama}</strong> dari daftar ini?
-            </Typography>
-          </DialogContent>
-
-          <DialogActions sx={{ p: 2 }}>
-            <Button
-              onClick={() => {
-                setDialogHapus(false);
-                setSantriHapus(null);
-              }}
-              sx={{ textTransform: "none", color: "#626B60" }}
-            >
-              Batal
-            </Button>
-
-            <Button
-              variant="contained"
-              color="error"
-              onClick={konfirmasiHapus}
-              sx={{ textTransform: "none" }}
-            >
-              Hapus
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </Box>
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={3000}
+        onClose={() => setToast({ ...toast, open: false })}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert severity="success" sx={{ borderRadius: "10px" }}>
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </LayoutPengajar>
   );
 }

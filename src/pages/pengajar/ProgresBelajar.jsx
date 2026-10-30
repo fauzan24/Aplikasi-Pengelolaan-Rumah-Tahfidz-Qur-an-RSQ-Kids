@@ -1,6 +1,8 @@
-
 import { useMemo, useState } from "react";
-import { Assessment, Search } from "@mui/icons-material";
+import {
+  Search,
+  ArrowForward,
+} from "@mui/icons-material";
 import {
   Button,
   InputAdornment,
@@ -15,200 +17,226 @@ import {
   TableRow,
   TextField,
   Typography,
+  Chip,
+  Avatar,
+  Box,
 } from "@mui/material";
 import LayoutPengajar from "../../components/pengajar/LayoutPengajar";
 import { dataSantriProgres } from "../../data/santriProgres";
+import { useProgresBelajar } from "../../context/ProgresBelajarContext";
+
+const kategoriProgres = [
+  { key: "tilawah", label: "Tilawah" },
+  { key: "hafalan-quran", label: "Hafalan Qur'an" },
+  { key: "hafalan-doa", label: "Do'a" },
+  { key: "hafalan-hadist", label: "Hadist" },
+];
 
 export default function ProgresBelajar({
+  Layout = LayoutPengajar,
   onNavigate,
   onLogout,
   onDetail,
 }) {
+  const { progres } = useProgresBelajar();
   const [keyword, setKeyword] = useState("");
-  const [filterKelas, setFilterKelas] = useState("Semua Kelas");
+  const [filterKelas, setFilterKelas] = useState("Semua");
 
   const dataTampil = useMemo(() => {
     const cari = keyword.toLowerCase().trim();
-
     return dataSantriProgres.filter((santri) => {
       const cocokPencarian =
-        santri.nama.toLowerCase().includes(cari) ||
-        santri.id.toLowerCase().includes(cari);
-
-      const cocokKelas =
-        filterKelas === "Semua Kelas" ||
-        santri.kelas === filterKelas;
-
+        santri.nama.toLowerCase().includes(cari) || santri.id.toLowerCase().includes(cari);
+      const cocokKelas = filterKelas === "Semua" || santri.kelas === filterKelas;
       return cocokPencarian && cocokKelas;
     });
   }, [keyword, filterKelas]);
 
   return (
-    <LayoutPengajar
-      onNavigate={onNavigate}
-      onLogout={onLogout}
-    >
-      <Stack spacing={3} sx={{ width: "100%", minWidth: 0, pb: 3 }}>
-        <Typography
-          component="h1"
-          variant="h5"
-          fontWeight={800}
-          color="#28352C"
-        >
-          Progres Belajar
-        </Typography>
+    <Layout onNavigate={onNavigate} onLogout={onLogout}>
+      <Stack spacing={3.5} sx={{ width: "100%", maxWidth: 1280, mx: "auto", pb: 4 }}>
+        {/* Header Title */}
+        <Box>
+          <Typography variant="h5" sx={{ fontWeight: 800, color: "#1B2A1E" }}>
+            Progres Belajar Santri
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            Pantau nilai tilawah serta setoran hafalan Al-Qur'an dan do'a setiap santri.
+          </Typography>
+        </Box>
 
-        <Stack
-          direction={{ xs: "column", md: "row" }}
-          spacing={1.5}
-          sx={{ width: "100%" }}
-        >
-          <TextField
-            fullWidth
-            placeholder="Cari nama atau NIS santri..."
-            value={keyword}
-            onChange={(event) => setKeyword(event.target.value)}
-            inputProps={{
-              "aria-label": "Cari nama atau NIS santri",
-            }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search sx={{ color: "#5A734E" }} />
-                </InputAdornment>
-              ),
-            }}
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 2,
-                backgroundColor: "#fff",
-              },
-              "& .MuiInputBase-input": { fontSize: 12 },
-            }}
-          />
-
-          <TextField
-            select
-            value={filterKelas}
-            onChange={(event) => setFilterKelas(event.target.value)}
-            sx={{
-              minWidth: { xs: "100%", md: 190 },
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 2,
-                backgroundColor: "#fff",
-              },
-              "& .MuiSelect-select": { fontSize: 12 },
-            }}
-            inputProps={{ "aria-label": "Filter kelas santri" }}
-          >
-            <MenuItem value="Semua Kelas">Semua Kelas</MenuItem>
-            <MenuItem value="Pagi">Kelas Pagi</MenuItem>
-            <MenuItem value="Sore">Kelas Sore</MenuItem>
-          </TextField>
-        </Stack>
-
+        {/* Paper Container */}
         <Paper
-          variant="outlined"
+          elevation={0}
           sx={{
+            borderRadius: "18px",
+            border: "1px solid #E5ECE4",
+            backgroundColor: "#FFFFFF",
             overflow: "hidden",
-            p: { xs: 1, sm: 1.5 },
-            borderColor: "#EAE7DF",
-            borderRadius: { xs: 2, sm: 3 },
-            backgroundColor: "#fff",
           }}
         >
-          <TableContainer sx={{ overflowX: "auto", borderRadius: 1.5 }}>
-            <Table
-              aria-label="Daftar santri dan progres belajar"
-              sx={{ minWidth: 650 }}
+          {/* Controls Bar */}
+          <Box sx={{ p: { xs: 2, sm: 2.75 }, borderBottom: "1px solid #EEF3ED" }}>
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={2}
+              alignItems={{ sm: "center" }}
+              justifyContent="space-between"
             >
+              <TextField
+                size="small"
+                placeholder="Cari nama atau NIS santri..."
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                sx={{ width: { xs: "100%", sm: 280 } }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search sx={{ color: "#8E9E90", fontSize: 20 }} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+
+              <TextField
+                select
+                size="small"
+                value={filterKelas}
+                onChange={(e) => setFilterKelas(e.target.value)}
+                sx={{ minWidth: 160 }}
+              >
+                <MenuItem value="Semua">Semua Kelas</MenuItem>
+                <MenuItem value="Pagi">Kelas Pagi</MenuItem>
+                <MenuItem value="Sore">Kelas Sore</MenuItem>
+              </TextField>
+            </Stack>
+          </Box>
+
+          {/* Table */}
+          <TableContainer>
+            <Table sx={{ minWidth: 700 }}>
               <TableHead>
-                <TableRow sx={{ backgroundColor: "#5A734E" }}>
-                  {["No", "NIS", "Nama Santri", "Kelas", "Aksi"].map(
-                    (label) => (
-                      <TableCell
-                        key={label}
-                        sx={{
-                          height: 55,
-                          px: { xs: 1.5, sm: 2.5 },
-                          color: "#fff",
-                          fontSize: 12,
-                          fontWeight: 700,
-                          whiteSpace: "nowrap",
-                          "&:last-child": { textAlign: "center" },
-                        }}
-                      >
-                        {label}
-                      </TableCell>
-                    )
-                  )}
+                <TableRow>
+                  <TableCell align="center" sx={{ width: 60 }}>NO</TableCell>
+                  <TableCell align="center">NIS</TableCell>
+                  <TableCell align="center">NAMA SANTRI</TableCell>
+                  <TableCell align="center">KELAS</TableCell>
+                  <TableCell align="center">STATUS CAPAIAN</TableCell>
+                  <TableCell align="center">AKSI</TableCell>
                 </TableRow>
               </TableHead>
 
               <TableBody>
                 {dataTampil.length > 0 ? (
-                  dataTampil.map((santri, index) => (
-                    <TableRow key={santri.id} hover>
-                      <TableCell sx={tableCellSx}>
-                        {index + 1}.
-                      </TableCell>
+                  dataTampil.map((santri, idx) => {
+                    const initials = santri.nama
+                      .split(" ")
+                      .map((n) => n[0])
+                      .slice(0, 2)
+                      .join("");
+                    const progresSantri = progres.filter(
+                      (item) => item.santriId === santri.id
+                    );
 
-                      <TableCell sx={tableCellSx}>
-                        {santri.id}
-                      </TableCell>
+                    return (
+                      <TableRow key={santri.id} hover>
+                        <TableCell align="center" sx={{ color: "#8E9E90", fontWeight: 600 }}>
+                          {idx + 1}
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: "#2E6F40", fontSize: "0.84rem" }}>
+                          {santri.id}
+                        </TableCell>
+                        <TableCell>
+                          <Stack direction="row" spacing={1.5} alignItems="center">
+                            <Avatar
+                              sx={{
+                                width: 34,
+                                height: 34,
+                                fontSize: "0.78rem",
+                                fontWeight: 700,
+                                backgroundColor: "#E3EFE5",
+                                color: "#2E6F40",
+                              }}
+                            >
+                              {initials}
+                            </Avatar>
+                            <Typography variant="body2" sx={{ fontWeight: 700, color: "#1A251D" }}>
+                              {santri.nama}
+                            </Typography>
+                          </Stack>
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={`Kelas ${santri.kelas}`}
+                            size="small"
+                            sx={{
+                              backgroundColor: santri.kelas === "Pagi" ? "#FEF3C7" : "#EFF6FF",
+                              color: santri.kelas === "Pagi" ? "#92400E" : "#1E40AF",
+                              fontWeight: 700,
+                              fontSize: "0.75rem",
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Box
+                            sx={{
+                              display: "grid",
+                              gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                              gap: 0.5,
+                            }}
+                          >
+                            {kategoriProgres.map((kategori) => {
+                              const jumlah = progresSantri.filter(
+                                (item) => item.jenis === kategori.key
+                              ).length;
+                              const adaProgres = jumlah > 0;
 
-                      <TableCell sx={tableCellSx}>
-                        {santri.nama}
-                      </TableCell>
-
-                      <TableCell sx={tableCellSx}>
-                        {santri.kelas}
-                      </TableCell>
-
-                      <TableCell align="center" sx={tableCellSx}>
-                        <Button
-                          variant="outlined"
-                          onClick={() => onDetail?.(santri)}
-                          sx={{
-                            minWidth: 100,
-                            px: 2.25,
-                            py: 1,
-                            borderColor: "#30442E",
-                            borderRadius: 5,
-                            color: "#30442E",
-                            fontSize: 12,
-                            fontWeight: 700,
-                            textTransform: "none",
-                            "&:hover": {
-                              borderColor: "#5A734E",
-                              backgroundColor: "#5A734E",
-                              color: "#fff",
-                            },
-                          }}
-                        >
-                          Detail
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                              return (
+                                <Chip
+                                  key={kategori.key}
+                                  size="small"
+                                  label={`${kategori.label}: ${adaProgres ? `${jumlah} progres` : "Belum ada progres"}`}
+                                  sx={{
+                                    backgroundColor: adaProgres ? "#DCFCE7" : "#F1F5F1",
+                                    color: adaProgres ? "#166534" : "#6A7D6E",
+                                    fontWeight: 600,
+                                    fontSize: "0.68rem",
+                                  }}
+                                />
+                              );
+                            })}
+                          </Box>
+                        </TableCell>
+                        <TableCell align="center">
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            endIcon={<ArrowForward sx={{ fontSize: 15 }} />}
+                            onClick={() => onDetail?.(santri)}
+                            sx={{
+                              borderRadius: "8px",
+                              borderColor: "#2E6F40",
+                              color: "#2E6F40",
+                              py: 0.5,
+                              px: 1.75,
+                              fontSize: "0.78rem",
+                              fontWeight: 700,
+                              "&:hover": {
+                                backgroundColor: "#2E6F40",
+                                color: "#FFF",
+                              },
+                            }}
+                          >
+                            Detail Progres
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 ) : (
                   <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      align="center"
-                      sx={{ py: 4 }}
-                    >
-                      <Assessment
-                        sx={{
-                          display: "block",
-                          mx: "auto",
-                          mb: 1,
-                          color: "#7B8577",
-                        }}
-                      />
-                      <Typography variant="body2" color="text.secondary">
-                        Santri tidak ditemukan.
-                      </Typography>
+                    <TableCell colSpan={6} align="center" sx={{ py: 6, color: "#8E9E90" }}>
+                      Santri tidak ditemukan.
                     </TableCell>
                   </TableRow>
                 )}
@@ -216,30 +244,20 @@ export default function ProgresBelajar({
             </Table>
           </TableContainer>
 
-          <Typography
-            variant="caption"
-            color="text.secondary"
+          <Box
             sx={{
-              display: "block",
-              px: 1.5,
-              py: 1.5,
-              borderTop: "1px solid #ECEAE3",
+              p: 2,
+              px: 3,
+              backgroundColor: "#FCFDFC",
+              borderTop: "1px solid #EEF3ED",
             }}
           >
-            Menampilkan {dataTampil.length} dari {dataSantriProgres.length} santri
-          </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Menampilkan {dataTampil.length} dari {dataSantriProgres.length} santri
+            </Typography>
+          </Box>
         </Paper>
       </Stack>
-    </LayoutPengajar>
+    </Layout>
   );
 }
-
-const tableCellSx = {
-  height: 75,
-  px: { xs: 1.5, sm: 2.5 },
-  py: 1.75,
-  borderBottomColor: "#ECEAE3",
-  color: "#626B60",
-  fontSize: 13,
-  whiteSpace: "nowrap",
-};

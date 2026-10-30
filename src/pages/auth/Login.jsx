@@ -89,8 +89,8 @@ const Login = ({ onLogin }) => {
         minHeight: '100dvh',
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: '#faf9f5',
-        color: '#243021'
+        backgroundColor: '#F8FAF8',
+        color: '#1A251D'
       }}
     >
       {/* HEADER */}
@@ -106,7 +106,7 @@ const Login = ({ onLogin }) => {
           justifyContent: 'space-between',
           gap: { xs: 1, sm: 2 },
           backgroundColor: '#fff',
-          borderBottom: '1px solid #eeeee8'
+          borderBottom: '1px solid #E5ECE4'
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.75, sm: 1.25 }, minWidth: 0 }}>
@@ -117,12 +117,12 @@ const Login = ({ onLogin }) => {
               flex: '0 0 auto',
               display: 'grid',
               placeItems: 'center',
-              border: '1px solid #e1e7db',
+              border: '1px solid #E5ECE4',
               borderRadius: 2,
-              backgroundColor: '#f4f6f0'
+              backgroundColor: '#F4F7F3'
             }}
           >
-            <Settings sx={{ color: '#607858', fontSize: 21 }} />
+            <Settings sx={{ color: '#2E6F40', fontSize: 21 }} />
           </Box>
 
           <Box>
@@ -131,7 +131,7 @@ const Login = ({ onLogin }) => {
                 fontWeight: 700,
                 fontSize: { xs: 11, sm: 14 },
                 lineHeight: 1.2,
-                color: '#293528',
+                color: '#1A251D',
                 whiteSpace: 'nowrap'
               }}
             >
@@ -144,7 +144,7 @@ const Login = ({ onLogin }) => {
                 display: { xs: 'none', sm: 'block' },
                 fontSize: { xs: 8, sm: 10 },
                 lineHeight: 1.2,
-                color: '#7e8478',
+                color: '#5E6F61',
                 whiteSpace: 'nowrap'
               }}
             >
@@ -161,8 +161,8 @@ const Login = ({ onLogin }) => {
             px: { xs: 0.75, sm: 1.5 },
             py: 0.65,
             borderRadius: 10,
-            backgroundColor: '#eef1e9',
-            color: '#65735d',
+            backgroundColor: '#F4F7F3',
+            color: '#5E6F61',
             fontSize: { xs: 8, sm: 10 },
             fontWeight: 600,
             whiteSpace: { xs: 'normal', sm: 'nowrap' },
@@ -172,7 +172,7 @@ const Login = ({ onLogin }) => {
             flexShrink: 0
           }}
         >
-          <Box component="span" sx={{ color: '#718760', fontSize: 9 }}>
+          <Box component="span" sx={{ color: '#2E6F40', fontSize: 9 }}>
             ●
           </Box>
           Portal Khusus Santri &amp; Wali Santri
@@ -203,9 +203,9 @@ const Login = ({ onLogin }) => {
             display: { xs: 'flex', sm: 'block' },
             flexDirection: 'column',
             overflow: 'hidden',
-            border: '1px solid #efefe9',
+            border: '1px solid #E5ECE4',
             borderRadius: { xs: 2.5, md: 4 },
-            boxShadow: '0 14px 36px rgba(48, 57, 42, 0.09)'
+            boxShadow: '0 14px 36px rgba(26, 37, 29, 0.09)'
           }}
         >
           {/* PANEL HIJAU */}
@@ -234,9 +234,9 @@ const Login = ({ onLogin }) => {
               flexDirection: 'column',
               justifyContent: 'space-between',
               color: '#fff',
-              backgroundColor: '#526d4b',
+              backgroundColor: '#2E6F40',
               backgroundImage:
-                'radial-gradient(rgba(255,255,255,0.11) 1px, transparent 1px), linear-gradient(135deg, #607b56, #405b3c)',
+                'radial-gradient(rgba(255,255,255,0.11) 1px, transparent 1px), linear-gradient(135deg, #4E8F5E, #1D4F2C)',
               backgroundSize: '16px 16px, 100% 100%'
             }}
           >
@@ -249,14 +249,14 @@ const Login = ({ onLogin }) => {
                   mb: 1.5,
                   borderRadius: 1,
                   backgroundColor: 'rgba(255,255,255,0.16)',
-                  color: '#edf3e7',
+                  color: '#F8FAF8',
                   fontSize: 10,
                   fontWeight: 700
                 }}
               >
                 <Box
                   component="span"
-                  sx={{ color: '#f1c27b', mr: 0.75 }}
+                  sx={{ color: '#F59E0B', mr: 0.75 }}
                 >
                   ✦
                 </Box>
@@ -286,7 +286,7 @@ const Login = ({ onLogin }) => {
               <Typography
                 sx={{
                   maxWidth: 390,
-                  color: '#e1e9dc',
+                  color: '#E5ECE4',
                   fontSize: { xs: 11, sm: 11, md: 13 },
                   lineHeight: 1.5
                 }}
@@ -305,7 +305,7 @@ const Login = ({ onLogin }) => {
               }}
             >
               <Typography
-                sx={{ mb: 1, color: '#dce6d7', fontSize: 11 }}
+                sx={{ mb: 1, color: '#E5ECE4', fontSize: 11 }}
               >
                 {isRegister
                   ? 'Sudah memiliki akun?'
@@ -321,13 +321,13 @@ const Login = ({ onLogin }) => {
                   px: 2,
                   borderRadius: 1.5,
                   backgroundColor: '#fff',
-                  color: '#40543a',
+                  color: '#1D4F2C',
                   fontSize: 12,
                   fontWeight: 700,
                   textTransform: 'none',
                   boxShadow: 'none',
                   '&:hover': {
-                    backgroundColor: '#f0f2ed',
+                    backgroundColor: '#F4F7F3',
                     boxShadow: 'none'
                   }
                 }}
@@ -375,7 +375,7 @@ const Login = ({ onLogin }) => {
                   fontSize: { xs: 32, sm: 40 },
                   lineHeight: 1.2,
                   fontWeight: 900,
-                  color: '#20261f'
+                  color: '#1A251D'
                 }}
               >
                 {isRegister ? 'DAFTAR' : 'MASUK'}
@@ -384,7 +384,7 @@ const Login = ({ onLogin }) => {
               <Typography
                 sx={{
                   mb: { xs: 2, sm: 3 },
-                  color: '#777c73',
+                  color: '#5E6F61',
                   fontSize: 13,
                   lineHeight: 1.5
                 }}
@@ -395,7 +395,7 @@ const Login = ({ onLogin }) => {
               </Typography>
 
               {!isRegister && (
-                <Typography sx={{ mb: 1.5, color: '#777c73', fontSize: { xs: 9.5, sm: 10 }, lineHeight: 1.6 }}>
+                <Typography sx={{ mb: 1.5, color: '#5E6F61', fontSize: { xs: 9.5, sm: 10 }, lineHeight: 1.6 }}>
                   Akun demo: admin / admin123 (Admin), pengajar / pengajar123 (Pengajar), wali / wali123 (Wali Santri).
                 </Typography>
               )}
@@ -406,7 +406,7 @@ const Login = ({ onLogin }) => {
                 sx={{
                   display: 'block',
                   mb: 0.65,
-                  color: '#495344',
+                  color: '#46594A',
                   fontSize: 13,
                   fontWeight: 800
                 }}
@@ -428,7 +428,7 @@ const Login = ({ onLogin }) => {
                   '& .MuiOutlinedInput-root': {
                     height: 48,
                     borderRadius: 2,
-                    backgroundColor: '#fdfdfc'
+                    backgroundColor: '#FFFFFF'
                   },
                   '& input': { fontSize: 12, py: 1.15 }
                 }}
@@ -436,7 +436,7 @@ const Login = ({ onLogin }) => {
                   input: {
                     endAdornment: (
                       <InputAdornment position="end">
-                        <Person sx={{ color: '#999b94', fontSize: 18 }} />
+                        <Person sx={{ color: '#9EADA0', fontSize: 18 }} />
                       </InputAdornment>
                     )
                   }
@@ -451,7 +451,7 @@ const Login = ({ onLogin }) => {
                     sx={{
                       display: 'block',
                       mb: 0.65,
-                      color: '#495344',
+                      color: '#46594A',
                       fontSize: 13,
                       fontWeight: 800
                     }}
@@ -474,7 +474,7 @@ const Login = ({ onLogin }) => {
                       '& .MuiOutlinedInput-root': {
                         height: 48,
                         borderRadius: 2,
-                        backgroundColor: '#fdfdfc'
+                        backgroundColor: '#FFFFFF'
                       },
                       '& input': { fontSize: 12, py: 1.15 }
                     }}
@@ -483,7 +483,7 @@ const Login = ({ onLogin }) => {
                         endAdornment: (
                           <InputAdornment position="end">
                             <Email
-                              sx={{ color: '#999b94', fontSize: 18 }}
+                              sx={{ color: '#9EADA0', fontSize: 18 }}
                             />
                           </InputAdornment>
                         )
@@ -499,7 +499,7 @@ const Login = ({ onLogin }) => {
                 sx={{
                   display: 'block',
                   mb: 0.65,
-                  color: '#495344',
+                  color: '#46594A',
                   fontSize: 13,
                   fontWeight: 800
                 }}
@@ -522,7 +522,7 @@ const Login = ({ onLogin }) => {
                   '& .MuiOutlinedInput-root': {
                     height: 48,
                     borderRadius: 2,
-                    backgroundColor: '#fdfdfc'
+                    backgroundColor: '#FFFFFF'
                   },
                   '& input': { fontSize: 12, py: 1.15 }
                 }}
@@ -552,7 +552,7 @@ const Login = ({ onLogin }) => {
                         <LockOutlined
                           sx={{
                             ml: 0.5,
-                            color: '#999b94',
+                            color: '#9EADA0',
                             fontSize: 17
                           }}
                         />
@@ -563,18 +563,18 @@ const Login = ({ onLogin }) => {
               />
 
               {loginError && !isRegister && (
-                <Typography role="alert" sx={{ mt: 0.5, color: '#B42318', fontSize: 11 }}>
+                <Typography role="alert" sx={{ mt: 0.5, color: '#DC2626', fontSize: 11 }}>
                   {loginError}
                 </Typography>
               )}
 
               {!isRegister && <Box sx={{ mb: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
                 <FormControlLabel
-                  control={<Checkbox name="rememberMe" checked={formData.rememberMe} onChange={handleChange} size="small" sx={{ p: 0.5, mr: 0.25, color: '#bbc0b7', '&.Mui-checked': { color: '#526d4b' } }} />}
-                  label={<Typography sx={{ color: '#737970', fontSize: 11 }}>Ingat saya</Typography>}
+                  control={<Checkbox name="rememberMe" checked={formData.rememberMe} onChange={handleChange} size="small" sx={{ p: 0.5, mr: 0.25, color: '#9EADA0', '&.Mui-checked': { color: '#2E6F40' } }} />}
+                  label={<Typography sx={{ color: '#5E6F61', fontSize: 11 }}>Ingat saya</Typography>}
                   sx={{ m: 0 }}
                 />
-                <Link href="#" underline="none" sx={{ color: '#5c7053', fontSize: 11, fontWeight: 600 }}>
+                <Link href="#" underline="none" sx={{ color: '#2E6F40', fontSize: 11, fontWeight: 600 }}>
                   Lupa Password?
                 </Link>
               </Box>}
@@ -588,14 +588,14 @@ const Login = ({ onLogin }) => {
                   }}
                   sx={{
                     minHeight: 40,
-                    borderColor: '#e2e4de',
+                    borderColor: '#DCE5DC',
                     borderRadius: 2,
-                    color: '#58634f',
+                    color: '#5E6F61',
                     fontSize: 11,
                     fontWeight: 800,
                     '&:hover': {
-                      borderColor: '#526d4b',
-                      backgroundColor: '#f8f9f6'
+                      borderColor: '#2E6F40',
+                      backgroundColor: '#F8FAF8'
                     }
                   }}
                 >
@@ -608,11 +608,11 @@ const Login = ({ onLogin }) => {
                   sx={{
                     minHeight: 40,
                     borderRadius: 2,
-                    backgroundColor: '#58734f',
+                    backgroundColor: '#2E6F40',
                     fontSize: 11,
                     fontWeight: 800,
-                    boxShadow: '0 3px 8px rgba(43,64,37,0.18)',
-                    '&:hover': { backgroundColor: '#46613f' }
+                    boxShadow: '0 3px 8px rgba(46,111,64,0.18)',
+                    '&:hover': { backgroundColor: '#1D4F2C' }
                   }}
                 >
                   {isRegister ? 'DAFTAR' : 'MASUK'}
@@ -627,12 +627,12 @@ const Login = ({ onLogin }) => {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     gap: 1.5,
-                    borderTop: '1px solid #f0f1ed'
+                    borderTop: '1px solid #E5ECE4'
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
-                    <Help sx={{ color: '#66805b', fontSize: 15 }} />
-                    <Typography sx={{ color: '#777c73', fontSize: 10.5 }}>
+                    <Help sx={{ color: '#4E8F5E', fontSize: 15 }} />
+                    <Typography sx={{ color: '#5E6F61', fontSize: 10.5 }}>
                       Butuh bantuan login?
                     </Typography>
                   </Box>
@@ -641,7 +641,7 @@ const Login = ({ onLogin }) => {
                     href="#"
                     underline="none"
                     sx={{
-                      color: '#536b49',
+                      color: '#2E6F40',
                       fontSize: 10.5,
                       fontWeight: 700,
                       whiteSpace: 'nowrap'
@@ -668,9 +668,9 @@ const Login = ({ onLogin }) => {
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: 1.5,
-          borderTop: '1px solid #ecece5',
+          borderTop: '1px solid #E5ECE4',
           backgroundColor: '#fff',
-          color: '#84877e'
+          color: '#5E6F61'
         }}
       >
         <Typography sx={{ fontSize: 9.5, textAlign: 'center' }}>
