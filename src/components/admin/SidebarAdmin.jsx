@@ -1,13 +1,13 @@
 import {
-  Book as BookIcon,
-  Class as ClassIcon,
-  CreditCard as CreditCardIcon,
-  Home as HomeIcon,
-  MenuBook as MenuBookIcon,
-  People as PeopleIcon,
-  School as SchoolIcon,
-  Assessment as AssessmentIcon,
-  Close as CloseIcon,
+  MenuBook,
+  PeopleAltOutlined,
+  SchoolOutlined,
+  ClassOutlined,
+  AssessmentOutlined,
+  CreditCardOutlined,
+  DescriptionOutlined,
+  Close,
+  DashboardOutlined,
 } from "@mui/icons-material";
 import {
   Box,
@@ -19,23 +19,169 @@ import {
   ListItemText,
   Typography,
   useMediaQuery,
+  useTheme,
+  Chip,
 } from "@mui/material";
 import { Link, NavLink } from "react-router-dom";
 
 const menuAdmin = [
-  { label: "Beranda", to: "/admin/dashboard", icon: HomeIcon },
-  { label: "Data Santri", to: "/admin/data-santri", icon: PeopleIcon },
-  { label: "Data Pengajar", to: "/admin/data-pengajar", icon: SchoolIcon },
-  { label: "Daftar Kelas", to: "/admin/daftar-kelas", icon: ClassIcon },
-  { label: "Progres Belajar", to: "/admin/progres-belajar", icon: AssessmentIcon },
-  { label: "Pembayaran SPP", to: "/admin/pembayaran-spp", icon: CreditCardIcon },
-  { label: "Raport", to: "/admin/raport", icon: MenuBookIcon },
+  { label: "Beranda", to: "/admin/dashboard", icon: DashboardOutlined },
+  { label: "Data Santri", to: "/admin/data-santri", icon: PeopleAltOutlined },
+  { label: "Data Pengajar", to: "/admin/data-pengajar", icon: SchoolOutlined },
+  { label: "Daftar Kelas", to: "/admin/daftar-kelas", icon: ClassOutlined },
+  { label: "Progres Belajar", to: "/admin/progres-belajar", icon: AssessmentOutlined },
+  { label: "Pembayaran SPP", to: "/admin/pembayaran-spp", icon: CreditCardOutlined },
+  { label: "Raport", to: "/admin/raport", icon: DescriptionOutlined },
 ];
 
-const drawerWidth = 245;
+const drawerWidth = 260;
 
 export default function SidebarAdmin({ isOpen = false, onClose }) {
-  const isMobile = useMediaQuery("(max-width:800px)");
+  const theme = useTheme();
+  const isMobile = useMediaQuery("(max-width:900px)");
+
+  const content = (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        p: 2.5,
+        backgroundColor: "#1E3D25",
+        color: "#FFFFFF",
+      }}
+    >
+      {/* Brand Header */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          mb: 3.5,
+          px: 1,
+        }}
+      >
+        <Box
+          component={Link}
+          to="/admin/dashboard"
+          onClick={onClose}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1.5,
+            color: "inherit",
+            textDecoration: "none",
+          }}
+        >
+          <Box
+            sx={{
+              width: 44,
+              height: 44,
+              borderRadius: "12px",
+              background: "linear-gradient(135deg, #3A8350 0%, #255C34 100%)",
+              display: "grid",
+              placeItems: "center",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              boxShadow: "0 4px 14px rgba(0,0,0,0.2)",
+            }}
+          >
+            <MenuBook sx={{ color: "#FFF", fontSize: 24 }} />
+          </Box>
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: 800, fontSize: "1.05rem", lineHeight: 1.15, letterSpacing: "-0.01em" }}>
+              RSQ-Kids
+            </Typography>
+            <Typography variant="caption" sx={{ color: "#A7C4AD", fontWeight: 500, fontSize: "0.72rem" }}>
+              Admin Management
+            </Typography>
+          </Box>
+        </Box>
+
+        {isMobile && (
+          <IconButton aria-label="Tutup sidebar" onClick={onClose} sx={{ color: "#FFF" }}>
+            <Close fontSize="small" />
+          </IconButton>
+        )}
+      </Box>
+
+      {/* Navigation List */}
+      <List component="nav" disablePadding sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
+        {menuAdmin.map(({ label, to, icon: Icon }) => (
+          <ListItemButton
+            key={label}
+            component={NavLink}
+            to={to}
+            onClick={onClose}
+            sx={{
+              minHeight: 46,
+              px: 2,
+              borderRadius: "12px",
+              color: "#C2D9C7",
+              transition: "all 0.2s ease",
+              "& .MuiListItemIcon-root": {
+                minWidth: 36,
+                color: "#A2C1A8",
+                transition: "color 0.2s ease",
+              },
+              "& .MuiListItemText-primary": {
+                fontSize: "0.88rem",
+                fontWeight: 500,
+              },
+              "&:hover": {
+                backgroundColor: "rgba(255, 255, 255, 0.08)",
+                color: "#FFFFFF",
+                "& .MuiListItemIcon-root": { color: "#FFFFFF" },
+              },
+              "&.active": {
+                backgroundColor: "#2E6F40",
+                color: "#FFFFFF",
+                fontWeight: 700,
+                boxShadow: "0 4px 14px rgba(46, 111, 64, 0.4)",
+                "& .MuiListItemIcon-root": { color: "#FBBF24" },
+                "& .MuiListItemText-primary": { fontWeight: 700 },
+              },
+            }}
+          >
+            <ListItemIcon>
+              <Icon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary={label} />
+          </ListItemButton>
+        ))}
+      </List>
+
+      {/* Bottom Academic Year Widget */}
+      <Box
+        sx={{
+          mt: "auto",
+          p: 2,
+          borderRadius: "14px",
+          backgroundColor: "rgba(255, 255, 255, 0.06)",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
+        }}
+      >
+        <Chip
+          label="TAHUN AJARAN"
+          size="small"
+          sx={{
+            height: 20,
+            fontSize: "0.65rem",
+            fontWeight: 800,
+            backgroundColor: "rgba(245, 158, 11, 0.2)",
+            color: "#FBBF24",
+            border: "1px solid rgba(245, 158, 11, 0.35)",
+            mb: 1,
+          }}
+        />
+        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#FFFFFF", fontSize: "0.9rem" }}>
+          2026 / 2027
+        </Typography>
+        <Typography variant="caption" sx={{ color: "#B3CBBB", display: "block", fontSize: "0.75rem" }}>
+          Semester Ganjil · Aktif
+        </Typography>
+      </Box>
+    </Box>
+  );
 
   return (
     <Drawer
@@ -44,114 +190,17 @@ export default function SidebarAdmin({ isOpen = false, onClose }) {
       onClose={onClose}
       ModalProps={{ keepMounted: true }}
       sx={{
-        width: isMobile ? 255 : drawerWidth,
+        width: drawerWidth,
         flexShrink: 0,
         "& .MuiDrawer-paper": {
-          position: isMobile ? "fixed" : "relative",
-          width: isMobile ? 255 : drawerWidth,
-          height: "100dvh",
+          width: drawerWidth,
           boxSizing: "border-box",
-          overflowX: "hidden",
-          border: 0,
-          bgcolor: "#30442E",
-          color: "#fff",
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          border: "none",
+          backgroundColor: "#1E3D25",
         },
       }}
     >
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          minHeight: "100%",
-          p: isMobile ? "22px 15px 18px" : "25px 15px 18px",
-        }}
-      >
-        <Box sx={{ display: "flex", alignItems: "center", mb: "35px", px: "8px" }}>
-          <Box
-            component={Link}
-            to="/admin/dashboard"
-            onClick={onClose}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: "11px",
-              color: "inherit",
-              textDecoration: "none",
-              minWidth: 0,
-            }}
-          >
-            <Box
-              sx={{
-                width: 43,
-                height: 43,
-                display: "grid",
-                placeItems: "center",
-                flexShrink: 0,
-                border: "1px solid rgba(255,255,255,.42)",
-                borderRadius: "11px",
-                color: "#F8F7EF",
-              }}
-            >
-              <BookIcon fontSize="medium" />
-            </Box>
-            <Box>
-              <Typography sx={{ mb: "4px", fontSize: 17, fontWeight: 800, lineHeight: 1.2 }}>
-                RSQ-Kids
-              </Typography>
-              <Typography sx={{ color: "#D5DFCE", fontSize: 9, whiteSpace: "nowrap" }}>
-                Rumah Tahfidz Qur&apos;an
-              </Typography>
-            </Box>
-          </Box>
-          {isMobile && (
-            <IconButton
-              aria-label="Tutup sidebar"
-              onClick={onClose}
-              sx={{ ml: "auto", color: "#fff" }}
-            >
-              <CloseIcon />
-            </IconButton>
-          )}
-        </Box>
-
-        <List component="nav" aria-label="Menu admin" disablePadding sx={{ display: "grid", gap: "6px" }}>
-          {menuAdmin.map(({ label, to, icon: Icon }) => (
-            <ListItemButton
-              key={label}
-              component={NavLink}
-              to={to}
-              onClick={onClose}
-              className={({ isActive }) => (isActive ? "active" : "")}
-              sx={{
-                minHeight: 44,
-                px: "13px",
-                gap: "12px",
-                borderRadius: "9px",
-                color: "#E1E8DC",
-                transition: "background .18s ease",
-                "& .MuiListItemIcon-root": { minWidth: 0, color: "inherit" },
-                "& .MuiListItemText-primary": {
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  fontSize: 11,
-                  fontWeight: 500,
-                },
-                "&:hover, &.active": { bgcolor: "#506748", color: "#fff" },
-                "&.active": { boxShadow: "inset 3px 0 #D5E1CA" },
-              }}
-            >
-              <ListItemIcon><Icon fontSize="small" /></ListItemIcon>
-              <ListItemText primary={label} />
-            </ListItemButton>
-          ))}
-        </List>
-
-        <Typography sx={{ mt: "auto", px: "10px", pt: "15px", color: "#D5DFCE", fontSize: 10, lineHeight: 1.6 }}>
-          Tahun Ajaran 2026 / 2027
-          <br />
-          Semester Ganjil
-        </Typography>
-      </Box>
+      {content}
     </Drawer>
   );
 }

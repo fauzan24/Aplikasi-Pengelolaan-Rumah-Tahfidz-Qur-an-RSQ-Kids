@@ -1,14 +1,15 @@
-
 import { useMemo, useState } from "react";
 import {
   Add,
   AssignmentTurnedIn,
-  CheckCircle,
+  CheckCircleRounded,
   Download,
   MenuBook,
-  PeopleAlt,
-  ReportProblem,
+  PeopleAltOutlined,
+  HourglassEmptyRounded,
   Search,
+  SchoolOutlined,
+  ArrowForward,
 } from "@mui/icons-material";
 import {
   Box,
@@ -16,6 +17,7 @@ import {
   Card,
   CardContent,
   Chip,
+  IconButton,
   InputAdornment,
   MenuItem,
   Paper,
@@ -28,636 +30,474 @@ import {
   TableRow,
   TextField,
   Typography,
+  Avatar,
+  Snackbar,
+  Alert,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import LayoutPengajar from "../../components/pengajar/LayoutPengajar";
-
-const dataAwal = [
-  {
-    id: "RSQ001",
-    nama: "Jauza Askana",
-    kelas: "Pagi",
-    nilai: 89,
-    lengkap: true,
-  },
-  {
-    id: "RSQ002",
-    nama: "Dinda Azzahra",
-    kelas: "Pagi",
-    nilai: 89,
-    lengkap: true,
-  },
-  {
-    id: "RSQ003",
-    nama: "Raffa Fadila",
-    kelas: "Pagi",
-    nilai: 0,
-    lengkap: false,
-  },
-  {
-    id: "RSQ004",
-    nama: "Dede Ridho",
-    kelas: "Pagi",
-    nilai: 88,
-    lengkap: true,
-  },
-  {
-    id: "RSQ005",
-    nama: "Kalila Haura",
-    kelas: "Pagi",
-    nilai: 89,
-    lengkap: true,
-  },
-  {
-    id: "RSQ006",
-    nama: "Fauzan Najib Ali",
-    kelas: "Pagi",
-    nilai: 89,
-    lengkap: true,
-  },
-  {
-    id: "RSQ007",
-    nama: "Muhammad Fikri",
-    kelas: "Pagi",
-    nilai: 88,
-    lengkap: true,
-  },
-  {
-    id: "RSQ008",
-    nama: "Aisyah Putri",
-    kelas: "Sore",
-    nilai: 89,
-    lengkap: true,
-  },
-  {
-    id: "RSQ009",
-    nama: "Ahmad Rizky",
-    kelas: "Sore",
-    nilai: 88,
-    lengkap: true,
-  },
-  {
-    id: "RSQ010",
-    nama: "Zahra Nabila",
-    kelas: "Sore",
-    nilai: 90,
-    lengkap: true,
-  },
-];
-
-const warnaKartu = {
-  hijau: { warna: "#5A734E", latar: "#EFF3EA" },
-  kuning: { warna: "#B18A4C", latar: "#F8F1E2" },
-  biru: { warna: "#6483BD", latar: "#EDF2FB" },
-  jingga: { warna: "#C47B48", latar: "#FAEEE5" },
-};
+import { useNilai } from "../../context/NilaiContext";
 
 export default function DashboardPengajar({ onLogout, onNavigate }) {
+  const navigate = useNavigate();
+  const { santri } = useNilai();
   const [keyword, setKeyword] = useState("");
-  const [filterStatus, setFilterStatus] = useState("Semua Status");
+  const [filterKelas, setFilterKelas] = useState("Semua");
+  const [filterStatus, setFilterStatus] = useState("Semua");
+  const [toast, setToast] = useState({ open: false, message: "" });
 
-  const jumlahLengkap = dataAwal.filter((santri) => santri.lengkap).length;
-  const jumlahBelum = dataAwal.length - jumlahLengkap;
+  const aspekPenilaian = ["bacaan", "doa", "tahfidz", "hadits", "adab"];
+
+  const hitungRataRata = (item) => {
+    const total = aspekPenilaian.reduce((sum, aspek) => sum + Number(item[aspek] || 0), 0);
+    return (total / aspekPenilaian.length).toFixed(1);
+  };
+
+  const isLengkap = (item) => {
+    return aspekPenilaian.every(
+      (aspek) =>
+        item[aspek] !== "" &&
+        item[aspek] !== null &&
+        item[aspek] !== undefined &&
+        item[aspek] !== "-" &&
+        Number.isFinite(Number(item[aspek]))
+    );
+  };
+
+  const jumlahLengkap = santri.filter(isLengkap).length;
+  const jumlahBelum = santri.length - jumlahLengkap;
 
   const dataTampil = useMemo(() => {
-    return dataAwal.filter((santri) => {
-      const kataKunci = keyword.toLowerCase();
+    return santri.filter((item) => {
+      const matchSearch =
+        item.nama.toLowerCase().includes(keyword.toLowerCase()) ||
+        item.nis.toLowerCase().includes(keyword.toLowerCase());
 
-      const cocokNama =
-        santri.nama.toLowerCase().includes(kataKunci) ||
-        santri.id.toLowerCase().includes(kataKunci);
+      const matchKelas = filterKelas === "Semua" || item.kelas === filterKelas;
 
-      const cocokStatus =
-        filterStatus === "Semua Status" ||
-        (filterStatus === "Lengkap" && santri.lengkap) ||
-        (filterStatus === "Belum Lengkap" && !santri.lengkap);
+      const lengkap = isLengkap(item);
+      const matchStatus =
+        filterStatus === "Semua" ||
+        (filterStatus === "Lengkap" && lengkap) ||
+        (filterStatus === "Belum" && !lengkap);
 
-      return cocokNama && cocokStatus;
+      return matchSearch && matchKelas && matchStatus;
     });
-  }, [keyword, filterStatus]);
+  }, [santri, keyword, filterKelas, filterStatus]);
 
   const unduhRekap = () => {
-    const header = ["NIS", "Nama Santri", "Kelas", "Nilai", "Status"];
-
-    const rows = dataTampil.map((santri) => [
-      santri.id,
-      santri.nama,
-      santri.kelas,
-      santri.nilai || "-",
-      santri.lengkap ? "Lengkap" : "Belum Lengkap",
+    const header = ["NIS", "Nama Santri", "Kelas", "Rata-rata", "Status"];
+    const rows = dataTampil.map((item) => [
+      item.nis,
+      item.nama,
+      item.kelas,
+      hitungRataRata(item),
+      isLengkap(item) ? "Lengkap" : "Belum Lengkap",
     ]);
 
     const csv = [header, ...rows]
-      .map((row) =>
-        row
-          .map((value) => `"${String(value).replace(/"/g, '""')}"`)
-          .join(",")
-      )
+      .map((row) => row.map((val) => `"${String(val).replace(/"/g, '""')}"`).join(","))
       .join("\n");
 
-    const blob = new Blob(["\uFEFF" + csv], {
-      type: "text/csv;charset=utf-8;",
-    });
-
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-
     link.href = url;
-    link.download = "rekap-santri-rsq-kids.csv";
+    link.download = "rekap-nilai-santri-rsq-kids.csv";
     document.body.appendChild(link);
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
+
+    setToast({ open: true, message: "Rekap nilai CSV berhasil diunduh!" });
   };
 
-  const kartu = [
+  const kartuStat = [
     {
-      label: "Total Santri",
-      angka: dataAwal.length,
-      deskripsi: "Santri dalam kelas",
-      badge: "Aktif",
-      icon: PeopleAlt,
-      warna: "hijau",
+      label: "Total Santri Binaan",
+      angka: santri.length,
+      desc: "Santri aktif terdaftar",
+      icon: PeopleAltOutlined,
+      color: "#2E6F40",
+      bg: "#EBF5ED",
     },
     {
       label: "Kelas Diampu",
-      angka: 2,
-      deskripsi: "Kelas Pagi A & Kelas Sore A",
+      angka: "2",
+      desc: "Kelas Pagi & Kelas Sore",
       icon: MenuBook,
-      warna: "kuning",
+      color: "#D97706",
+      bg: "#FEF3C7",
     },
     {
-      label: "Nilai Lengkap",
-      angka: `${jumlahLengkap}/${dataAwal.length}`,
-      deskripsi: "Data nilai santri",
-      badge: "Tersimpan",
-      icon: CheckCircle,
-      warna: "biru",
+      label: "Nilai Terinput Lengkap",
+      angka: `${jumlahLengkap} / ${santri.length}`,
+      desc: "Siap cetak rapor",
+      icon: CheckCircleRounded,
+      color: "#16A34A",
+      bg: "#DCFCE7",
     },
     {
-      label: "Belum Lengkap",
+      label: "Perlu Dilengkapi",
       angka: jumlahBelum,
-      deskripsi: "Perlu ditindaklanjuti",
-      badge: "Periksa",
-      icon: ReportProblem,
-      warna: "jingga",
+      desc: "Belum lengkap nilainya",
+      icon: HourglassEmptyRounded,
+      color: "#DC2626",
+      bg: "#FEE2E2",
     },
   ];
 
   return (
-    <LayoutPengajar
-      onNavigate={onNavigate}
-      onLogout={onLogout}
-    >
-      <Stack spacing={3} sx={{ width: "100%", minWidth: 0, pb: 3 }}>
-        <Stack
-          direction={{ xs: "column", md: "row" }}
-          spacing={2}
-          sx={{
-            alignItems: { md: "center" },
-            justifyContent: "space-between",
-          }}
-        >
-          <Box>
-            <Typography
-              component="h1"
-              variant="h5"
-              fontWeight={800}
-              color="#28352C"
-            >
-              Selamat Datang, Pengajar 👋
-            </Typography>
-
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ mt: 0.5 }}
-            >
-              Pantau perkembangan santri, nilai, dan jadwal mengajar kamu hari ini.
-            </Typography>
-          </Box>
-
-          <Stack
-            direction="row"
-            spacing={1}
-            sx={{ width: { xs: "100%", md: "auto" } }}
-          >
-            <Button
-              variant="outlined"
-              startIcon={<Download />}
-              onClick={unduhRekap}
-              sx={{
-                flex: { xs: 1, md: "initial" },
-                minHeight: 40,
-                borderColor: "#E2E0D6",
-                borderRadius: 2.5,
-                color: "#566752",
-                fontSize: 12,
-                textTransform: "none",
-              }}
-            >
-              Unduh Rekap
-            </Button>
-
-            <Button
-              variant="contained"
-              startIcon={<Add />}
-              onClick={() => onNavigate?.("Input Nilai")}
-              sx={{
-                flex: { xs: 1, md: "initial" },
-                minHeight: 40,
-                borderRadius: 2.5,
-                backgroundColor: "#5A734E",
-                fontSize: 12,
-                textTransform: "none",
-                "&:hover": { backgroundColor: "#30442E" },
-              }}
-            >
-              Input Nilai
-            </Button>
-          </Stack>
-        </Stack>
-
-        <Box
-          aria-label="Ringkasan data"
-          sx={{
-            display: "grid",
-            gridTemplateColumns: {
-              xs: "repeat(2, minmax(0, 1fr))",
-              lg: "repeat(4, minmax(0, 1fr))",
-            },
-            gap: 1.75,
-          }}
-        >
-          {kartu.map(
-            ({ label, angka, deskripsi, badge, icon: Icon, warna }) => (
-              <Card
-                key={label}
-                variant="outlined"
-                sx={{
-                  minWidth: 0,
-                  borderColor: "#E9E6DD",
-                  borderRadius: 2,
-                  boxShadow: "0 2px 5px rgba(40,53,44,.025)",
-                }}
-              >
-                <CardContent
-                  sx={{
-                    p: { xs: 1.5, sm: 2 },
-                    "&:last-child": { pb: { xs: 1.5, sm: 2 } },
-                  }}
-                >
-                  <Stack
-                    direction="row"
-                    spacing={1}
-                    sx={{
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ fontSize: { xs: 11, sm: 12 } }}
-                    >
-                      {label}
-                    </Typography>
-
-                    <Box
-                      sx={{
-                        width: { xs: 34, sm: 42 },
-                        height: { xs: 34, sm: 42 },
-                        display: "grid",
-                        placeItems: "center",
-                        flex: "0 0 auto",
-                        borderRadius: 2,
-                        backgroundColor: warnaKartu[warna].latar,
-                        color: warnaKartu[warna].warna,
-                      }}
-                    >
-                      <Icon fontSize="small" />
-                    </Box>
-                  </Stack>
-
-                  <Typography
-                    variant="h4"
-                    fontWeight={800}
-                    color="#28352C"
-                    sx={{
-                      mt: 1.5,
-                      mb: 1,
-                      fontSize: { xs: 25, sm: 30 },
-                    }}
-                  >
-                    {angka}
-                  </Typography>
-
-                  <Stack
-                    direction={{ xs: "column", sm: "row" }}
-                    spacing={0.75}
-                    sx={{
-                      alignItems: { sm: "center" },
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{ fontSize: 11 }}
-                    >
-                      {deskripsi}
-                    </Typography>
-
-                    {badge && (
-                      <Chip
-                        size="small"
-                        label={badge}
-                        sx={{
-                          alignSelf: { xs: "flex-start", sm: "auto" },
-                          height: 24,
-                          backgroundColor:
-                            warna === "jingga" ? "#FFF9EA" : "#EEF3E8",
-                          color:
-                            warna === "jingga" ? "#A96A09" : "#628255",
-                          border:
-                            warna === "jingga"
-                              ? "1px solid #F6D58A"
-                              : "none",
-                          fontSize: 10,
-                        }}
-                      />
-                    )}
-                  </Stack>
-                </CardContent>
-              </Card>
-            )
-          )}
-        </Box>
-
+    <LayoutPengajar onNavigate={onNavigate} onLogout={onLogout}>
+      <Stack spacing={3.5} sx={{ width: "100%", maxWidth: 1280, mx: "auto", pb: 4 }}>
+        {/* Welcome Hero Banner */}
         <Paper
-          variant="outlined"
+          elevation={0}
           sx={{
-            width: "100%",
+            p: { xs: 3, sm: 4 },
+            borderRadius: "20px",
+            background: "linear-gradient(135deg, #2E6F40 0%, #1A4426 100%)",
+            color: "#FFFFFF",
+            position: "relative",
             overflow: "hidden",
-            borderColor: "#E9E6DD",
-            borderRadius: 2,
-            boxShadow: "0 2px 5px rgba(40,53,44,.025)",
+            boxShadow: "0 10px 30px rgba(30, 75, 42, 0.15)",
           }}
         >
-          <Stack
-            direction={{ xs: "column", lg: "row" }}
-            spacing={2}
+          <Box
             sx={{
-              alignItems: { lg: "center" },
+              position: "relative",
+              zIndex: 1,
+              display: "flex",
+              flexDirection: { xs: "column", md: "row" },
               justifyContent: "space-between",
-              px: { xs: 2, sm: 2.75 },
-              py: 2,
+              alignItems: { xs: "flex-start", md: "center" },
+              gap: 2.5,
             }}
           >
             <Box>
-              <Stack
-                direction="row"
-                spacing={1}
+              <Chip
+                label="SEMESTER GANJIL · T.A 2026/2027"
+                size="small"
                 sx={{
-                  alignItems: "center",
-                  mb: 0.75,
-                  flexWrap: "wrap",
+                  backgroundColor: "rgba(255,255,255,0.15)",
+                  color: "#FBBF24",
+                  fontWeight: 800,
+                  fontSize: "0.72rem",
+                  letterSpacing: "0.06em",
+                  mb: 1.5,
+                  border: "1px solid rgba(255,255,255,0.25)",
                 }}
-              >
-                <Typography
-                  component="h2"
-                  variant="h6"
-                  fontWeight={800}
-                  color="#28352C"
-                >
-                  Daftar Santri
-                </Typography>
-
-                <Chip
-                  size="small"
-                  label={`${dataAwal.length} Santri`}
-                  sx={{
-                    height: 24,
-                    backgroundColor: "#F0F3EB",
-                    color: "#5A734E",
-                    fontSize: 10,
-                  }}
-                />
-              </Stack>
-
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ fontSize: 12 }}
-              >
-                Pantau nilai dan kelengkapan data santri yang kamu ampu.
+              />
+              <Typography variant="h4" sx={{ fontWeight: 800, color: "#FFF", mb: 0.75 }}>
+                Selamat Datang, Ustadzah Aisyah
+              </Typography>
+              <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.85)", maxWidth: 560 }}>
+                Pantau perkembangan hafalan santri, input nilai harian, dan pantau kelengkapan raport santri binaan ananda.
               </Typography>
             </Box>
 
-            <Stack
-              direction={{ xs: "column", sm: "row" }}
-              spacing={1}
-              sx={{ width: { xs: "100%", lg: "auto" } }}
-            >
-              <TextField
-                size="small"
-                placeholder="Cari nama santri..."
-                value={keyword}
-                onChange={(event) => setKeyword(event.target.value)}
-                inputProps={{
-                  "aria-label": "Cari nama atau NIS santri",
-                }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Search fontSize="small" />
-                    </InputAdornment>
-                  ),
-                }}
+            <Stack direction="row" spacing={1.5} sx={{ width: { xs: "100%", md: "auto" } }}>
+              <Button
+                variant="outlined"
+                startIcon={<Download />}
+                onClick={unduhRekap}
                 sx={{
-                  width: { xs: "100%", sm: 230 },
-                  "& .MuiOutlinedInput-root": {
-                    backgroundColor: "#FCFBF8",
-                    borderRadius: 2.5,
-                  },
-                  "& .MuiInputBase-input": {
-                    fontSize: 12,
-                  },
-                }}
-              />
-
-              {/* Filter status tanpa label kecil di atas dropdown */}
-              <TextField
-                select
-                size="small"
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                sx={{
-                  minWidth: 190,
-                  "& .MuiOutlinedInput-root": {
-                    backgroundColor: "#FCFBF8",
-                    borderRadius: 2.5,
-                  },
-                  "& .MuiSelect-select": {
-                    fontSize: 12,
+                  flex: { xs: 1, sm: "initial" },
+                  color: "#FFFFFF",
+                  borderColor: "rgba(255,255,255,0.4)",
+                  backgroundColor: "rgba(255,255,255,0.08)",
+                  fontWeight: 700,
+                  fontSize: "0.86rem",
+                  py: 1.15,
+                  px: 2.2,
+                  borderRadius: "12px",
+                  "&:hover": {
+                    borderColor: "#FFFFFF",
+                    backgroundColor: "rgba(255,255,255,0.18)",
                   },
                 }}
               >
-                <MenuItem value="Semua Status">
-                  Semua Status
-                </MenuItem>
-
-                <MenuItem value="Lengkap">
-                  Lengkap
-                </MenuItem>
-
-                <MenuItem value="Belum Lengkap">
-                  Belum Lengkap
-                </MenuItem>
-              </TextField>
+                Unduh Rekap
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<Add />}
+                onClick={() => navigate("/pengajar/input-nilai")}
+                sx={{
+                  flex: { xs: 1, sm: "initial" },
+                  backgroundColor: "#F59E0B",
+                  color: "#1B2A1E",
+                  fontWeight: 700,
+                  fontSize: "0.86rem",
+                  py: 1.15,
+                  px: 2.5,
+                  borderRadius: "12px",
+                  boxShadow: "0 4px 14px rgba(245, 158, 11, 0.35)",
+                  "&:hover": {
+                    backgroundColor: "#D97706",
+                  },
+                }}
+              >
+                Input Nilai
+              </Button>
             </Stack>
-          </Stack>
+          </Box>
+        </Paper>
 
-          <TableContainer sx={{ overflowX: "auto" }}>
-            <Table aria-label="Daftar santri" sx={{ minWidth: 700 }}>
+        {/* 4 Stat Cards */}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "repeat(1, minmax(0, 1fr))",
+              sm: "repeat(2, minmax(0, 1fr))",
+              lg: "repeat(4, minmax(0, 1fr))",
+            },
+            gap: 2.5,
+          }}
+        >
+          {kartuStat.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Card
+                key={item.label}
+                sx={{
+                  width: "100%",
+                  p: 2.5,
+                  borderRadius: "16px",
+                  "&:hover": {
+                    transform: "translateY(-4px)",
+                    boxShadow: "0 12px 25px -4px rgba(0,0,0,0.08)",
+                    borderColor: item.color,
+                  },
+                }}
+              >
+              <CardContent sx={{ p: 0, width: "100%", "&:last-child": { pb: 0 } }}>
+                {/* Stack utama yang membagi area Kiri (Teks) dan Kanan (Ikon) */}
+                <Box
+                  sx={{
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "flex-start",
+                    justifyContent: "space-between",
+                    gap: 2,
+                  }}
+                >
+                  {/* KELOMPOK KIRI: Semua Teks */}
+                  <Box sx={{ flex: "1 1 auto", minWidth: 0 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: "#6A7E6D", mb: 0.5 }}>
+                      {item.label}
+                    </Typography>
+
+                    <Typography variant="h3" sx={{ fontWeight: 800, color: "#1A251D", mb: 0.5 }}>
+                      {item.angka}
+                    </Typography>
+
+                    <Typography variant="caption" sx={{ color: "#6A7E6D", fontWeight: 500 }}>
+                      {item.desc}
+                    </Typography>
+                  </Box>
+
+                  {/* KELOMPOK KANAN: Ikon */}
+                  <Box
+                    sx={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: "12px",
+                      backgroundColor: item.bg,
+                      color: item.color,
+                      display: "grid",
+                      placeItems: "center",
+                      flexShrink: 0,
+                      ml: "auto",
+                    }}
+                  >
+                    <Icon sx={{ fontSize: 22 }} />
+                  </Box>
+
+                </Box>
+              </CardContent>
+              </Card>
+            );
+          })}
+        </Box>
+
+        {/* Interactive Santri Table */}
+        <Paper
+          elevation={0}
+          sx={{
+            borderRadius: "18px",
+            border: "1px solid #E5ECE4",
+            backgroundColor: "#FFFFFF",
+            overflow: "hidden",
+          }}
+        >
+          {/* Filter and Search Bar */}
+          <Box sx={{ p: { xs: 2, sm: 3 }, borderBottom: "1px solid #EEF3ED" }}>
+            <Stack
+              direction={{ xs: "column", md: "row" }}
+              spacing={2}
+              alignItems={{ md: "center" }}
+              justifyContent="space-between"
+            >
+              <Box>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: "#1B2A1E" }}>
+                  Daftar Nilai & Santri Binaan
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Periksa progres nilai setiap santri dan pantau kelengkapan nilai raport.
+                </Typography>
+              </Box>
+
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+                <TextField
+                  size="small"
+                  placeholder="Cari nama atau NIS santri..."
+                  value={keyword}
+                  onChange={(e) => setKeyword(e.target.value)}
+                  sx={{ width: { xs: "100%", sm: 240 } }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Search sx={{ color: "#8E9E90", fontSize: 20 }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+
+                <TextField
+                  select
+                  size="small"
+                  value={filterKelas}
+                  onChange={(e) => setFilterKelas(e.target.value)}
+                  sx={{ minWidth: 140 }}
+                >
+                  <MenuItem value="Semua">Semua Kelas</MenuItem>
+                  <MenuItem value="Pagi">Kelas Pagi</MenuItem>
+                  <MenuItem value="Sore">Kelas Sore</MenuItem>
+                </TextField>
+
+                <TextField
+                  select
+                  size="small"
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  sx={{ minWidth: 150 }}
+                >
+                  <MenuItem value="Semua">Semua Status</MenuItem>
+                  <MenuItem value="Lengkap">Nilai Lengkap</MenuItem>
+                  <MenuItem value="Belum">Belum Lengkap</MenuItem>
+                </TextField>
+              </Stack>
+            </Stack>
+          </Box>
+
+          <TableContainer>
+            <Table sx={{ minWidth: 720 }}>
               <TableHead>
-                <TableRow sx={{ backgroundColor: "#5A734E" }}>
-                  {[
-                    "NO",
-                    "NIS",
-                    "NAMA SANTRI",
-                    "KELAS",
-                    "NILAI",
-                    "STATUS",
-                  ].map((judul) => (
-                    <TableCell
-                      key={judul}
-                      sx={{
-                        height: 49,
-                        color: "#fff",
-                        fontSize: 10,
-                        fontWeight: 700,
-                        letterSpacing: 0.4,
-                        whiteSpace: "nowrap",
-                        "&:first-of-type": { pl: 2.75 },
-                      }}
-                    >
-                      {judul}
-                    </TableCell>
-                  ))}
+                <TableRow>
+                  <TableCell align="center" sx={{ width: 60 }}>NO</TableCell>
+                  <TableCell>NIS</TableCell>
+                  <TableCell>NAMA SANTRI</TableCell>
+                  <TableCell>KELAS</TableCell>
+                  <TableCell>RATA-RATA</TableCell>
+                  <TableCell>KELENGKAPAN</TableCell>
+                  <TableCell align="center">AKSI</TableCell>
                 </TableRow>
               </TableHead>
-
               <TableBody>
                 {dataTampil.length > 0 ? (
-                  dataTampil.map((santri, index) => (
-                    <TableRow key={santri.id} hover>
-                      <TableCell
-                        sx={{
-                          pl: 2.75,
-                          width: 55,
-                          color: "#A1A69E",
-                          fontSize: 12,
-                        }}
-                      >
-                        {index + 1}.
-                      </TableCell>
+                  dataTampil.map((item, idx) => {
+                    const lengkap = isLengkap(item);
+                    const avg = hitungRataRata(item);
+                    const initials = item.nama
+                      .split(" ")
+                      .map((n) => n[0])
+                      .slice(0, 2)
+                      .join("");
 
-                      <TableCell
-                        sx={{ color: "#5D685D", fontSize: 12 }}
-                      >
-                        {santri.id}
-                      </TableCell>
-
-                      <TableCell
-                        sx={{
-                          color: "#28352C",
-                          fontSize: 12,
-                          fontWeight: 600,
-                        }}
-                      >
-                        <Stack
-                          direction="row"
-                          spacing={1.25}
-                          sx={{ alignItems: "center" }}
-                        >
-                          <Box
-                            aria-hidden="true"
+                    return (
+                      <TableRow key={item.nis} hover>
+                        <TableCell align="center" sx={{ color: "#8E9E90", fontWeight: 600 }}>
+                          {idx + 1}
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 700, color: "#2E6F40", fontSize: "0.84rem" }}>
+                          {item.nis}
+                        </TableCell>
+                        <TableCell>
+                          <Stack direction="row" spacing={1.5} alignItems="center">
+                            <Avatar
+                              sx={{
+                                width: 34,
+                                height: 34,
+                                fontSize: "0.78rem",
+                                fontWeight: 700,
+                                backgroundColor: "#E3EFE5",
+                                color: "#2E6F40",
+                              }}
+                            >
+                              {initials}
+                            </Avatar>
+                            <Typography variant="body2" sx={{ fontWeight: 700, color: "#1A251D" }}>
+                              {item.nama}
+                            </Typography>
+                          </Stack>
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={`Kelas ${item.kelas}`}
+                            size="small"
                             sx={{
-                              width: 38,
-                              height: 38,
-                              display: "grid",
-                              placeItems: "center",
-                              flex: "0 0 auto",
-                              borderRadius: "50%",
-                              backgroundColor: "#EDF0E7",
-                              color: "#4E6745",
-                              fontSize: 11,
+                              backgroundColor: item.kelas === "Pagi" ? "#FEF3C7" : "#EFF6FF",
+                              color: item.kelas === "Pagi" ? "#92400E" : "#1E40AF",
                               fontWeight: 700,
+                              fontSize: "0.75rem",
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2" sx={{ fontWeight: 800, color: Number(avg) >= 88 ? "#166534" : "#B45309" }}>
+                            {avg}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            size="small"
+                            label={lengkap ? "Lengkap" : "Belum Lengkap"}
+                            sx={{
+                              backgroundColor: lengkap ? "#DCFCE7" : "#FEE2E2",
+                              color: lengkap ? "#166534" : "#991B1B",
+                              fontWeight: 700,
+                              fontSize: "0.75rem",
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell align="center">
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={() => navigate("/pengajar/input-nilai")}
+                            sx={{
+                              py: 0.4,
+                              px: 1.5,
+                              fontSize: "0.78rem",
+                              fontWeight: 700,
+                              borderRadius: "8px",
+                              borderColor: lengkap ? "#CBD5E1" : "#2E6F40",
+                              color: lengkap ? "#475569" : "#2E6F40",
+                              backgroundColor: lengkap ? "#F8FAFC" : "#F4FAF5",
                             }}
                           >
-                            {santri.nama
-                              .split(" ")
-                              .map((kata) => kata[0])
-                              .slice(0, 2)
-                              .join("")}
-                          </Box>
-
-                          {santri.nama}
-                        </Stack>
-                      </TableCell>
-
-                      <TableCell
-                        sx={{ color: "#5D685D", fontSize: 12 }}
-                      >
-                        {santri.kelas}
-                      </TableCell>
-
-                      <TableCell
-                        sx={{ color: "#5D685D", fontSize: 12 }}
-                      >
-                        {santri.nilai || "-"}
-                      </TableCell>
-
-                      <TableCell>
-                        <Chip
-                          size="small"
-                          label={
-                            santri.lengkap
-                              ? "Lengkap"
-                              : "Belum Lengkap"
-                          }
-                          sx={{
-                            height: 26,
-                            border: santri.lengkap
-                              ? "1px solid #A9E7D1"
-                              : "1px solid #F4D78B",
-                            backgroundColor: santri.lengkap
-                              ? "#EDFBF5"
-                              : "#FFF9EA",
-                            color: santri.lengkap
-                              ? "#14805E"
-                              : "#A56A0B",
-                            fontSize: 11,
-                          }}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))
+                            {lengkap ? "Lihat Nilai" : "Input Nilai"}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 ) : (
                   <TableRow>
-                    <TableCell
-                      colSpan={6}
-                      align="center"
-                      sx={{ py: 4, color: "#899287" }}
-                    >
-                      <AssignmentTurnedIn
-                        sx={{
-                          display: "block",
-                          mx: "auto",
-                          mb: 1,
-                        }}
-                      />
-                      Santri tidak ditemukan.
+                    <TableCell colSpan={7} align="center" sx={{ py: 6, color: "#8E9E90" }}>
+                      Tidak ada santri yang sesuai dengan filter pencarian.
                     </TableCell>
                   </TableRow>
                 )}
@@ -667,18 +507,40 @@ export default function DashboardPengajar({ onLogout, onNavigate }) {
 
           <Box
             sx={{
-              px: { xs: 2, sm: 2.75 },
-              py: 1.5,
-              borderTop: "1px solid #ECEAE3",
-              backgroundColor: "#FDFCF9",
+              p: 2,
+              px: 3,
+              backgroundColor: "#FCFDFC",
+              borderTop: "1px solid #EEF3ED",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
             }}
           >
             <Typography variant="caption" color="text.secondary">
-              Menampilkan {dataTampil.length} dari {dataAwal.length} santri
+              Menampilkan {dataTampil.length} dari {santri.length} santri binaan
             </Typography>
+
+            <Button
+              endIcon={<ArrowForward sx={{ fontSize: 16 }} />}
+              onClick={() => navigate("/pengajar/raport-santri")}
+              sx={{ color: "#2E6F40", fontWeight: 700, fontSize: "0.82rem" }}
+            >
+              Lihat Seluruh Raport Santri
+            </Button>
           </Box>
         </Paper>
       </Stack>
+
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={3000}
+        onClose={() => setToast({ ...toast, open: false })}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert severity="success" sx={{ borderRadius: "10px" }}>
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </LayoutPengajar>
   );
 }

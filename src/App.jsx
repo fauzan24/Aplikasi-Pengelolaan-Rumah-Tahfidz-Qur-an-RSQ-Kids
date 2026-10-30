@@ -12,6 +12,11 @@ import Login from "./pages/auth/Login";
 
 import DashboardAdmin from "./pages/admin/DashboardAdmin";
 import DataSantri from "./pages/admin/DataSantri";
+import DataPengajar from "./pages/admin/DataPengajar";
+import DaftarKelas from "./pages/admin/DaftarKelas";
+import PembayaranSPP from "./pages/admin/PembayaranSPP";
+import RaportAdmin from "./pages/admin/RaportAdmin";
+import LayoutAdmin from "./components/admin/LayoutAdmin";
 
 import DashboardPengajar from "./pages/pengajar/DashboardPengajar";
 import KelasDiampu from "./pages/pengajar/KelasDiampu";
@@ -109,6 +114,7 @@ function App() {
   };
 
   const pageProps = {
+    pengguna,
     onNavigate: handleMenuNavigate,
     onLogout: handleLogout,
   };
@@ -157,27 +163,50 @@ function App() {
 
           <Route
             path="data-pengajar"
-            element={<DashboardAdmin {...pageProps} />}
+            element={<DataPengajar {...pageProps} />}
           />
 
           <Route
             path="daftar-kelas"
-            element={<DashboardAdmin {...pageProps} />}
+            element={<DaftarKelas {...pageProps} />}
           />
 
-          <Route
-            path="progres-belajar"
-            element={<DashboardAdmin {...pageProps} />}
-          />
+          <Route path="progres-belajar">
+            <Route
+              index
+              element={
+                <ProgresBelajar
+                  {...pageProps}
+                  Layout={LayoutAdmin}
+                  onDetail={(santri) =>
+                    navigate(
+                      `/admin/progres-belajar/${encodeURIComponent(santri.id)}`
+                    )
+                  }
+                />
+              }
+            />
+            <Route
+              path=":santriId"
+              element={
+                <DetailProgresBelajar {...pageProps} Layout={LayoutAdmin} />
+              }
+            />
+          </Route>
 
           <Route
             path="pembayaran-spp"
-            element={<DashboardAdmin {...pageProps} />}
+            element={<PembayaranSPP {...pageProps} />}
+          />
+
+          <Route
+            path="pembayaran-spp/:santriId"
+            element={<PembayaranSPP {...pageProps} />}
           />
 
           <Route
             path="raport"
-            element={<DashboardAdmin {...pageProps} />}
+            element={<RaportAdmin {...pageProps} />}
           />
 
           <Route
