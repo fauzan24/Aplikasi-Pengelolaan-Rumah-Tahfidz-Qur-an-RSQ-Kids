@@ -22,6 +22,10 @@ Rute utama:
 | Umum | `/login` |
 | Admin | `/admin/dashboard`, `/admin/data-santri` |
 | Pengajar | `/pengajar/dashboard`, `/pengajar/kelas-diampu`, `/pengajar/input-nilai`, `/pengajar/progres-belajar`, `/pengajar/progres-belajar/:santriId`, `/pengajar/raport-santri` |
-| Wali santri | `/walisantri/dashboard` |
+| Wali santri | `/walisantri/dashboard`, `/walisantri/pendaftaran`, `/walisantri/progres-belajar`, `/walisantri/pembayaran-spp`, `/walisantri/raport` |
 
 Rute menu admin yang halamannya belum tersedia tetap diarahkan ke dashboard admin. ID santri untuk rute detail progres diambil dari parameter URL, sehingga detail tetap dapat dibuka langsung menggunakan URL.
+
+Raport admin dan pengajar dikelola per tahun ajaran dan semester, dengan arsip lama tetap tersedia saat periode diganti. Data raport disimpan bersama di `localStorage` agar halaman wali dapat menampilkan seluruh riwayat raport santri yang terhubung ke akunnya; wali hanya dapat melihat dan mencetak raport.
+
+Halaman Input Nilai pengajar juga menyimpan nilai per tahun ajaran dan semester. Gunakan pemilih periode untuk meninjau atau memperbarui arsip sebelumnya, atau mulai periode penilaian baru tanpa mengubah nilai pada periode lain.

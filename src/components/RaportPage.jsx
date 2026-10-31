@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Box,
   Paper,
@@ -38,6 +38,13 @@ import {
   SaveOutlined,
   EmojiEventsOutlined,
 } from "@mui/icons-material";
+import { useRaport } from "../context/RaportContext";
+
+const getTahunAjaranBerjalan = () => {
+  const sekarang = new Date();
+  const tahunMulai = sekarang.getMonth() >= 6 ? sekarang.getFullYear() : sekarang.getFullYear() - 1;
+  return `${tahunMulai}/${tahunMulai + 1}`;
+};
 
 const dataAwal = [
   {
@@ -134,23 +141,67 @@ const dataAwal = [
 ];
 
 export default function RaportPage({ Layout, ...layoutProps }) {
-  const [santri, setSantri] = useState(dataAwal);
+  const { raport, tambahkanRaport, simpanRaport } = useRaport();
   const [pencarian, setPencarian] = useState("");
   const [filterKelas, setFilterKelas] = useState("Semua");
+  const [tahunAjaran, setTahunAjaran] = useState(getTahunAjaranBerjalan);
+  const [semester, setSemester] = useState("Ganjil");
   const [santriTerpilih, setSantriTerpilih] = useState(null);
   const [modeDialog, setModeDialog] = useState("");
   const [nilaiEdit, setNilaiEdit] = useState([]);
   const [toast, setToast] = useState({ open: false, message: "" });
 
+  useEffect(() => {
+    tambahkanRaport(
+      dataAwal.map((item) => ({
+        ...item,
+        tahunAjaran: "2026/2027",
+        semester: "Ganjil",
+      }))
+    );
+  }, [tambahkanRaport]);
+
+  const tahunAjaranTersedia = useMemo(() => {
+    const tahunMulaiBerjalan = Number(getTahunAjaranBerjalan().slice(0, 4));
+    const tahun = new Set(
+      Array.from({ length: 7 }, (_, index) => {
+        const tahunMulai = tahunMulaiBerjalan + index - 4;
+        return `${tahunMulai}/${tahunMulai + 1}`;
+      })
+    );
+    raport.forEach((item) => tahun.add(item.tahunAjaran));
+    return [...tahun].sort((a, b) => b.localeCompare(a));
+  }, [raport]);
+
+  const templateRaport = useMemo(() => {
+    const templatePerNis = new Map(dataAwal.map((item) => [item.nis, item]));
+    raport.forEach((item) => {
+      if (!templatePerNis.has(item.nis)) templatePerNis.set(item.nis, item);
+    });
+    return [...templatePerNis.values()];
+  }, [raport]);
+
+  const daftarRaport = useMemo(
+    () =>
+      raport.filter(
+        (item) => item.tahunAjaran === tahunAjaran && item.semester === semester
+      ),
+    [raport, tahunAjaran, semester]
+  );
+  const jumlahRaportBelumAda = templateRaport.filter(
+    (item) =>
+      !daftarRaport.some((tersedia) => tersedia.nis === item.nis)
+  ).length;
+
   const daftarSantri = useMemo(() => {
-    return santri.filter((item) => {
+    return daftarRaport.filter((item) => {
       const cocokPencarian =
         item.nama.toLowerCase().includes(pencarian.toLowerCase()) ||
         item.nis.toLowerCase().includes(pencarian.toLowerCase());
       const cocokKelas = filterKelas === "Semua" || item.kelas === filterKelas;
       return cocokPencarian && cocokKelas;
     });
-  }, [santri, pencarian, filterKelas]);
+  }, [daftarRaport, pencarian, filterKelas]);
 
   const hitungRataRata = (dataNilai) => {
     if (!dataNilai || !dataNilai.length) return "0.0";
@@ -169,13 +220,25 @@ export default function RaportPage({ Layout, ...layoutProps }) {
     setModeDialog("edit");
   };
 
-  const simpanNilai = () => {
-    setSantri((prev) =>
-      prev.map((item) =>
-        item.nis === santriTerpilih.nis ? { ...item, nilai: nilaiEdit } : item
-      )
+  const buatRaportUntukPeriode = () => {
+    tambahkanRaport(
+      templateRaport.map((item) => ({
+        ...item,
+        nilai: item.nilai.map((nilai) => ({ ...nilai })),
+        tahunAjaran,
+        semester,
+      }))
     );
-    setSantriTerpilih((prev) => ({ ...prev, nilai: nilaiEdit }));
+    setToast({
+      open: true,
+      message: `Raport untuk tahun ajaran ${tahunAjaran} semester ${semester} berhasil dibuat.`,
+    });
+  };
+
+  const simpanNilai = () => {
+    const raportDiperbarui = { ...santriTerpilih, nilai: nilaiEdit };
+    simpanRaport(raportDiperbarui);
+    setSantriTerpilih(raportDiperbarui);
     setModeDialog("lihat");
     setToast({ open: true, message: `Raport santri ${santriTerpilih.nama} berhasil diperbarui!` });
   };
@@ -213,9 +276,9 @@ export default function RaportPage({ Layout, ...layoutProps }) {
           }}
         >
           {[
-            { label: "Total Raport Tersedia", count: `${santri.length} Santri`, icon: MenuBook, color: "#2E6F40", bg: "#EBF5ED" },
-            { label: "Raport Kelas Pagi", count: `${santri.filter((x) => x.kelas === "Pagi").length} Santri`, icon: SchoolOutlined, color: "#D97706", bg: "#FEF3C7" },
-            { label: "Raport Kelas Sore", count: `${santri.filter((x) => x.kelas === "Sore").length} Santri`, icon: EmojiEventsOutlined, color: "#2563EB", bg: "#EFF6FF" },
+            { label: "Total Raport Tersedia", count: `${daftarRaport.length} Santri`, icon: MenuBook, color: "#2E6F40", bg: "#EBF5ED" },
+            { label: "Raport Kelas Pagi", count: `${daftarRaport.filter((x) => x.kelas === "Pagi").length} Santri`, icon: SchoolOutlined, color: "#D97706", bg: "#FEF3C7" },
+            { label: "Raport Kelas Sore", count: `${daftarRaport.filter((x) => x.kelas === "Sore").length} Santri`, icon: EmojiEventsOutlined, color: "#2563EB", bg: "#EFF6FF" },
           ].map((item) => {
             const Icon = item.icon;
             return (
@@ -282,12 +345,8 @@ export default function RaportPage({ Layout, ...layoutProps }) {
         >
           {/* Controls Bar */}
           <Box sx={{ p: { xs: 2, sm: 2.75 }, borderBottom: "1px solid #EEF3ED" }}>
-            <Stack
-              direction={{ xs: "column", sm: "row" }}
-              spacing={2}
-              alignItems={{ sm: "center" }}
-              justifyContent="space-between"
-            >
+            <Stack spacing={2}>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems={{ sm: "center" }} justifyContent="space-between">
               <TextField
                 size="small"
                 placeholder="Cari nama atau NIS santri..."
@@ -314,6 +373,44 @@ export default function RaportPage({ Layout, ...layoutProps }) {
                 <MenuItem value="Pagi">Kelas Pagi</MenuItem>
                 <MenuItem value="Sore">Kelas Sore</MenuItem>
               </TextField>
+              </Stack>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems={{ sm: "center" }} justifyContent="space-between">
+                <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                  <TextField
+                    select
+                    size="small"
+                    label="Tahun Ajaran"
+                    value={tahunAjaran}
+                    onChange={(event) => setTahunAjaran(event.target.value)}
+                    sx={{ minWidth: 170 }}
+                  >
+                    {tahunAjaranTersedia.map((tahun) => (
+                      <MenuItem key={tahun} value={tahun}>{tahun}</MenuItem>
+                    ))}
+                  </TextField>
+                  <TextField
+                    select
+                    size="small"
+                    label="Semester"
+                    value={semester}
+                    onChange={(event) => setSemester(event.target.value)}
+                    sx={{ minWidth: 150 }}
+                  >
+                    <MenuItem value="Ganjil">Ganjil</MenuItem>
+                    <MenuItem value="Genap">Genap</MenuItem>
+                  </TextField>
+                </Stack>
+                <Button
+                  variant="contained"
+                  onClick={buatRaportUntukPeriode}
+                  disabled={jumlahRaportBelumAda === 0}
+                  sx={{ backgroundColor: "#2E6F40", "&:hover": { backgroundColor: "#235933" } }}
+                >
+                  {jumlahRaportBelumAda
+                    ? `Tambahkan ${jumlahRaportBelumAda} Raport yang Belum Ada`
+                    : "Semua Raport Sudah Dibuat"}
+                </Button>
+              </Stack>
             </Stack>
           </Box>
 
@@ -326,7 +423,7 @@ export default function RaportPage({ Layout, ...layoutProps }) {
                   <TableCell>NAMA SANTRI</TableCell>
                   <TableCell>KELAS</TableCell>
                   <TableCell>RATA-RATA NILAI</TableCell>
-                  <TableCell align="center">AKSI</TableCell>
+                  <TableCell>AKSI</TableCell>
                 </TableRow>
               </TableHead>
 
@@ -419,13 +516,21 @@ export default function RaportPage({ Layout, ...layoutProps }) {
                     </TableRow>
                   );
                 })}
+                {!daftarSantri.length && (
+                  <TableRow>
+                    <TableCell colSpan={6} align="center" sx={{ py: 5, color: "text.secondary" }}>
+                      Belum ada raport untuk tahun ajaran {tahunAjaran} semester {semester}.
+                      Gunakan tombol di atas untuk membuat raport.
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </TableContainer>
 
           <Box sx={{ p: 2, px: 3, backgroundColor: "#FCFDFC", borderTop: "1px solid #EEF3ED" }}>
             <Typography variant="caption" color="text.secondary">
-              Menampilkan {daftarSantri.length} dari {santri.length} santri
+              Menampilkan {daftarSantri.length} dari {daftarRaport.length} santri
             </Typography>
           </Box>
         </Paper>
@@ -504,7 +609,7 @@ export default function RaportPage({ Layout, ...layoutProps }) {
                   <strong>Nama Santri:</strong> {santriTerpilih.nama}
                 </Typography>
                 <Typography variant="body2">
-                  <strong>Tahun Ajaran:</strong> 2026/2027 (Ganjil)
+                  <strong>Tahun Ajaran:</strong> {santriTerpilih.tahunAjaran} ({santriTerpilih.semester})
                 </Typography>
                 <Typography variant="body2">
                   <strong>NIS:</strong> {santriTerpilih.nis}
@@ -525,11 +630,11 @@ export default function RaportPage({ Layout, ...layoutProps }) {
                 <Table size="small">
                   <TableHead>
                     <TableRow sx={{ backgroundColor: "#2E6F40" }}>
-                      <TableCell sx={{ color: "#FFF", fontWeight: 700, width: 50 }}>No</TableCell>
-                      <TableCell sx={{ color: "#FFF", fontWeight: 700 }}>Aspek Penilaian</TableCell>
-                      <TableCell align="center" sx={{ color: "#FFF", fontWeight: 700 }}>Nilai</TableCell>
-                      <TableCell align="center" sx={{ color: "#FFF", fontWeight: 700 }}>Predikat</TableCell>
-                      <TableCell sx={{ color: "#FFF", fontWeight: 700 }}>Catatan Perkembangan</TableCell>
+                      <TableCell sx={{ color: "#000000", fontWeight: 700, width: 50 }}>No</TableCell>
+                      <TableCell sx={{ color: "#000000", fontWeight: 700 }}>Aspek Penilaian</TableCell>
+                      <TableCell align="center" sx={{ color: "#000000", fontWeight: 700 }}>Nilai</TableCell>
+                      <TableCell align="center" sx={{ color: "#000000", fontWeight: 700 }}>Predikat</TableCell>
+                      <TableCell sx={{ color: "#000000", fontWeight: 700 }}>Catatan Perkembangan</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>

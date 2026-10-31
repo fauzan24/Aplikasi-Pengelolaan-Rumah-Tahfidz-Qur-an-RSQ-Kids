@@ -19,5 +19,6 @@ export const akunDummy = [
     password: "wali123",
     role: "walisantri",
     nama: "Bapak Ahmad",
+    santriId: "RSQ006",
   },
 ];

@@ -7,6 +7,7 @@ import App from './App.jsx'
 import { NilaiProvider } from './context/NilaiContext.jsx'
 import { ProgresBelajarProvider } from './context/ProgresBelajarContext.jsx'
 import { PengajarProvider } from './context/PengajarContext.jsx'
+import { RaportProvider } from './context/RaportContext.jsx'
 import { theme } from './theme/theme.js'
 
 createRoot(document.getElementById('root')).render(
@@ -17,7 +18,9 @@ createRoot(document.getElementById('root')).render(
         <NilaiProvider>
           <ProgresBelajarProvider>
             <PengajarProvider>
-              <App />
+              <RaportProvider>
+                <App />
+              </RaportProvider>
             </PengajarProvider>
           </ProgresBelajarProvider>
         </NilaiProvider>

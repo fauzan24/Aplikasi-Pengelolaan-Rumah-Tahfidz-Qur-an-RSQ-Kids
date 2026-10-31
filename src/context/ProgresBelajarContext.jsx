@@ -1,6 +1,63 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
 const STORAGE_KEY = "progres-belajar-santri-v1";
+const WALI_DEMO_SEED_KEY = "progres-belajar-wali-demo-seed-v1";
+
+const dataDummyWali = [
+  {
+    id: "RSQ006-tilawah-demo-1",
+    santriId: "RSQ006",
+    jenis: "tilawah",
+    tanggal: "2026-10-27",
+    hal: "1",
+    surah: "Al-Fatihah",
+    ayat: "1-7",
+    nilai: "90",
+    parafPengajar: "Ust. Aisyah",
+    nilaiKelancaran: 90,
+    nilaiTajwid: 88,
+    nilaiMakhraj: 92,
+    catatan: "Bacaan lancar, tajwid dan makhraj sudah baik.",
+    dibuatOleh: "Pengajar",
+  },
+  {
+    id: "RSQ006-hafalan-quran-demo-1",
+    santriId: "RSQ006",
+    jenis: "hafalan-quran",
+    tanggal: "2026-10-28",
+    hal: "2",
+    surah: "An-Nas",
+    ayat: "1-6",
+    nilai: "Lancar",
+    parafPengajar: "Ust. Aisyah",
+    statusSetoran: "Lancar",
+    catatan: "Setoran lancar. Tetap rutin murojaah di rumah.",
+    dibuatOleh: "Pengajar",
+  },
+  {
+    id: "RSQ006-hafalan-doa-demo-1",
+    santriId: "RSQ006",
+    jenis: "hafalan-doa",
+    tanggal: "2026-10-29",
+    namaDoa: "Doa sebelum makan",
+    penilaianDoa: "L.D.A",
+    parafPengajar: "Ust. Aisyah",
+    statusSetoran: "Lancar",
+    catatan: "Hafalan lancar dan sudah dapat menyebutkan artinya.",
+    dibuatOleh: "Pengajar",
+  },
+  {
+    id: "RSQ006-hafalan-hadist-demo-1",
+    santriId: "RSQ006",
+    jenis: "hafalan-hadist",
+    tanggal: "2026-10-30",
+    namaHadist: "Hadist kebersihan",
+    penilaianHadist: "L",
+    statusSetoran: "Lancar",
+    catatan: "Lafal hadist sudah lancar. Perlu mengulang arti dan perawi.",
+    dibuatOleh: "Pengajar",
+  },
+];
 
 const dataProgresAwal = [
   {
@@ -45,6 +102,7 @@ const dataProgresAwal = [
     catatan: "Hafalan sudah lancar dan pelafalan jelas.",
     dibuatOleh: "Pengajar",
   },
+  ...dataDummyWali,
 ];
 
 const ProgresBelajarContext = createContext(null);
@@ -74,13 +132,27 @@ function normalisasiProgres(data) {
 
 function bacaDataTersimpan() {
   const dataTersimpan = localStorage.getItem(STORAGE_KEY);
-  if (!dataTersimpan) return normalisasiProgres(dataProgresAwal);
+  if (!dataTersimpan) {
+    localStorage.setItem(WALI_DEMO_SEED_KEY, "true");
+    return normalisasiProgres(dataProgresAwal);
+  }
 
   const data = JSON.parse(dataTersimpan);
   if (!Array.isArray(data)) {
     throw new Error("Data progres belajar tersimpan harus berupa daftar.");
   }
-  return normalisasiProgres(data);
+
+  if (localStorage.getItem(WALI_DEMO_SEED_KEY) === "true") {
+    return normalisasiProgres(data);
+  }
+
+  const idTersimpan = new Set(data.map((item) => item.id));
+  const dataDenganDummyWali = [
+    ...data,
+    ...dataDummyWali.filter((item) => !idTersimpan.has(item.id)),
+  ];
+  localStorage.setItem(WALI_DEMO_SEED_KEY, "true");
+  return normalisasiProgres(dataDenganDummyWali);
 }
 
 export function ProgresBelajarProvider({ children }) {

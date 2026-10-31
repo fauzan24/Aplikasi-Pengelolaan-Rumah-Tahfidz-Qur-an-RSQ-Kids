@@ -32,7 +32,6 @@ import {
   EditOutlined,
   Delete,
   SaveOutlined,
-  Close,
 } from "@mui/icons-material";
 import LayoutPengajar from "../../components/pengajar/LayoutPengajar";
 import { useNilai } from "../../context/NilaiContext";
@@ -46,8 +45,21 @@ const aspekPenilaian = [
 ];
 
 const hitungRataRata = (item) => {
-  const total = aspekPenilaian.reduce((sum, a) => sum + Number(item[a.key] || 0), 0);
-  return (total / aspekPenilaian.length).toFixed(1);
+  const nilaiValid = aspekPenilaian
+    .map((aspek) => item[aspek.key])
+    .filter((nilai) => nilai !== "" && nilai !== "-" && Number.isFinite(Number(nilai)));
+  if (!nilaiValid.length) return "0.0";
+  const total = nilaiValid.reduce((sum, nilai) => sum + Number(nilai), 0);
+  return (total / nilaiValid.length).toFixed(1);
+};
+
+const getPeriodeBerjalan = () => {
+  const sekarang = new Date();
+  const tahunMulai = sekarang.getMonth() >= 6 ? sekarang.getFullYear() : sekarang.getFullYear() - 1;
+  return {
+    tahunAjaran: `${tahunMulai}/${tahunMulai + 1}`,
+    semester: sekarang.getMonth() >= 6 ? "Ganjil" : "Genap",
+  };
 };
 
 const getPredikat = (score) => {
@@ -59,7 +71,10 @@ const getPredikat = (score) => {
 };
 
 export default function InputNilai({ onLogout, onNavigate }) {
-  const { santri, setSantri } = useNilai();
+  const { nilai, setNilai } = useNilai();
+  const periodeBerjalan = getPeriodeBerjalan();
+  const [tahunAjaran, setTahunAjaran] = useState(periodeBerjalan.tahunAjaran);
+  const [semester, setSemester] = useState(periodeBerjalan.semester);
   const [keyword, setKeyword] = useState("");
   const [filterKelas, setFilterKelas] = useState("Semua");
   const [santriEdit, setSantriEdit] = useState(null);
@@ -68,15 +83,59 @@ export default function InputNilai({ onLogout, onNavigate }) {
   const [dialogHapus, setDialogHapus] = useState(false);
   const [toast, setToast] = useState({ open: false, message: "" });
 
+  const tahunAjaranTersedia = useMemo(() => {
+    const tahunMulaiBerjalan = Number(periodeBerjalan.tahunAjaran.slice(0, 4));
+    const tahun = new Set(
+      Array.from({ length: 7 }, (_, index) => {
+        const tahunMulai = tahunMulaiBerjalan + index - 4;
+        return `${tahunMulai}/${tahunMulai + 1}`;
+      })
+    );
+    nilai.forEach((item) => tahun.add(item.tahunAjaran));
+    return [...tahun].sort((a, b) => b.localeCompare(a));
+  }, [nilai, periodeBerjalan.tahunAjaran]);
+
+  const nilaiPeriode = useMemo(
+    () =>
+      nilai.filter(
+        (item) => item.tahunAjaran === tahunAjaran && item.semester === semester
+      ),
+    [nilai, tahunAjaran, semester]
+  );
+
+  const daftarSantriDasar = useMemo(
+    () => [...new Map(nilai.map((item) => [item.nis, item])).values()],
+    [nilai]
+  );
+
   const daftarSantri = useMemo(() => {
     const kata = keyword.trim().toLowerCase();
-    return santri.filter((item) => {
+    return nilaiPeriode.filter((item) => {
       const cocokPencarian =
         item.nama.toLowerCase().includes(kata) || item.nis.toLowerCase().includes(kata);
       const cocokKelas = filterKelas === "Semua" || item.kelas === filterKelas;
       return cocokPencarian && cocokKelas;
     });
-  }, [santri, keyword, filterKelas]);
+  }, [nilaiPeriode, keyword, filterKelas]);
+
+  const mulaiPenilaianPeriode = () => {
+    const nisTersimpan = new Set(nilaiPeriode.map((item) => item.nis));
+    const barisBaru = daftarSantriDasar
+      .filter((item) => !nisTersimpan.has(item.nis))
+      .map((item) => ({
+        nis: item.nis,
+        nama: item.nama,
+        kelas: item.kelas,
+        tahunAjaran,
+        semester,
+        ...Object.fromEntries(aspekPenilaian.map((aspek) => [aspek.key, "-"])),
+      }));
+    setNilai((sebelumnya) => [...sebelumnya, ...barisBaru]);
+    setToast({
+      open: true,
+      message: `Periode penilaian ${tahunAjaran} semester ${semester} berhasil disiapkan.`,
+    });
+  };
 
   const bukaEdit = (item) => {
     setSantriEdit({ ...item });
@@ -86,8 +145,14 @@ export default function InputNilai({ onLogout, onNavigate }) {
   const simpanNilai = () => {
     if (!santriEdit) return;
 
-    setSantri((prev) =>
-      prev.map((item) => (item.nis === santriEdit.nis ? { ...santriEdit } : item))
+    setNilai((prev) =>
+      prev.map((item) =>
+        item.nis === santriEdit.nis &&
+        item.tahunAjaran === tahunAjaran &&
+        item.semester === semester
+          ? { ...santriEdit, tahunAjaran, semester }
+          : item
+      )
     );
     setDialogEdit(false);
     setSantriEdit(null);
@@ -97,7 +162,14 @@ export default function InputNilai({ onLogout, onNavigate }) {
   const konfirmasiHapus = () => {
     if (!santriHapus) return;
 
-    setSantri((prev) => prev.filter((item) => item.nis !== santriHapus.nis));
+    setNilai((prev) =>
+      prev.filter(
+        (item) =>
+          item.nis !== santriHapus.nis ||
+          item.tahunAjaran !== tahunAjaran ||
+          item.semester !== semester
+      )
+    );
     setDialogHapus(false);
     setSantriHapus(null);
     setToast({ open: true, message: `Data nilai santri ${santriHapus.nama} berhasil dihapus.` });
@@ -128,47 +200,81 @@ export default function InputNilai({ onLogout, onNavigate }) {
         >
           {/* Controls Bar */}
           <Box sx={{ p: { xs: 2, sm: 2.75 }, borderBottom: "1px solid #EEF3ED" }}>
-            <Stack
-              direction={{ xs: "column", md: "row" }}
-              spacing={2}
-              alignItems={{ md: "center" }}
-              justifyContent="space-between"
-            >
-              <Tabs
-                value={filterKelas}
-                onChange={(_, val) => setFilterKelas(val)}
-                sx={{
-                  minHeight: 40,
-                  "& .MuiTab-root": {
-                    minHeight: 38,
-                    textTransform: "none",
-                    fontWeight: 700,
-                    fontSize: "0.85rem",
-                    color: "#6A7D6E",
-                    "&.Mui-selected": { color: "#2E6F40" },
-                  },
-                  "& .MuiTabs-indicator": { backgroundColor: "#2E6F40", height: 3, borderRadius: "3px" },
-                }}
+            <Stack spacing={2}>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} justifyContent="space-between">
+                <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+                  <TextField
+                    select
+                    size="small"
+                    label="Tahun Ajaran"
+                    value={tahunAjaran}
+                    onChange={(event) => setTahunAjaran(event.target.value)}
+                    sx={{ minWidth: 160 }}
+                  >
+                    {tahunAjaranTersedia.map((tahun) => (
+                      <MenuItem key={tahun} value={tahun}>{tahun}</MenuItem>
+                    ))}
+                  </TextField>
+                  <TextField
+                    select
+                    size="small"
+                    label="Semester"
+                    value={semester}
+                    onChange={(event) => setSemester(event.target.value)}
+                    sx={{ minWidth: 130 }}
+                  >
+                    <MenuItem value="Ganjil">Ganjil</MenuItem>
+                    <MenuItem value="Genap">Genap</MenuItem>
+                  </TextField>
+                </Stack>
+                {!nilaiPeriode.length && (
+                  <Button variant="outlined" onClick={mulaiPenilaianPeriode}>
+                    Mulai Penilaian Periode Ini
+                  </Button>
+                )}
+              </Stack>
+              <Stack
+                direction={{ xs: "column", md: "row" }}
+                spacing={2}
+                alignItems={{ md: "center" }}
+                justifyContent="space-between"
               >
-                <Tab value="Semua" label={`Semua Kelas (${santri.length})`} />
-                <Tab value="Pagi" label={`Kelas Pagi (${santri.filter((x) => x.kelas === "Pagi").length})`} />
-                <Tab value="Sore" label={`Kelas Sore (${santri.filter((x) => x.kelas === "Sore").length})`} />
-              </Tabs>
+                  <Tabs
+                    value={filterKelas}
+                    onChange={(_, val) => setFilterKelas(val)}
+                    sx={{
+                      minHeight: 40,
+                      "& .MuiTab-root": {
+                        minHeight: 38,
+                        textTransform: "none",
+                        fontWeight: 700,
+                        fontSize: "0.85rem",
+                        color: "#6A7D6E",
+                        "&.Mui-selected": { color: "#2E6F40" },
+                      },
+                      "& .MuiTabs-indicator": { backgroundColor: "#2E6F40", height: 3, borderRadius: "3px" },
+                    }}
+                  >
+                    <Tab value="Semua" label={`Semua Kelas (${nilaiPeriode.length})`} />
+                    <Tab value="Pagi" label={`Kelas Pagi (${nilaiPeriode.filter((x) => x.kelas === "Pagi").length})`} />
+                    <Tab value="Sore" label={`Kelas Sore (${nilaiPeriode.filter((x) => x.kelas === "Sore").length})`} />
+                  </Tabs>
 
-              <TextField
-                size="small"
-                placeholder="Cari nama atau NIS santri..."
-                value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
-                sx={{ width: { xs: "100%", sm: 260 } }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Search sx={{ color: "#8E9E90", fontSize: 20 }} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
+                <TextField
+                  size="small"
+                  placeholder="Cari nama atau NIS santri..."
+                  value={keyword}
+                  onChange={(e) => setKeyword(e.target.value)}
+                  sx={{ width: { xs: "100%", sm: 260 } }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Search sx={{ color: "#8E9E90", fontSize: 20 }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Stack>
             </Stack>
           </Box>
 
@@ -326,7 +432,9 @@ export default function InputNilai({ onLogout, onNavigate }) {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={12} align="center" sx={{ py: 6, color: "#8E9E90" }}>
-                      Santri tidak ditemukan pada filter ini.
+                      {nilaiPeriode.length
+                        ? "Santri tidak ditemukan pada filter ini."
+                        : `Belum ada riwayat penilaian untuk ${tahunAjaran} semester ${semester}.`}
                     </TableCell>
                   </TableRow>
                 )}
@@ -346,10 +454,10 @@ export default function InputNilai({ onLogout, onNavigate }) {
             }}
           >
             <Typography variant="caption" color="text.secondary">
-              Menampilkan {daftarSantri.length} dari {santri.length} santri
+              Menampilkan {daftarSantri.length} dari {nilaiPeriode.length} santri
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              Semester Ganjil · T.A 2026/2027
+              Riwayat penilaian · Semester {semester} · T.A {tahunAjaran}
             </Typography>
           </Box>
         </Paper>
@@ -381,7 +489,7 @@ export default function InputNilai({ onLogout, onNavigate }) {
                   {santriEdit.nama}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  NIS: {santriEdit.nis} · Kelas {santriEdit.kelas}
+                  NIS: {santriEdit.nis} · Kelas {santriEdit.kelas} · T.A {tahunAjaran} ({semester})
                 </Typography>
               </Box>
 

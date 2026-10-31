@@ -27,6 +27,10 @@ import RaportPengajar from "./pages/pengajar/RaportPengajar";
 import ProfilPengajar from "./pages/pengajar/ProfilPengajar";
 
 import DashboardWalisantri from "./pages/walisantri/DashboardWalisantri";
+import PendaftaranWalisantri from "./pages/walisantri/PendaftaranWalisantri";
+import ProgresBelajarWalisantri from "./pages/walisantri/ProgresBelajarWalisantri";
+import PembayaranSPPWalisantri from "./pages/walisantri/PembayaranSPPWalisantri";
+import RaportWalisantri from "./pages/walisantri/RaportWalisantri";
 
 const halamanAwal = {
   admin: "/admin/dashboard",
@@ -57,6 +61,10 @@ const ruteMenu = {
 
   walisantri: {
     Dashboard: "/walisantri/dashboard",
+    "Pendaftaran Baru": "/walisantri/pendaftaran",
+    "Perkembangan Belajar": "/walisantri/progres-belajar",
+    "Pembayaran SPP": "/walisantri/pembayaran-spp",
+    Raport: "/walisantri/raport",
   },
 };
 
@@ -298,6 +306,46 @@ function App() {
             path="dashboard"
             element={
               <DashboardWalisantri
+                pengguna={pengguna}
+                onLogout={handleLogout}
+              />
+            }
+          />
+
+          <Route
+            path="pendaftaran"
+            element={
+              <PendaftaranWalisantri
+                pengguna={pengguna}
+                onLogout={handleLogout}
+              />
+            }
+          />
+
+          <Route
+            path="progres-belajar"
+            element={
+              <ProgresBelajarWalisantri
+                pengguna={pengguna}
+                onLogout={handleLogout}
+              />
+            }
+          />
+
+          <Route
+            path="pembayaran-spp"
+            element={
+              <PembayaranSPPWalisantri
+                pengguna={pengguna}
+                onLogout={handleLogout}
+              />
+            }
+          />
+
+          <Route
+            path="raport"
+            element={
+              <RaportWalisantri
                 pengguna={pengguna}
                 onLogout={handleLogout}
               />
