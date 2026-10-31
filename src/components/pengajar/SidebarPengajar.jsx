@@ -86,7 +86,7 @@ export default function SidebarPengajar({ isOpen = false, onClose }) {
               RSQ-Kids
             </Typography>
             <Typography variant="caption" sx={{ color: "#A7C4AD", fontWeight: 500, fontSize: "0.72rem" }}>
-              Portal Asatidz
+              Portal Pengajar
             </Typography>
           </Box>
         </Box>
