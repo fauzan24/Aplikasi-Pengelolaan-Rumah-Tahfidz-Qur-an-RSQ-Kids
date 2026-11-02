@@ -17,7 +17,7 @@ import {
   Menu as MenuIcon,
   NotificationsOutlined,
   Logout,
-  SettingsOutlined,
+  PersonOutlined,
   KeyboardArrowDown,
   Person,
 } from "@mui/icons-material";
@@ -241,14 +241,14 @@ export default function LayoutAdmin({ pengguna: propPengguna, onNavigate, onLogo
                 <MenuItem
                   onClick={() => {
                     handleProfileClose();
-                    onNavigate?.("Pengaturan");
+                    onNavigate?.("Profil Admin");
                   }}
                   sx={{ borderRadius: "8px", py: 1, fontSize: "0.86rem" }}
                 >
                   <ListItemIcon sx={{ minWidth: 32, color: "#46594A" }}>
-                    <SettingsOutlined fontSize="small" />
+                    <PersonOutlined fontSize="small" />
                   </ListItemIcon>
-                  Profil
+                  Profil Admin
                 </MenuItem>
                 <Divider sx={{ my: 0.5 }} />
                 <MenuItem
