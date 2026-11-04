@@ -1,366 +1,810 @@
+
 import { useState } from "react";
+
 import {
-  Box,
-  Paper,
-  Typography,
-  TextField,
-  Button,
-  Avatar,
-  Snackbar,
+  AccountCircleOutlined,
+  BookOutlined,
+  CameraAltOutlined,
+  LockOutlined,
+  SaveOutlined,
+  Visibility,
+  VisibilityOff,
+} from "@mui/icons-material";
+
+import {
   Alert,
-  Stack,
+  Avatar,
+  Box,
+  Button,
   Card,
   CardContent,
-  Chip,
   Divider,
+  IconButton,
+  InputAdornment,
+  Paper,
+  Snackbar,
+  Stack,
+  TextField,
+  Typography,
 } from "@mui/material";
-import {
-  Person,
-  PhotoCamera,
-  Edit,
-  Save,
-  Close,
-  SchoolOutlined,
-  MenuBook,
-  VerifiedUserOutlined,
-  PhoneOutlined,
-  LocationOnOutlined,
-  EmailOutlined,
-} from "@mui/icons-material";
+
 import LayoutPengajar from "../../components/pengajar/LayoutPengajar";
 
-export default function ProfilPengajar({ pengguna, onNavigate, onLogout }) {
-  const [nama, setNama] = useState(
-    pengguna?.nama || pengguna?.namaLengkap || "Ustadzah Aisyah"
-  );
-  const [nip] = useState(pengguna?.nip || "19890412-202201-2-004");
-  const [noHp, setNoHp] = useState(
-    pengguna?.noHp || pengguna?.telepon || "0821-7281-9921"
-  );
-  const [email, setEmail] = useState("aisyah.tahfidz@rsqkids.sch.id");
-  const [alamat, setAlamat] = useState(
-    pengguna?.alamat || "Perumahan Buana Vista Indah Blok C No. 14, Batam"
-  );
-  const [spesialisasi, setSpesialisasi] = useState("Tahfidz Juz 30 & Metode Tartil Iqro");
+const warnaUtama = "#2E6F40";
 
-  const [foto, setFoto] = useState("");
-  const [modeEdit, setModeEdit] = useState(false);
-  const [toast, setToast] = useState({ open: false, message: "", severity: "success" });
+export default function ProfilPengajar({
+  onNavigate,
+  onLogout,
+  pengguna,
+}) {
+  const [isEdit, setIsEdit] = useState(false);
 
-  const [dataAwal, setDataAwal] = useState({ noHp, email, alamat, spesialisasi });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordBaru, setShowPasswordBaru] = useState(false);
+  const [showKonfirmasi, setShowKonfirmasi] = useState(false);
 
-  const handleUbahFoto = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const [profil, setProfil] = useState({
+    nama: pengguna?.nama || "Nama Pengajar",
+    email: pengguna?.email || "Aisyah@gmail.com",
+    telepon: pengguna?.telepon || "0824352427",
+    idPengajar: pengguna?.idPengajar || "PGJ-001",
+    bidang: pengguna?.bidang || "Tahfidz Al-Qur'an",
+    kelas: pengguna?.kelas || "Kelas Pagi & Sore",
+  });
 
-    if (!file.type.startsWith("image/")) {
-      setToast({ open: true, message: "Harap pilih berkas gambar yang valid.", severity: "error" });
-      return;
-    }
-    setFoto(URL.createObjectURL(file));
-    setToast({ open: true, message: "Foto profil berhasil diperbarui!", severity: "success" });
+  const [password, setPassword] = useState({
+    lama: "pengajar123",
+    baru: "",
+    konfirmasi: "",
+  });
+
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const tampilkanPesan = (message, severity = "success") => {
+    setSnackbar({
+      open: true,
+      message,
+      severity,
+    });
   };
 
-  const handleEdit = () => {
-    setDataAwal({ noHp, email, alamat, spesialisasi });
-    setModeEdit(true);
+  const handleChangeProfil = (e) => {
+    setProfil((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
   };
 
-  const handleBatal = () => {
-    setNoHp(dataAwal.noHp);
-    setEmail(dataAwal.email);
-    setAlamat(dataAwal.alamat);
-    setSpesialisasi(dataAwal.spesialisasi);
-    setModeEdit(false);
-  };
-
-  const handleSimpan = () => {
-    if (!noHp.trim() || !alamat.trim() || !email.trim()) {
-      setToast({ open: true, message: "Semua data profil wajib diisi.", severity: "error" });
-      return;
-    }
-
-    try {
-      const dataLama = JSON.parse(sessionStorage.getItem("pengguna") || "{}");
-      sessionStorage.setItem(
-        "pengguna",
-        JSON.stringify({
-          ...dataLama,
-          nama,
-          nip,
-          noHp,
-          email,
-          alamat,
-          spesialisasi,
-        })
+  const handleSimpanProfil = () => {
+    if (
+      !profil.nama.trim() ||
+      !profil.email.trim() ||
+      !profil.telepon.trim()
+    ) {
+      tampilkanPesan(
+        "Nama, email, dan nomor telepon wajib diisi.",
+        "error"
       );
-      setDataAwal({ noHp, email, alamat, spesialisasi });
-      setModeEdit(false);
-      setToast({ open: true, message: "Data profil berhasil disimpan!", severity: "success" });
-    } catch {
-      setToast({ open: true, message: "Gagal menyimpan data profil.", severity: "error" });
+      return;
     }
+
+    setIsEdit(false);
+    tampilkanPesan("Profil pengajar berhasil diperbarui!");
   };
+
+  const handleBatalEdit = () => {
+    setProfil({
+      nama: pengguna?.nama || "Nama Pengajar",
+      email: pengguna?.email || "pengajar@rsqkids.com",
+      telepon: pengguna?.telepon || "",
+      idPengajar: pengguna?.idPengajar || "PGJ-001",
+      bidang: pengguna?.bidang || "Tahfidz Al-Qur'an",
+      kelas: pengguna?.kelas || "Kelas Pagi & Sore",
+    });
+
+    setIsEdit(false);
+  };
+
+  const handleSimpanPassword = () => {
+    if (!password.lama || !password.baru || !password.konfirmasi) {
+      tampilkanPesan(
+        "Semua kolom password wajib diisi.",
+        "error"
+      );
+      return;
+    }
+
+    if (password.baru.length < 8) {
+      tampilkanPesan(
+        "Password baru minimal 8 karakter.",
+        "error"
+      );
+      return;
+    }
+
+    if (password.baru !== password.konfirmasi) {
+      tampilkanPesan(
+        "Konfirmasi password baru tidak sesuai.",
+        "error"
+      );
+      return;
+    }
+
+    setPassword({
+      lama: "",
+      baru: "",
+      konfirmasi: "",
+    });
+
+    tampilkanPesan(
+      "Validasi berhasil. Hubungkan ke backend untuk menyimpan password baru."
+    );
+  };
+
+  const inputSx = {
+    "& .MuiOutlinedInput-root": {
+      borderRadius: "10px",
+      backgroundColor: "#FFFFFF",
+      "& fieldset": {
+        borderColor: "#DCE6DC",
+      },
+      "&:hover fieldset": {
+        borderColor: "#8EAD91",
+      },
+      "&.Mui-focused fieldset": {
+        borderColor: warnaUtama,
+      },
+    },
+    "& .MuiInputBase-input.Mui-disabled": {
+      WebkitTextFillColor: "#526354",
+    },
+  };
+
+  const LabelInput = ({ children }) => (
+    <Typography
+      variant="body2"
+      sx={{
+        fontWeight: 700,
+        color: "#344638",
+        mb: 1,
+      }}
+    >
+      {children}
+    </Typography>
+  );
 
   return (
-    <LayoutPengajar onNavigate={onNavigate} onLogout={onLogout}>
-      <Stack spacing={3.5} sx={{ width: "100%", maxWidth: 1180, mx: "auto", pb: 4 }}>
-        {/* Header Title */}
+    <LayoutPengajar
+      onNavigate={onNavigate}
+      onLogout={onLogout}
+      pengguna={pengguna}
+    >
+      <Stack
+        spacing={3.5}
+        sx={{
+          width: "100%",
+          maxWidth: 1280,
+          mx: "auto",
+          pb: 4,
+        }}
+      >
+        {/* HEADER HALAMAN */}
         <Box>
-          <Typography variant="h5" sx={{ fontWeight: 800, color: "#1B2A1E" }}>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 800,
+              color: "#1B2A1E",
+              mb: 0.75,
+            }}
+          >
             Profil Pengajar
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            Informasi identitas asatidz, kontak pribadi, serta penugasan kelas tahfidz.
+
+          <Typography
+            variant="body2"
+            sx={{ color: "#6A7E6D" }}
+          >
+            Kelola informasi pribadi dan akun pengajar RSQ-Kids.
           </Typography>
         </Box>
 
-        <Box
+        {/* PROFILE HERO */}
+        <Paper
+          elevation={0}
           sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "340px 1fr" },
-            gap: 3.5,
-            alignItems: "start",
+            p: { xs: 3, sm: 4 },
+            borderRadius: "20px",
+            background:
+              "linear-gradient(135deg, #2E6F40 0%, #1B4527 100%)",
+            color: "#FFFFFF",
+            boxShadow: "0 10px 30px rgba(30, 75, 42, 0.12)",
           }}
         >
-          {/* Left Column: Avatar & Quick Info Card */}
-          <Paper
-            elevation={0}
-            sx={{
-              p: 3.5,
-              borderRadius: "20px",
-              border: "1px solid #E5ECE4",
-              backgroundColor: "#FFFFFF",
-              textAlign: "center",
-            }}
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={3}
+            alignItems={{ xs: "flex-start", sm: "center" }}
           >
-            <Box sx={{ position: "relative", width: 140, height: 140, mx: "auto", mb: 2 }}>
+            <Box sx={{ position: "relative" }}>
               <Avatar
-                src={foto}
                 sx={{
-                  width: 140,
-                  height: 140,
-                  backgroundColor: "#2E6F40",
-                  fontSize: "3rem",
-                  fontWeight: 800,
-                  border: "4px solid #E3ECE4",
-                  boxShadow: "0 8px 24px rgba(46, 111, 64, 0.15)",
+                  width: 100,
+                  height: 100,
+                  bgcolor: "#E8F3E9",
+                  color: warnaUtama,
+                  border: "4px solid rgba(255,255,255,0.35)",
                 }}
               >
-                {!foto && "UA"}
+                <AccountCircleOutlined sx={{ fontSize: 78 }} />
               </Avatar>
 
               <IconButton
-                component="label"
+                size="small"
+                aria-label="Ubah foto profil"
+                onClick={() =>
+                  tampilkanPesan(
+                    "Fitur unggah foto dapat ditambahkan berikutnya."
+                  )
+                }
                 sx={{
                   position: "absolute",
-                  bottom: 2,
-                  right: 2,
-                  backgroundColor: "#D97706",
-                  color: "#FFF",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-                  "&:hover": { backgroundColor: "#B45309" },
+                  bottom: 0,
+                  right: 0,
+                  bgcolor: "#F59E0B",
+                  color: "#1B2A1E",
+                  "&:hover": {
+                    bgcolor: "#D97706",
+                  },
                 }}
               >
-                <PhotoCamera fontSize="small" />
-                <input type="file" accept="image/*" hidden onChange={handleUbahFoto} />
+                <CameraAltOutlined fontSize="small" />
               </IconButton>
             </Box>
 
-            <Typography variant="h6" sx={{ fontWeight: 800, color: "#1B2A1E" }}>
-              {nama}
-            </Typography>
+            <Box>
+              <Typography
+                variant="overline"
+                sx={{
+                  color: "#FBBF24",
+                  fontWeight: 800,
+                  letterSpacing: "0.1em",
+                }}
+              >
+                PROFIL PENGAJAR
+              </Typography>
 
-            <Chip
-              label="Ustadzah Pengajar Tahfidz"
-              size="small"
+              <Typography
+                variant="h5"
+                sx={{
+                  fontWeight: 800,
+                  mb: 0.5,
+                  overflowWrap: "anywhere",
+                }}
+              >
+                {profil.nama}
+              </Typography>
+
+              <Typography
+                variant="body2"
+                sx={{
+                  color: "rgba(255,255,255,0.8)",
+                  overflowWrap: "anywhere",
+                }}
+              >
+                {profil.email}
+              </Typography>
+
+              <Box
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 0.75,
+                  mt: 1.5,
+                  px: 1.5,
+                  py: 0.6,
+                  borderRadius: "20px",
+                  bgcolor: "rgba(255,255,255,0.15)",
+                }}
+              >
+                <BookOutlined sx={{ fontSize: 17 }} />
+
+                <Typography
+                  variant="caption"
+                  sx={{ fontWeight: 700 }}
+                >
+                  Pengajar RSQ-Kids
+                </Typography>
+              </Box>
+            </Box>
+          </Stack>
+        </Paper>
+
+        {/* INFORMASI PRIBADI */}
+        <Card
+          elevation={0}
+          sx={{
+            border: "1px solid #E5ECE4",
+            borderRadius: "18px",
+          }}
+        >
+          <CardContent sx={{ p: { xs: 2.5, sm: 3.5 } }}>
+            <Box
               sx={{
-                mt: 1,
-                mb: 2.5,
-                backgroundColor: "#EBF5ED",
-                color: "#2E6F40",
-                fontWeight: 700,
-                fontSize: "0.75rem",
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                alignItems: { xs: "stretch", sm: "center" },
+                justifyContent: "space-between",
+                width: "100%",
+                mb: 3,
+                gap: 2,
               }}
-            />
-
-            <Divider sx={{ my: 2 }} />
-
-            <Stack spacing={1.5} sx={{ textAlign: "left" }}>
-              <Box>
-                <Typography variant="caption" sx={{ color: "#7B8E7D", fontWeight: 600 }}>NIP RESMI:</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 700, color: "#1B2A1E" }}>{nip}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="caption" sx={{ color: "#7B8E7D", fontWeight: 600 }}>STATUS MENGAJAR:</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 700, color: "#166534" }}>Aktif Mengajar (Pagi & Sore)</Typography>
-              </Box>
-              <Box>
-                <Typography variant="caption" sx={{ color: "#7B8E7D", fontWeight: 600 }}>JUMLAH SANTRI BINAAN:</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 700, color: "#1B2A1E" }}>10 Santri</Typography>
-              </Box>
-            </Stack>
-          </Paper>
-
-          {/* Right Column: Form Information */}
-          <Paper
-            elevation={0}
-            sx={{
-              p: { xs: 2.5, sm: 3.5 },
-              borderRadius: "20px",
-              border: "1px solid #E5ECE4",
-              backgroundColor: "#FFFFFF",
-            }}
-          >
-            <Stack
-              direction="row"
-              justifyContent="space-between"
-              alignItems="center"
-              sx={{ pb: 2.5, mb: 3, borderBottom: "1px solid #EEF3ED" }}
             >
               <Box>
-                <Typography variant="h6" sx={{ fontWeight: 800, color: "#1B2A1E" }}>
-                  Informasi Data Diri
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 800,
+                    color: "#1B2A1E",
+                  }}
+                >
+                  Informasi Pribadi
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Perbarui nomor telepon, email, dan alamat untuk korespondensi wali santri.
+
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: "#6A7E6D",
+                    mt: 0.5,
+                  }}
+                >
+                  Informasi akun dan data pribadi pengajar.
                 </Typography>
               </Box>
 
-              {!modeEdit && (
+              <Button
+                variant={isEdit ? "outlined" : "contained"}
+                onClick={() => {
+                  if (isEdit) {
+                    handleBatalEdit();
+                  } else {
+                    setIsEdit(true);
+                  }
+                }}
+                sx={{
+                  borderRadius: "10px",
+                  px: 2.5,
+                  fontWeight: 700,
+                  bgcolor: isEdit ? "transparent" : warnaUtama,
+                  color: isEdit ? warnaUtama : "#FFFFFF",
+                  borderColor: warnaUtama,
+                  alignSelf: { xs: "flex-end", sm: "center" },
+                  flexShrink: 0,
+                  "&:hover": {
+                    bgcolor: isEdit ? "#EDF5EE" : "#245B34",
+                  },
+                }}
+              >
+                {isEdit ? "Batal" : "Edit Profil"}
+              </Button>
+            </Box>
+
+            <Divider sx={{ mb: 3, borderColor: "#EEF3ED" }} />
+
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  sm: "repeat(2, minmax(0, 1fr))",
+                },
+                gap: 2.5,
+              }}
+            >
+              <Box>
+                <LabelInput>Nama Lengkap</LabelInput>
+                <TextField
+                  fullWidth
+                  name="nama"
+                  value={profil.nama}
+                  onChange={handleChangeProfil}
+                  disabled={!isEdit}
+                  placeholder="Masukkan nama lengkap"
+                  sx={inputSx}
+                />
+              </Box>
+
+              <Box>
+                <LabelInput>Alamat Email</LabelInput>
+                <TextField
+                  fullWidth
+                  name="email"
+                  type="email"
+                  value={profil.email}
+                  onChange={handleChangeProfil}
+                  disabled={!isEdit}
+                  placeholder="Masukkan alamat email"
+                  sx={inputSx}
+                />
+              </Box>
+
+              <Box>
+                <LabelInput>Nomor Telepon</LabelInput>
+                <TextField
+                  fullWidth
+                  name="telepon"
+                  value={profil.telepon}
+                  onChange={handleChangeProfil}
+                  disabled={!isEdit}
+                  placeholder="Masukkan nomor telepon"
+                  sx={inputSx}
+                />
+              </Box>
+
+              <Box>
+                <LabelInput>ID Pengajar</LabelInput>
+                <TextField
+                  fullWidth
+                  value={profil.idPengajar}
+                  disabled
+                  sx={inputSx}
+                />
+              </Box>
+            </Box>
+
+            {isEdit && (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  mt: 3,
+                }}
+              >
                 <Button
-                  variant="outlined"
-                  startIcon={<Edit />}
-                  onClick={handleEdit}
+                  variant="contained"
+                  startIcon={<SaveOutlined />}
+                  onClick={handleSimpanProfil}
                   sx={{
-                    borderColor: "#2E6F40",
-                    color: "#2E6F40",
-                    fontWeight: 700,
+                    bgcolor: warnaUtama,
                     borderRadius: "10px",
+                    px: 3,
+                    fontWeight: 700,
+                    "&:hover": {
+                      bgcolor: "#245B34",
+                    },
                   }}
                 >
-                  Edit Profil
+                  Simpan Perubahan
                 </Button>
-              )}
+              </Box>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* INFORMASI MENGAJAR */}
+        <Card
+          elevation={0}
+          sx={{
+            border: "1px solid #E5ECE4",
+            borderRadius: "18px",
+          }}
+        >
+          <CardContent sx={{ p: { xs: 2.5, sm: 3.5 } }}>
+            <Stack
+              direction="row"
+              spacing={1.5}
+              alignItems="center"
+              sx={{ mb: 1 }}
+            >
+              <Box
+                sx={{
+                  width: 42,
+                  height: 42,
+                  borderRadius: "12px",
+                  bgcolor: "#EDF5EE",
+                  color: warnaUtama,
+                  display: "grid",
+                  placeItems: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <BookOutlined />
+              </Box>
+
+              <Box>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 800,
+                    color: "#1B2A1E",
+                  }}
+                >
+                  Informasi Mengajar
+                </Typography>
+
+                <Typography
+                  variant="body2"
+                  sx={{ color: "#6A7E6D" }}
+                >
+                  Informasi bidang dan kelas yang diampu.
+                </Typography>
+              </Box>
             </Stack>
+
+            <Divider sx={{ my: 3, borderColor: "#EEF3ED" }} />
+
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  sm: "repeat(2, minmax(0, 1fr))",
+                },
+                gap: 2.5,
+              }}
+            >
+              <Box>
+                <LabelInput>Bidang Mengajar</LabelInput>
+                <TextField
+                  fullWidth
+                  value={profil.bidang}
+                  disabled
+                  sx={inputSx}
+                />
+              </Box>
+
+              <Box>
+                <LabelInput>Kelas yang Diampu</LabelInput>
+                <TextField
+                  fullWidth
+                  value={profil.kelas}
+                  disabled
+                  sx={inputSx}
+                />
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
+
+        {/* KEAMANAN AKUN */}
+        <Card
+          elevation={0}
+          sx={{
+            border: "1px solid #E5ECE4",
+            borderRadius: "18px",
+          }}
+        >
+          <CardContent sx={{ p: { xs: 2.5, sm: 3.5 } }}>
+            <Stack
+              direction="row"
+              spacing={1.5}
+              alignItems="center"
+              sx={{ mb: 1 }}
+            >
+              <Box
+                sx={{
+                  width: 42,
+                  height: 42,
+                  borderRadius: "12px",
+                  bgcolor: "#EDF5EE",
+                  color: warnaUtama,
+                  display: "grid",
+                  placeItems: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <LockOutlined />
+              </Box>
+
+              <Box>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 800,
+                    color: "#1B2A1E",
+                  }}
+                >
+                  Keamanan Akun
+                </Typography>
+
+                <Typography
+                  variant="body2"
+                  sx={{ color: "#6A7E6D" }}
+                >
+                  Perbarui password untuk menjaga keamanan akun.
+                </Typography>
+              </Box>
+            </Stack>
+
+            <Divider sx={{ my: 3, borderColor: "#EEF3ED" }} />
 
             <Stack spacing={2.5}>
               <Box>
-                <Typography variant="caption" sx={{ fontWeight: 700, color: "#4B5E4F", display: "block", mb: 0.6 }}>
-                  NAMA LENGKAP & GELAR
-                </Typography>
+                <LabelInput>Password Saat Ini</LabelInput>
+
                 <TextField
                   fullWidth
-                  disabled={!modeEdit}
-                  value={nama}
-                  onChange={(e) => setNama(e.target.value)}
-                  size="small"
+                  type={showPassword ? "text" : "password"}
+                  value={password.lama}
+                  onChange={(e) =>
+                    setPassword((prev) => ({
+                      ...prev,
+                      lama: e.target.value,
+                    }))
+                  }
+                  placeholder="Masukkan password saat ini"
+                  sx={inputSx}
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() =>
+                              setShowPassword((prev) => !prev)
+                            }
+                            edge="end"
+                            aria-label="Tampilkan password saat ini"
+                          >
+                            {showPassword ? (
+                              <VisibilityOff />
+                            ) : (
+                              <Visibility />
+                            )}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
                 />
               </Box>
 
-              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-                <Box sx={{ flex: 1 }}>
-                  <Typography variant="caption" sx={{ fontWeight: 700, color: "#4B5E4F", display: "block", mb: 0.6 }}>
-                    NOMOR WHATSAPP / TELEPON
-                  </Typography>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: {
+                    xs: "1fr",
+                    sm: "repeat(2, minmax(0, 1fr))",
+                  },
+                  gap: 2.5,
+                }}
+              >
+                <Box>
+                  <LabelInput>Password Baru</LabelInput>
+
                   <TextField
                     fullWidth
-                    disabled={!modeEdit}
-                    value={noHp}
-                    onChange={(e) => setNoHp(e.target.value)}
-                    size="small"
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <PhoneOutlined sx={{ fontSize: 18, color: "#7B8E7D" }} />
-                        </InputAdornment>
-                      ),
+                    type={showPasswordBaru ? "text" : "password"}
+                    value={password.baru}
+                    onChange={(e) =>
+                      setPassword((prev) => ({
+                        ...prev,
+                        baru: e.target.value,
+                      }))
+                    }
+                    placeholder="Masukkan password baru"
+                    sx={inputSx}
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={() =>
+                                setShowPasswordBaru((prev) => !prev)
+                              }
+                              edge="end"
+                              aria-label="Tampilkan password baru"
+                            >
+                              {showPasswordBaru ? (
+                                <VisibilityOff />
+                              ) : (
+                                <Visibility />
+                              )}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      },
                     }}
                   />
                 </Box>
 
-                <Box sx={{ flex: 1 }}>
-                  <Typography variant="caption" sx={{ fontWeight: 700, color: "#4B5E4F", display: "block", mb: 0.6 }}>
-                    ALAMAT EMAIL RESMI
-                  </Typography>
+                <Box>
+                  <LabelInput>Konfirmasi Password Baru</LabelInput>
+
                   <TextField
                     fullWidth
-                    disabled={!modeEdit}
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    size="small"
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <EmailOutlined sx={{ fontSize: 18, color: "#7B8E7D" }} />
-                        </InputAdornment>
-                      ),
+                    type={showKonfirmasi ? "text" : "password"}
+                    value={password.konfirmasi}
+                    onChange={(e) =>
+                      setPassword((prev) => ({
+                        ...prev,
+                        konfirmasi: e.target.value,
+                      }))
+                    }
+                    placeholder="Ulangi password baru"
+                    sx={inputSx}
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={() =>
+                                setShowKonfirmasi((prev) => !prev)
+                              }
+                              edge="end"
+                              aria-label="Tampilkan konfirmasi password"
+                            >
+                              {showKonfirmasi ? (
+                                <VisibilityOff />
+                              ) : (
+                                <Visibility />
+                              )}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      },
                     }}
                   />
                 </Box>
-              </Stack>
-
-              <Box>
-                <Typography variant="caption" sx={{ fontWeight: 700, color: "#4B5E4F", display: "block", mb: 0.6 }}>
-                  ALAMAT DOMISILI (BATAM)
-                </Typography>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={2}
-                  disabled={!modeEdit}
-                  value={alamat}
-                  onChange={(e) => setAlamat(e.target.value)}
-                  size="small"
-                />
               </Box>
 
-              <Box>
-                <Typography variant="caption" sx={{ fontWeight: 700, color: "#4B5E4F", display: "block", mb: 0.6 }}>
-                  BIDANG KEAHLIAN / SPESIALISASI
-                </Typography>
-                <TextField
-                  fullWidth
-                  disabled={!modeEdit}
-                  value={spesialisasi}
-                  onChange={(e) => setSpesialisasi(e.target.value)}
-                  size="small"
-                />
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                }}
+              >
+                <Button
+                  variant="contained"
+                  startIcon={<LockOutlined />}
+                  onClick={handleSimpanPassword}
+                  sx={{
+                    bgcolor: warnaUtama,
+                    borderRadius: "10px",
+                    px: 3,
+                    fontWeight: 700,
+                    "&:hover": {
+                      bgcolor: "#245B34",
+                    },
+                  }}
+                >
+                  Ubah Password
+                </Button>
               </Box>
-
-              {modeEdit && (
-                <Stack direction="row" spacing={1.5} justifyContent="flex-end" sx={{ pt: 2 }}>
-                  <Button
-                    variant="outlined"
-                    startIcon={<Close />}
-                    onClick={handleBatal}
-                    sx={{ color: "#6A7D6E", borderColor: "#CBD5CD" }}
-                  >
-                    Batal
-                  </Button>
-                  <Button
-                    variant="contained"
-                    startIcon={<Save />}
-                    onClick={handleSimpan}
-                    sx={{ backgroundColor: "#2E6F40", "&:hover": { backgroundColor: "#235933" } }}
-                  >
-                    Simpan Perubahan
-                  </Button>
-                </Stack>
-              )}
             </Stack>
-          </Paper>
-        </Box>
+          </CardContent>
+        </Card>
       </Stack>
 
+      {/* NOTIFIKASI */}
       <Snackbar
-        open={toast.open}
-        autoHideDuration={3000}
-        onClose={() => setToast({ ...toast, open: false })}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        open={snackbar.open}
+        autoHideDuration={3500}
+        onClose={() =>
+          setSnackbar((prev) => ({
+            ...prev,
+            open: false,
+          }))
+        }
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "right",
+        }}
       >
-        <Alert severity={toast.severity} sx={{ borderRadius: "10px" }}>
-          {toast.message}
+        <Alert
+          severity={snackbar.severity}
+          onClose={() =>
+            setSnackbar((prev) => ({
+              ...prev,
+              open: false,
+            }))
+          }
+          sx={{ borderRadius: "10px" }}
+        >
+          {snackbar.message}
         </Alert>
       </Snackbar>
     </LayoutPengajar>
