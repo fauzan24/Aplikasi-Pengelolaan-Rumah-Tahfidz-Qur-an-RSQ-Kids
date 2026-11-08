@@ -21,9 +21,11 @@ import {
   Avatar,
   Box,
 } from "@mui/material";
+import { useSearchParams } from "react-router-dom";
 import LayoutPengajar from "../../components/pengajar/LayoutPengajar";
 import { dataSantriProgres } from "../../data/santriProgres";
 import { useProgresBelajar } from "../../context/ProgresBelajarContext";
+import { dapatkanPeriodeAkademik } from "../../data/penilaianProgres";
 
 const kategoriProgres = [
   { key: "tilawah", label: "Tilawah" },
@@ -39,8 +41,40 @@ export default function ProgresBelajar({
   onDetail,
 }) {
   const { progres } = useProgresBelajar();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const periodeSekarang = dapatkanPeriodeAkademik();
+  const tahunAjaranTerpilih =
+    searchParams.get("tahunAjaran") || periodeSekarang.tahunAjaran;
+  const semesterTerpilih =
+    searchParams.get("semester") || periodeSekarang.semester;
   const [keyword, setKeyword] = useState("");
   const [filterKelas, setFilterKelas] = useState("Semua");
+  const tahunAjaranTersedia = useMemo(() => {
+    const tahunMulaiSekarang = Number(
+      periodeSekarang.tahunAjaran.split("/")[0]
+    );
+    const tahunAjaran = new Set([
+      periodeSekarang.tahunAjaran,
+      ...Array.from({ length: 7 }, (_, index) => {
+        const tahunMulai = tahunMulaiSekarang - 3 + index;
+        return `${tahunMulai}/${tahunMulai + 1}`;
+      }),
+      ...progres.map(
+        (item) =>
+          item.tahunAjaran ||
+          dapatkanPeriodeAkademik(item.tanggal).tahunAjaran
+      ),
+    ]);
+
+    return [...tahunAjaran].sort((a, b) => b.localeCompare(a));
+  }, [periodeSekarang.tahunAjaran, progres]);
+
+  const ubahPeriode = (key, value) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("tahunAjaran", key === "tahunAjaran" ? value : tahunAjaranTerpilih);
+    params.set("semester", key === "semester" ? value : semesterTerpilih);
+    setSearchParams(params, { replace: true });
+  };
 
   const dataTampil = useMemo(() => {
     const cari = keyword.toLowerCase().trim();
@@ -51,6 +85,14 @@ export default function ProgresBelajar({
       return cocokPencarian && cocokKelas;
     });
   }, [keyword, filterKelas]);
+
+  const progresDalamPeriode = (item) => {
+    const periode = dapatkanPeriodeAkademik(item.tanggal);
+    return (
+      (item.tahunAjaran || periode.tahunAjaran) === tahunAjaranTerpilih &&
+      (item.semester || periode.semester) === semesterTerpilih
+    );
+  };
 
   return (
     <Layout onNavigate={onNavigate} onLogout={onLogout}>
@@ -77,38 +119,73 @@ export default function ProgresBelajar({
         >
           {/* Controls Bar */}
           <Box sx={{ p: { xs: 2, sm: 2.75 }, borderBottom: "1px solid #EEF3ED" }}>
-            <Stack
-              direction={{ xs: "column", sm: "row" }}
-              spacing={2}
-              alignItems={{ sm: "center" }}
-              justifyContent="space-between"
-            >
-              <TextField
-                size="small"
-                placeholder="Cari nama atau NIS santri..."
-                value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
-                sx={{ width: { xs: "100%", sm: 280 } }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Search sx={{ color: "#8E9E90", fontSize: 20 }} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-
-              <TextField
-                select
-                size="small"
-                value={filterKelas}
-                onChange={(e) => setFilterKelas(e.target.value)}
-                sx={{ minWidth: 160 }}
+            <Stack spacing={2}>
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={2}
+                alignItems={{ sm: "center" }}
               >
-                <MenuItem value="Semua">Semua Kelas</MenuItem>
-                <MenuItem value="Pagi">Kelas Pagi</MenuItem>
-                <MenuItem value="Sore">Kelas Sore</MenuItem>
-              </TextField>
+                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: "#344638" }}>
+                  Periode perkembangan
+                </Typography>
+                <TextField
+                  select
+                  size="small"
+                  label="Tahun Ajaran"
+                  value={tahunAjaranTerpilih}
+                  onChange={(e) => ubahPeriode("tahunAjaran", e.target.value)}
+                  sx={{ minWidth: 170 }}
+                >
+                  {tahunAjaranTersedia.map((tahunAjaran) => (
+                    <MenuItem key={tahunAjaran} value={tahunAjaran}>
+                      {tahunAjaran}
+                    </MenuItem>
+                  ))}
+                </TextField>
+                <TextField
+                  select
+                  size="small"
+                  label="Semester"
+                  value={semesterTerpilih}
+                  onChange={(e) => ubahPeriode("semester", e.target.value)}
+                  sx={{ minWidth: 145 }}
+                >
+                  <MenuItem value="Ganjil">Ganjil</MenuItem>
+                  <MenuItem value="Genap">Genap</MenuItem>
+                </TextField>
+              </Stack>
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={2}
+                alignItems={{ sm: "center" }}
+                justifyContent="space-between"
+              >
+                <TextField
+                  size="small"
+                  placeholder="Cari nama atau NIS santri..."
+                  value={keyword}
+                  onChange={(e) => setKeyword(e.target.value)}
+                  sx={{ width: { xs: "100%", sm: 280 } }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Search sx={{ color: "#8E9E90", fontSize: 20 }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                <TextField
+                  select
+                  size="small"
+                  value={filterKelas}
+                  onChange={(e) => setFilterKelas(e.target.value)}
+                  sx={{ minWidth: 160 }}
+                >
+                  <MenuItem value="Semua">Semua Kelas</MenuItem>
+                  <MenuItem value="Pagi">Kelas Pagi</MenuItem>
+                  <MenuItem value="Sore">Kelas Sore</MenuItem>
+                </TextField>
+              </Stack>
             </Stack>
           </Box>
 
@@ -135,7 +212,8 @@ export default function ProgresBelajar({
                       .slice(0, 2)
                       .join("");
                     const progresSantri = progres.filter(
-                      (item) => item.santriId === santri.id
+                      (item) =>
+                        item.santriId === santri.id && progresDalamPeriode(item)
                     );
 
                     return (
@@ -212,7 +290,12 @@ export default function ProgresBelajar({
                             variant="outlined"
                             size="small"
                             endIcon={<ArrowForward sx={{ fontSize: 15 }} />}
-                            onClick={() => onDetail?.(santri)}
+                            onClick={() =>
+                              onDetail?.(santri, {
+                                tahunAjaran: tahunAjaranTerpilih,
+                                semester: semesterTerpilih,
+                              })
+                            }
                             sx={{
                               borderRadius: "8px",
                               borderColor: "#2E6F40",

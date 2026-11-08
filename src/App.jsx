@@ -188,9 +188,9 @@ function App() {
                 <ProgresBelajar
                   {...pageProps}
                   Layout={LayoutAdmin}
-                  onDetail={(santri) =>
+                  onDetail={(santri, periode) =>
                     navigate(
-                      `/admin/progres-belajar/${encodeURIComponent(santri.id)}`
+                      `/admin/progres-belajar/${encodeURIComponent(santri.id)}?${new URLSearchParams(periode)}`
                     )
                   }
                 />
@@ -227,9 +227,9 @@ function App() {
               element={
                 <ProgresBelajar
                   {...pageProps}
-                  onDetail={(santri) =>
+                  onDetail={(santri, periode) =>
                     navigate(
-                      `/pengajar/progres-belajar/${encodeURIComponent(santri.id)}`
+                      `/pengajar/progres-belajar/${encodeURIComponent(santri.id)}?${new URLSearchParams(periode)}`
                     )
                   }
                 />

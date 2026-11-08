@@ -37,11 +37,15 @@ import {
   Tooltip,
   Snackbar,
 } from "@mui/material";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import LayoutPengajar from "../../components/pengajar/LayoutPengajar";
 import { dataSantriProgres } from "../../data/santriProgres";
 import { useProgresBelajar } from "../../context/ProgresBelajarContext";
 import { usePengajar } from "../../context/PengajarContext";
+import {
+  dapatkanPeriodeAkademik,
+  pilihanNilaiQuran,
+} from "../../data/penilaianProgres";
 
 const aspekCards = [
   { key: "tilawah", label: "Lembar Nilai Tilawah Al-Qur'an", icon: AutoStoriesOutlined, color: "#2E6F40", bg: "#EBF5ED" },
@@ -190,25 +194,29 @@ const tanggalHariIni = () => {
 const normalisasiNamaPengajar = (nama = "") =>
   nama.replace(/^(ustadzah|ustadz|ust\.?)\s*/i, "").trim().toLowerCase();
 
-const buatFormKosong = (jenis) => ({
-  id: crypto.randomUUID(),
-  jenis,
-  tanggal: tanggalHariIni(),
-  hal: "",
-  surah: "",
-  ayat: "",
-  nilai: "",
-  parafPengajar: "",
-  namaDoa: "",
-  penilaianDoa: "B.L.",
-  namaHadist: "",
-  penilaianHadist: "B.L",
-  nilaiKelancaran: "",
-  nilaiTajwid: "",
-  nilaiMakhraj: "",
-  statusSetoran: "Lancar",
-  catatan: "",
-});
+const buatFormKosong = (jenis) => {
+  const tanggal = tanggalHariIni();
+  return {
+    id: crypto.randomUUID(),
+    jenis,
+    tanggal,
+    ...dapatkanPeriodeAkademik(tanggal),
+    hal: "",
+    surah: "",
+    ayat: "",
+    nilai: "",
+    parafPengajar: "",
+    namaDoa: "",
+    penilaianDoa: "B.L.",
+    namaHadist: "",
+    penilaianHadist: "B.L",
+    nilaiKelancaran: "",
+    nilaiTajwid: "",
+    nilaiMakhraj: "",
+    statusSetoran: "Lancar",
+    catatan: "",
+  };
+};
 
 const formatTanggal = (tanggal) =>
   tanggal
@@ -223,6 +231,7 @@ export default function DetailProgresBelajar({
 }) {
   const { santriId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { progres, setProgres } = useProgresBelajar();
   const { dataPengajar } = usePengajar();
   const santri = dataSantriProgres.find((item) => String(item.id) === String(santriId));
@@ -233,12 +242,24 @@ export default function DetailProgresBelajar({
     ? pengajarAktif?.nama || pengguna.nama
     : "";
   const daftarPath = pengguna?.role === "admin" ? "/admin/progres-belajar" : "/pengajar/progres-belajar";
+  const periodeSekarang = dapatkanPeriodeAkademik();
+  const tahunAjaranTerpilih =
+    searchParams.get("tahunAjaran") || periodeSekarang.tahunAjaran;
+  const semesterTerpilih =
+    searchParams.get("semester") || periodeSekarang.semester;
   const [jenisTerpilih, setJenisTerpilih] = useState(null);
   const [dataEdit, setDataEdit] = useState(null);
   const [isTambah, setIsTambah] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [toast, setToast] = useState({ open: false, message: "" });
-  const daftarProgres = progres.filter((item) => item.santriId === santriId);
+  const daftarProgres = progres.filter((item) => {
+    if (item.santriId !== santriId) return false;
+    const periodeItem = dapatkanPeriodeAkademik(item.tanggal);
+    return (
+      (item.tahunAjaran || periodeItem.tahunAjaran) === tahunAjaranTerpilih &&
+      (item.semester || periodeItem.semester) === semesterTerpilih
+    );
+  });
   const aspekTerpilih = aspekCards.find((item) => item.key === jenisTerpilih);
   const progresTampil = daftarProgres.filter((item) => item.jenis === jenisTerpilih);
 
@@ -247,6 +268,8 @@ export default function DetailProgresBelajar({
     setIsTambah(true);
     setDataEdit({
       ...buatFormKosong(jenisTerpilih),
+      tahunAjaran: tahunAjaranTerpilih,
+      semester: semesterTerpilih,
       parafPengajar: namaParafOtomatis,
     });
     setModalOpen(true);
@@ -254,7 +277,12 @@ export default function DetailProgresBelajar({
 
   const bukaEdit = (item) => {
     setIsTambah(false);
-    setDataEdit({ ...item });
+    const periodeAkademik = dapatkanPeriodeAkademik(item.tanggal);
+    setDataEdit({
+      ...item,
+      tahunAjaran: tahunAjaranTerpilih || item.tahunAjaran || periodeAkademik.tahunAjaran,
+      semester: semesterTerpilih || item.semester || periodeAkademik.semester,
+    });
     setModalOpen(true);
   };
 
@@ -264,6 +292,18 @@ export default function DetailProgresBelajar({
     const dataSimpan = {
       ...dataEdit,
       santriId,
+      tahunAjaran: tahunAjaranTerpilih,
+      semester: semesterTerpilih,
+      ...(isLembarTilawah(dataEdit.jenis)
+        ? {
+            kesalahan: pilihanNilaiQuran.find(
+              (pilihan) => pilihan.kode === dataEdit.nilai
+            )?.kesalahan || "",
+            keterangan: pilihanNilaiQuran.find(
+              (pilihan) => pilihan.kode === dataEdit.nilai
+            )?.keterangan || "",
+          }
+        : {}),
       parafPengajar:
         isTambah && pengguna?.role === "pengajar" && (isLembarTilawah(dataEdit.jenis) || dataEdit.jenis === "hafalan-doa")
           ? namaParafOtomatis
@@ -309,7 +349,14 @@ export default function DetailProgresBelajar({
         <Box>
           <Button
             startIcon={<ArrowBack />}
-            onClick={() => navigate(daftarPath)}
+            onClick={() =>
+              navigate(
+                `${daftarPath}?${new URLSearchParams({
+                  tahunAjaran: tahunAjaranTerpilih,
+                  semester: semesterTerpilih,
+                })}`
+              )
+            }
             sx={{
               color: "#2E6F40",
               fontWeight: 700,
@@ -462,7 +509,8 @@ export default function DetailProgresBelajar({
                 {aspekTerpilih.label}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Riwayat perkembangan untuk {santri.nama}.
+                Riwayat perkembangan untuk {santri.nama} · Tahun Ajaran{" "}
+                {tahunAjaranTerpilih} · Semester {semesterTerpilih}.
               </Typography>
             </Box>
             <Button variant="contained" startIcon={<Add />} onClick={bukaTambah} sx={{ backgroundColor: "#2E6F40", "&:hover": { backgroundColor: "#245A33" } }}>
@@ -471,16 +519,20 @@ export default function DetailProgresBelajar({
           </Box>
 
           <TableContainer>
-            <Table sx={{ minWidth: isLembarTilawah(jenisTerpilih) ? 1150 : jenisTerpilih === "hafalan-doa" || jenisTerpilih === "hafalan-hadist" ? 1050 : 780 }}>
+            <Table sx={{ minWidth: isLembarTilawah(jenisTerpilih) ? 1600 : jenisTerpilih === "hafalan-doa" ? 1250 : jenisTerpilih === "hafalan-hadist" ? 1150 : 780 }}>
               <TableHead>
                 {isLembarTilawah(jenisTerpilih) ? (
                   <TableRow>
                     <TableCell align="center" sx={{ width: 60 }}>NO</TableCell>
                     <TableCell>TGL</TableCell>
+                    <TableCell>TAHUN AJARAN</TableCell>
+                    <TableCell>SEMESTER</TableCell>
                     <TableCell>HAL</TableCell>
                     <TableCell>SURAT</TableCell>
                     <TableCell>AYAT</TableCell>
                     <TableCell>NILAI</TableCell>
+                    <TableCell>KESALAHAN</TableCell>
+                    <TableCell>KETERANGAN</TableCell>
                     <TableCell>PARAF USTADZ/USTADZAH</TableCell>
                     <TableCell>CATATAN</TableCell>
                     <TableCell align="center">AKSI</TableCell>
@@ -493,6 +545,8 @@ export default function DetailProgresBelajar({
                         {jenisTerpilih === "hafalan-doa" ? "JUDUL DO'A" : "JUDUL HADIST"}
                       </TableCell>
                       <TableCell rowSpan={2} sx={{ verticalAlign: "middle" }}>TGL</TableCell>
+                      <TableCell rowSpan={2} sx={{ verticalAlign: "middle" }}>TAHUN AJARAN</TableCell>
+                      <TableCell rowSpan={2} sx={{ verticalAlign: "middle" }}>SEMESTER</TableCell>
                       <TableCell align="center" colSpan={3}>PENILAIAN SETORAN</TableCell>
                       {jenisTerpilih === "hafalan-doa" && (
                         <TableCell rowSpan={2} sx={{ verticalAlign: "middle" }}>PARAF USTADZ/USTADZAH</TableCell>
@@ -535,10 +589,14 @@ export default function DetailProgresBelajar({
                     {isLembarTilawah(jenisTerpilih) ? (
                       <>
                         <TableCell sx={{ fontWeight: 600, color: "#1A251D", whiteSpace: "nowrap" }}>{formatTanggal(item.tanggal)}</TableCell>
+                        <TableCell>{item.tahunAjaran || dapatkanPeriodeAkademik(item.tanggal).tahunAjaran}</TableCell>
+                        <TableCell>{item.semester || dapatkanPeriodeAkademik(item.tanggal).semester}</TableCell>
                         <TableCell>{item.hal || "-"}</TableCell>
                         <TableCell sx={{ fontWeight: 700, color: "#2E6F40" }}>{item.surah || "-"}</TableCell>
                         <TableCell>{item.ayat || "-"}</TableCell>
                         <TableCell>{item.nilai || "-"}</TableCell>
+                        <TableCell>{item.kesalahan || pilihanNilaiQuran.find((pilihan) => pilihan.kode === item.nilai)?.kesalahan || "-"}</TableCell>
+                        <TableCell>{item.keterangan || pilihanNilaiQuran.find((pilihan) => pilihan.kode === item.nilai)?.keterangan || "-"}</TableCell>
                         <TableCell>{item.parafPengajar || "-"}</TableCell>
                         <TableCell sx={{ color: "#4B5E4F" }}>{item.catatan || "-"}</TableCell>
                       </>
@@ -548,7 +606,9 @@ export default function DetailProgresBelajar({
                           {jenisTerpilih === "hafalan-doa" ? item.namaDoa || "-" : item.namaHadist || "-"}
                         </TableCell>
                         <TableCell sx={{ whiteSpace: "nowrap" }}>{formatTanggal(item.tanggal)}</TableCell>
-                        {(jenisTerpilih === "hafalan-doa" ? pilihanPenilaianDoa : pilihanPenilaianHadist).map((pilihan) => (
+                          <TableCell>{item.tahunAjaran || dapatkanPeriodeAkademik(item.tanggal).tahunAjaran}</TableCell>
+                          <TableCell>{item.semester || dapatkanPeriodeAkademik(item.tanggal).semester}</TableCell>
+                          {(jenisTerpilih === "hafalan-doa" ? pilihanPenilaianDoa : pilihanPenilaianHadist).map((pilihan) => (
                           <TableCell
                             key={pilihan.kode}
                             align="center"
@@ -627,7 +687,7 @@ export default function DetailProgresBelajar({
                   </TableRow>
                 )) : (
                   <TableRow>
-                    <TableCell colSpan={isLembarTilawah(jenisTerpilih) ? 9 : jenisTerpilih === "hafalan-doa" ? 9 : jenisTerpilih === "hafalan-hadist" ? 8 : 6} align="center" sx={{ py: 5, color: "#8E9E90" }}>
+                    <TableCell colSpan={isLembarTilawah(jenisTerpilih) ? 13 : jenisTerpilih === "hafalan-doa" ? 11 : jenisTerpilih === "hafalan-hadist" ? 10 : 6} align="center" sx={{ py: 5, color: "#8E9E90" }}>
                       Belum ada data pada lembar ini. Klik "Tambah Data" untuk mengisi perkembangan.
                     </TableCell>
                   </TableRow>
@@ -655,6 +715,11 @@ export default function DetailProgresBelajar({
                 onChange={(e) => setDataEdit({ ...dataEdit, tanggal: e.target.value })}
                 slotProps={{ inputLabel: { shrink: true } }}
               />
+
+              <Alert severity="info">
+                Data akan disimpan pada Tahun Ajaran {tahunAjaranTerpilih}, Semester{" "}
+                {semesterTerpilih}.
+              </Alert>
 
               {isLembarTilawah(dataEdit?.jenis) ? (
                 <>
@@ -696,14 +761,35 @@ export default function DetailProgresBelajar({
                       onChange={(e) => setDataEdit({ ...dataEdit, ayat: e.target.value })}
                     />
                     <TextField
+                      select
                       required
                       fullWidth
                       label="Nilai"
-                      placeholder={dataEdit?.jenis === "tilawah" ? "Masukkan nilai tilawah" : "Masukkan nilai setoran hafalan"}
                       value={dataEdit?.nilai || ""}
-                      onChange={(e) => setDataEdit({ ...dataEdit, nilai: e.target.value })}
-                    />
+                      onChange={(e) => {
+                        const pilihan = pilihanNilaiQuran.find(
+                          (item) => item.kode === e.target.value
+                        );
+                        setDataEdit({
+                          ...dataEdit,
+                          nilai: e.target.value,
+                          kesalahan: pilihan?.kesalahan || "",
+                          keterangan: pilihan?.keterangan || "",
+                        });
+                      }}
+                    >
+                      {pilihanNilaiQuran.map((pilihan) => (
+                        <MenuItem key={pilihan.kode} value={pilihan.kode}>
+                          {pilihan.kode} — {pilihan.kesalahan} — {pilihan.keterangan}
+                        </MenuItem>
+                      ))}
+                    </TextField>
                   </Stack>
+                  <Alert severity="info">
+                    {dataEdit?.nilai
+                      ? `${dataEdit.nilai} · ${dataEdit.kesalahan || pilihanNilaiQuran.find((pilihan) => pilihan.kode === dataEdit.nilai)?.kesalahan} · ${dataEdit.keterangan || pilihanNilaiQuran.find((pilihan) => pilihan.kode === dataEdit.nilai)?.keterangan}`
+                      : "Pilih nilai untuk melihat jumlah kesalahan dan keterangan tindak lanjut."}
+                  </Alert>
                   <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                     <Autocomplete
                       fullWidth
@@ -818,7 +904,7 @@ export default function DetailProgresBelajar({
                   )}
                   />
                 </>
-              ) : dataEdit?.jenis !== "tilawah" ? (
+              ) : !isLembarTilawah(dataEdit?.jenis) ? (
                 <TextField
                   select
                   required
