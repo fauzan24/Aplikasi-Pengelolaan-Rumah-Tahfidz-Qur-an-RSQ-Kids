@@ -28,8 +28,10 @@ import {
 } from "@mui/material";
 
 import LayoutWaliSantri from "../../components/walisantri/LayoutWalisantri";
+import { dataSantriProgres } from "../../data/santriProgres";
 
 const warnaUtama = "#2E6F40";
+const KUNCI_PENDAFTARAN = "pendaftaranSantriBaru";
 
 export default function ProfilWalisantri({
   onNavigate,
@@ -63,6 +65,72 @@ export default function ProfilWalisantri({
     message: "",
     severity: "success",
   });
+
+  const [hasilPendaftaran] = useState(() => {
+    try {
+      const tersimpan = localStorage.getItem(KUNCI_PENDAFTARAN);
+      if (!tersimpan) {
+        return { data: null, error: "" };
+      }
+
+      const daftarPendaftaran = JSON.parse(tersimpan);
+      if (!Array.isArray(daftarPendaftaran)) {
+        throw new Error("Format data pendaftaran tidak valid.");
+      }
+
+      const pendaftaranWali = daftarPendaftaran
+        .filter((data) => data?.idWali === pengguna?.id)
+        .slice(-1)[0];
+      return { data: pendaftaranWali || null, error: "" };
+    } catch (error) {
+      return {
+        data: null,
+        error:
+          error instanceof Error
+            ? `Data pendaftaran gagal dibaca: ${error.message}`
+            : "Data pendaftaran gagal dibaca.",
+      };
+    }
+  });
+  const pendaftaranSantri = hasilPendaftaran.data;
+
+  const santriId =
+    pengguna?.santriId || (pengguna?.id === "WALI001" ? "RSQ006" : null);
+  const santriTerhubung = dataSantriProgres.find(
+    (santri) => santri.id === santriId
+  );
+  const informasiSantri = [
+    {
+      label: "NAMA SANTRI",
+      value:
+        pendaftaranSantri?.namaSantri ||
+        pengguna?.namaAnak ||
+        santriTerhubung?.nama ||
+        "-",
+    },
+    { label: "TEMPAT LAHIR", value: pendaftaranSantri?.tempatLahir || "-" },
+    { label: "TANGGAL LAHIR", value: pendaftaranSantri?.tanggalLahir || "-" },
+    { label: "SEKOLAH", value: pendaftaranSantri?.sekolah || "-" },
+    {
+      label: "KELAS",
+      value:
+        pendaftaranSantri?.kelas ||
+        pengguna?.kelas ||
+        santriTerhubung?.kelas ||
+        "-",
+    },
+    { label: "NAMA AYAH", value: pendaftaranSantri?.namaAyah || "-" },
+    { label: "NAMA IBU", value: pendaftaranSantri?.namaIbu || "-" },
+    {
+      label: "NOMOR HP",
+      value: pendaftaranSantri?.nomorHandphone || "-",
+    },
+    {
+      label: "ALAMAT",
+      value: pendaftaranSantri?.alamatTempatTinggal || "-",
+    },
+    { label: "STATUS", value: pendaftaranSantri?.status || "-" },
+  ];
 
   const tampilkanPesan = (message, severity = "success") => {
     setSnackbar({
@@ -541,6 +609,12 @@ export default function ProfilWalisantri({
 
             <Divider sx={{ my: 3, borderColor: "#EEF3ED" }} />
 
+            {hasilPendaftaran.error && (
+              <Alert severity="error" sx={{ mb: 3 }}>
+                {hasilPendaftaran.error}
+              </Alert>
+            )}
+
             <Box
               sx={{
                 display: "grid",
@@ -551,25 +625,26 @@ export default function ProfilWalisantri({
                 gap: 2.5,
               }}
             >
-              <Box>
-                <LabelInput>Nama Santri</LabelInput>
-                <TextField
-                  fullWidth
-                  value={profil.namaAnak}
-                  disabled
-                  sx={inputSx}
-                />
-              </Box>
-
-              <Box>
-                <LabelInput>Kelas</LabelInput>
-                <TextField
-                  fullWidth
-                  value={profil.kelas}
-                  disabled
-                  sx={inputSx}
-                />
-              </Box>
+              {informasiSantri.map(({ label, value }) => (
+                <Box key={label}>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 700, color: "#344638", mb: 0.75 }}
+                  >
+                    {label}
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      color: "#526354",
+                      overflowWrap: "anywhere",
+                      whiteSpace: "pre-wrap",
+                    }}
+                  >
+                    {value}
+                  </Typography>
+                </Box>
+              ))}
             </Box>
           </CardContent>
         </Card>

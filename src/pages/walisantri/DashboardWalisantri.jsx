@@ -86,7 +86,7 @@ export default function DashboardWalisantri({ pengguna, onLogout }) {
             }}
           />
           <Typography variant="h4" sx={{ mb: 0.75, color: "inherit", fontWeight: 800 }}>
-            Ahlan wa Sahlan, {namaPengguna} 👋
+            Ahlan wa Sahlan, {namaPengguna} 
           </Typography>
           <Typography variant="body2" sx={{ maxWidth: 620, color: "rgba(255,255,255,0.85)" }}>
             Pantau perkembangan belajar, jadwal kelas, dan pembayaran SPP ananda dalam satu halaman.

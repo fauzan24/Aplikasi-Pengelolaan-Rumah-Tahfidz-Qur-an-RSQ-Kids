@@ -15,18 +15,24 @@ import {
   Chip,
   Paper,
   Stack,
+  MenuItem,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
+  TextField,
   Typography,
   useTheme,
 } from "@mui/material";
 import LayoutWalisantri from "../../components/walisantri/LayoutWalisantri";
 import { useProgresBelajar } from "../../context/ProgresBelajarContext";
 import { dataSantriProgres } from "../../data/santriProgres";
+import {
+  dapatkanPeriodeAkademik,
+  pilihanNilaiQuran,
+} from "../../data/penilaianProgres";
 
 const kategoriProgres = [
   {
@@ -85,11 +91,43 @@ export default function ProgresBelajarWalisantri({ pengguna, onLogout }) {
   const theme = useTheme();
   const { progres } = useProgresBelajar();
   const [jenisTerpilih, setJenisTerpilih] = useState(null);
+  const [periodeTerpilih, setPeriodeTerpilih] = useState(() =>
+    dapatkanPeriodeAkademik()
+  );
   const santriId = pengguna?.santriId || (pengguna?.id === "WALI001" ? "RSQ006" : null);
   const santri = dataSantriProgres.find((item) => item.id === santriId);
-  const daftarProgres = santriId
+  const semuaProgresSantri = santriId
     ? progres.filter((item) => item.santriId === santriId)
     : [];
+  const tahunMulaiSekarang = Number(
+    dapatkanPeriodeAkademik().tahunAjaran.split("/")[0]
+  );
+  const tahunAjaranTersedia = [
+    ...new Set([
+      ...Array.from({ length: 10 }, (_, index) => {
+        const tahunMulai = tahunMulaiSekarang - index;
+        return `${tahunMulai}/${tahunMulai + 1}`;
+      }),
+      ...Array.from({ length: 10 }, (_, index) => {
+        const tahunMulai = tahunMulaiSekarang + index + 1;
+        return `${tahunMulai}/${tahunMulai + 1}`;
+      }),
+      ...semuaProgresSantri.map(
+        (item) =>
+          item.tahunAjaran ||
+          dapatkanPeriodeAkademik(item.tanggal).tahunAjaran
+      ),
+      periodeTerpilih.tahunAjaran,
+    ]),
+  ].sort((a, b) => b.localeCompare(a));
+  const daftarProgres = semuaProgresSantri.filter((item) => {
+    const periodeItem = dapatkanPeriodeAkademik(item.tanggal);
+    return (
+      (item.tahunAjaran || periodeItem.tahunAjaran) ===
+        periodeTerpilih.tahunAjaran &&
+      (item.semester || periodeItem.semester) === periodeTerpilih.semester
+    );
+  });
   const aspekTerpilih = kategoriProgres.find(
     (item) => item.key === jenisTerpilih
   );
@@ -104,10 +142,14 @@ export default function ProgresBelajarWalisantri({ pengguna, onLogout }) {
         <TableRow>
           <TableCell align="center">NO</TableCell>
           <TableCell>TANGGAL</TableCell>
+          <TableCell>TAHUN AJARAN</TableCell>
+          <TableCell>SEMESTER</TableCell>
           <TableCell>HAL</TableCell>
           <TableCell>SURAT</TableCell>
           <TableCell>AYAT</TableCell>
           <TableCell>NILAI</TableCell>
+          <TableCell>KESALAHAN</TableCell>
+          <TableCell>KETERANGAN</TableCell>
           <TableCell>PARAF USTADZ/USTADZAH</TableCell>
           <TableCell>CATATAN</TableCell>
         </TableRow>
@@ -121,6 +163,8 @@ export default function ProgresBelajarWalisantri({ pengguna, onLogout }) {
           {jenisTerpilih === "hafalan-doa" ? "JUDUL DO'A" : "JUDUL HADIST"}
         </TableCell>
         <TableCell>TANGGAL</TableCell>
+        <TableCell>TAHUN AJARAN</TableCell>
+        <TableCell>SEMESTER</TableCell>
         <TableCell align="center">PENILAIAN SETORAN</TableCell>
         {jenisTerpilih === "hafalan-doa" && (
           <TableCell>PARAF USTADZ/USTADZAH</TableCell>
@@ -138,12 +182,16 @@ export default function ProgresBelajarWalisantri({ pengguna, onLogout }) {
           <TableCell sx={{ whiteSpace: "nowrap" }}>
             {formatTanggal(item.tanggal)}
           </TableCell>
+          <TableCell>{item.tahunAjaran || dapatkanPeriodeAkademik(item.tanggal).tahunAjaran}</TableCell>
+          <TableCell>{item.semester || dapatkanPeriodeAkademik(item.tanggal).semester}</TableCell>
           <TableCell>{item.hal || "-"}</TableCell>
           <TableCell sx={{ fontWeight: 700, color: "primary.main" }}>
             {item.surah || "-"}
           </TableCell>
           <TableCell>{item.ayat || "-"}</TableCell>
           <TableCell>{item.nilai || "-"}</TableCell>
+          <TableCell>{item.kesalahan || pilihanNilaiQuran.find((pilihan) => pilihan.kode === item.nilai)?.kesalahan || "-"}</TableCell>
+          <TableCell>{item.keterangan || pilihanNilaiQuran.find((pilihan) => pilihan.kode === item.nilai)?.keterangan || "-"}</TableCell>
           <TableCell>{item.parafPengajar || "-"}</TableCell>
           <TableCell>{item.catatan || "-"}</TableCell>
         </TableRow>
@@ -166,6 +214,8 @@ export default function ProgresBelajarWalisantri({ pengguna, onLogout }) {
         <TableCell sx={{ whiteSpace: "nowrap" }}>
           {formatTanggal(item.tanggal)}
         </TableCell>
+        <TableCell>{item.tahunAjaran || dapatkanPeriodeAkademik(item.tanggal).tahunAjaran}</TableCell>
+        <TableCell>{item.semester || dapatkanPeriodeAkademik(item.tanggal).semester}</TableCell>
         <TableCell align="center">
           {nilaiPenilaian ? (
             <Stack spacing={0.25} sx={{ alignItems: "center" }}>
@@ -207,6 +257,63 @@ export default function ProgresBelajarWalisantri({ pengguna, onLogout }) {
           </Alert>
         ) : (
           <>
+            <Paper
+              elevation={0}
+              sx={{
+                p: { xs: 2, sm: 2.5 },
+                border: `1px solid ${theme.palette.divider}`,
+                borderRadius: `${theme.shape.borderRadius + 4}px`,
+              }}
+            >
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={2}
+                alignItems={{ sm: "center" }}
+              >
+                <Typography
+                  variant="subtitle2"
+                  sx={{ fontWeight: 800, color: "#344638", flexGrow: 1 }}
+                >
+                  Pilih Tahun Ajaran dan Semester
+                </Typography>
+                <TextField
+                  select
+                  size="small"
+                  label="Tahun Ajaran"
+                  value={periodeTerpilih.tahunAjaran}
+                  onChange={(event) =>
+                    setPeriodeTerpilih((periode) => ({
+                      ...periode,
+                      tahunAjaran: event.target.value,
+                    }))
+                  }
+                  sx={{ minWidth: { xs: "100%", sm: 180 } }}
+                >
+                  {tahunAjaranTersedia.map((tahunAjaran) => (
+                    <MenuItem key={tahunAjaran} value={tahunAjaran}>
+                      {tahunAjaran}
+                    </MenuItem>
+                  ))}
+                </TextField>
+                <TextField
+                  select
+                  size="small"
+                  label="Semester"
+                  value={periodeTerpilih.semester}
+                  onChange={(event) =>
+                    setPeriodeTerpilih((periode) => ({
+                      ...periode,
+                      semester: event.target.value,
+                    }))
+                  }
+                  sx={{ minWidth: { xs: "100%", sm: 150 } }}
+                >
+                  <MenuItem value="Ganjil">Ganjil</MenuItem>
+                  <MenuItem value="Genap">Genap</MenuItem>
+                </TextField>
+              </Stack>
+            </Paper>
+
             <Paper
               elevation={0}
               sx={{
@@ -346,17 +453,19 @@ export default function ProgresBelajarWalisantri({ pengguna, onLogout }) {
                     {aspekTerpilih.label}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Riwayat perkembangan untuk {santri.nama}.
+                    Riwayat perkembangan untuk {santri.nama} · Tahun Ajaran{" "}
+                    {periodeTerpilih.tahunAjaran} · Semester{" "}
+                    {periodeTerpilih.semester}.
                   </Typography>
                 </Box>
                 <TableContainer>
                   <Table
                     sx={{
                       minWidth: isLembarTilawah(jenisTerpilih)
-                        ? 950
+                        ? 1500
                         : jenisTerpilih === "hafalan-doa"
-                          ? 850
-                          : 720,
+                          ? 1050
+                          : 900,
                     }}
                   >
                     <TableHead>{renderHeaderTabel()}</TableHead>
@@ -366,7 +475,7 @@ export default function ProgresBelajarWalisantri({ pengguna, onLogout }) {
                       ) : (
                         <TableRow>
                           <TableCell
-                            colSpan={isLembarTilawah(jenisTerpilih) ? 8 : jenisTerpilih === "hafalan-doa" ? 6 : 5}
+                            colSpan={isLembarTilawah(jenisTerpilih) ? 12 : jenisTerpilih === "hafalan-doa" ? 8 : 7}
                             align="center"
                             sx={{ py: 5, color: "text.secondary" }}
                           >
